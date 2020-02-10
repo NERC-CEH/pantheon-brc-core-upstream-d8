@@ -29,6 +29,7 @@ class ComposerStaticInitf0a76219c246ec6fe5f87782734a67c8
     public static $prefixLengthsPsr4 = array (
         'Z' => 
         array (
+            'ZipStream\\' => 10,
             'Zend\\Stdlib\\' => 12,
             'Zend\\Feed\\' => 10,
             'Zend\\Escaper\\' => 13,
@@ -47,7 +48,10 @@ class ComposerStaticInitf0a76219c246ec6fe5f87782734a67c8
             'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Symfony\\Polyfill\\Iconv\\' => 23,
             'Symfony\\Polyfill\\Ctype\\' => 23,
+            'Symfony\\Contracts\\Service\\' => 26,
+            'Symfony\\Contracts\\Cache\\' => 24,
             'Symfony\\Component\\Yaml\\' => 23,
+            'Symfony\\Component\\VarExporter\\' => 30,
             'Symfony\\Component\\Validator\\' => 28,
             'Symfony\\Component\\Translation\\' => 30,
             'Symfony\\Component\\Serializer\\' => 29,
@@ -55,19 +59,23 @@ class ComposerStaticInitf0a76219c246ec6fe5f87782734a67c8
             'Symfony\\Component\\Process\\' => 26,
             'Symfony\\Component\\HttpKernel\\' => 29,
             'Symfony\\Component\\HttpFoundation\\' => 33,
+            'Symfony\\Component\\Finder\\' => 25,
             'Symfony\\Component\\EventDispatcher\\' => 34,
             'Symfony\\Component\\DependencyInjection\\' => 38,
             'Symfony\\Component\\Debug\\' => 24,
             'Symfony\\Component\\Console\\' => 26,
             'Symfony\\Component\\ClassLoader\\' => 30,
+            'Symfony\\Component\\Cache\\' => 24,
             'Symfony\\Cmf\\Component\\Routing\\' => 30,
             'Symfony\\Bridge\\PsrHttpMessage\\' => 30,
+            'Solarium\\' => 9,
         ),
         'P' => 
         array (
             'Psr\\Log\\' => 8,
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Container\\' => 14,
+            'Psr\\Cache\\' => 10,
         ),
         'O' => 
         array (
@@ -75,7 +83,12 @@ class ComposerStaticInitf0a76219c246ec6fe5f87782734a67c8
         ),
         'M' => 
         array (
+            'MyCLabs\\Enum\\' => 13,
             'Masterminds\\' => 12,
+        ),
+        'L' => 
+        array (
+            'League\\Csv\\' => 11,
         ),
         'G' => 
         array (
@@ -103,6 +116,8 @@ class ComposerStaticInitf0a76219c246ec6fe5f87782734a67c8
         ),
         'C' => 
         array (
+            'Consolidation\\OutputFormatters\\' => 31,
+            'Consolidation\\AnnotatedCommand\\' => 31,
             'Composer\\Semver\\' => 16,
             'Composer\\Installers\\' => 20,
             'CommerceGuys\\Intl\\' => 18,
@@ -117,6 +132,10 @@ class ComposerStaticInitf0a76219c246ec6fe5f87782734a67c8
     );
 
     public static $prefixDirsPsr4 = array (
+        'ZipStream\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/maennchen/zipstream-php/src',
+        ),
         'Zend\\Stdlib\\' => 
         array (
             0 => __DIR__ . '/..' . '/zendframework/zend-stdlib/src',
@@ -165,9 +184,21 @@ class ComposerStaticInitf0a76219c246ec6fe5f87782734a67c8
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
         ),
+        'Symfony\\Contracts\\Service\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/service-contracts',
+        ),
+        'Symfony\\Contracts\\Cache\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/cache-contracts',
+        ),
         'Symfony\\Component\\Yaml\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/yaml',
+        ),
+        'Symfony\\Component\\VarExporter\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/var-exporter',
         ),
         'Symfony\\Component\\Validator\\' => 
         array (
@@ -197,6 +228,10 @@ class ComposerStaticInitf0a76219c246ec6fe5f87782734a67c8
         array (
             0 => __DIR__ . '/..' . '/symfony/http-foundation',
         ),
+        'Symfony\\Component\\Finder\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/finder',
+        ),
         'Symfony\\Component\\EventDispatcher\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/event-dispatcher',
@@ -217,6 +252,10 @@ class ComposerStaticInitf0a76219c246ec6fe5f87782734a67c8
         array (
             0 => __DIR__ . '/..' . '/symfony/class-loader',
         ),
+        'Symfony\\Component\\Cache\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/cache',
+        ),
         'Symfony\\Cmf\\Component\\Routing\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony-cmf/routing',
@@ -224,6 +263,10 @@ class ComposerStaticInitf0a76219c246ec6fe5f87782734a67c8
         'Symfony\\Bridge\\PsrHttpMessage\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/psr-http-message-bridge',
+        ),
+        'Solarium\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/solarium/solarium/src',
         ),
         'Psr\\Log\\' => 
         array (
@@ -237,13 +280,25 @@ class ComposerStaticInitf0a76219c246ec6fe5f87782734a67c8
         array (
             0 => __DIR__ . '/..' . '/psr/container/src',
         ),
+        'Psr\\Cache\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/cache/src',
+        ),
         'OomphInc\\ComposerInstallersExtender\\' => 
         array (
             0 => __DIR__ . '/..' . '/oomphinc/composer-installers-extender/src',
         ),
+        'MyCLabs\\Enum\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/myclabs/php-enum/src',
+        ),
         'Masterminds\\' => 
         array (
             0 => __DIR__ . '/..' . '/masterminds/html5/src',
+        ),
+        'League\\Csv\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/league/csv/src',
         ),
         'GuzzleHttp\\Psr7\\' => 
         array (
@@ -304,6 +359,14 @@ class ComposerStaticInitf0a76219c246ec6fe5f87782734a67c8
         'Doctrine\\Common\\' => 
         array (
             0 => __DIR__ . '/..' . '/doctrine/common/lib/Doctrine/Common',
+        ),
+        'Consolidation\\OutputFormatters\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/consolidation/output-formatters/src',
+        ),
+        'Consolidation\\AnnotatedCommand\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/consolidation/annotated-command/src',
         ),
         'Composer\\Semver\\' => 
         array (
@@ -380,6 +443,10 @@ class ComposerStaticInitf0a76219c246ec6fe5f87782734a67c8
             'Doctrine\\Common\\Collections\\' => 
             array (
                 0 => __DIR__ . '/..' . '/doctrine/collections/lib',
+            ),
+            'Dflydev\\DotAccessData' => 
+            array (
+                0 => __DIR__ . '/..' . '/dflydev/dot-access-data/src',
             ),
         ),
         'C' => 
