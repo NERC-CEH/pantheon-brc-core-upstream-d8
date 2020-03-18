@@ -1267,17 +1267,17 @@
     },
     {
         "name": "drupal/core",
-        "version": "8.8.3",
-        "version_normalized": "8.8.3.0",
+        "version": "8.8.4",
+        "version_normalized": "8.8.4.0",
         "source": {
             "type": "git",
             "url": "https://github.com/drupal/core.git",
-            "reference": "77971de6d6ade7366cdd3fadfc16c5d02e531446"
+            "reference": "34e59fcf702c1b3c497bbd6e92e68e546c5d15b8"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/drupal/core/zipball/77971de6d6ade7366cdd3fadfc16c5d02e531446",
-            "reference": "77971de6d6ade7366cdd3fadfc16c5d02e531446",
+            "url": "https://api.github.com/repos/drupal/core/zipball/34e59fcf702c1b3c497bbd6e92e68e546c5d15b8",
+            "reference": "34e59fcf702c1b3c497bbd6e92e68e546c5d15b8",
             "shasum": ""
         },
         "require": {
@@ -2331,489 +2331,8 @@
             "drupal/workflows": "self.version",
             "drupal/workspaces": "self.version"
         },
+        "time": "2020-03-18T16:26:33+00:00",
         "type": "drupal-core",
-        "extra": {
-            "branch-alias": {
-                "dev-1.x": "1.x-dev"
-            },
-            "drupal": {
-                "version": "8.x-1.6",
-                "datestamp": "1575467285",
-                "security-coverage": {
-                    "status": "covered",
-                    "message": "Covered by Drupal's security advisory policy"
-                }
-            }
-        },
-        "installation-source": "dist",
-        "notification-url": "https://packages.drupal.org/8/downloads",
-        "license": [
-            "GPL-2.0-or-later"
-        ],
-        "authors": [
-            {
-                "name": "Berdir",
-                "homepage": "https://www.drupal.org/user/214652"
-            },
-            {
-                "name": "Dave Reid",
-                "homepage": "https://www.drupal.org/user/53892"
-            },
-            {
-                "name": "Freso",
-                "homepage": "https://www.drupal.org/user/27504"
-            },
-            {
-                "name": "greggles",
-                "homepage": "https://www.drupal.org/user/36762"
-            }
-        ],
-        "description": "Provides a mechanism for modules to automatically generate aliases for the content they manage.",
-        "homepage": "https://www.drupal.org/project/pathauto",
-        "support": {
-            "source": "https://git.drupalcode.org/project/pathauto"
-        }
-    },
-    {
-        "name": "drupal/profile",
-        "version": "1.1.0",
-        "version_normalized": "1.1.0.0",
-        "source": {
-            "type": "git",
-            "url": "https://git.drupalcode.org/project/profile.git",
-            "reference": "8.x-1.1"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://ftp.drupal.org/files/projects/profile-8.x-1.1.zip",
-            "reference": "8.x-1.1",
-            "shasum": "b8f6aca4f432228e614dca0a50cb187e936e4825"
-        },
-        "require": {
-            "drupal/core": "^8.7.7 || ^9",
-            "drupal/entity": "^1.0-rc2"
-        },
-        "require-dev": {
-            "drupal/token": "^1.0"
-        },
-        "type": "drupal-module",
-        "extra": {
-            "branch-alias": {
-                "dev-1.x": "1.x-dev"
-            },
-            "drupal": {
-                "version": "8.x-1.1",
-                "datestamp": "1582134004",
-                "security-coverage": {
-                    "status": "covered",
-                    "message": "Covered by Drupal's security advisory policy"
-                }
-            }
-        },
-        "installation-source": "dist",
-        "notification-url": "https://packages.drupal.org/8/downloads",
-        "license": [
-            "GPL-2.0+"
-        ],
-        "authors": [
-            {
-                "name": "bojanz",
-                "homepage": "https://www.drupal.org/user/86106"
-            },
-            {
-                "name": "daggerhart",
-                "homepage": "https://www.drupal.org/user/167806"
-            },
-            {
-                "name": "fago",
-                "homepage": "https://www.drupal.org/user/16747"
-            },
-            {
-                "name": "jsacksick",
-                "homepage": "https://www.drupal.org/user/972218"
-            },
-            {
-                "name": "mglaman",
-                "homepage": "https://www.drupal.org/user/2416470"
-            },
-            {
-                "name": "pcambra",
-                "homepage": "https://www.drupal.org/user/122101"
-            }
-        ],
-        "description": "Provides configurable user profiles.",
-        "homepage": "http://drupal.org/project/profile",
-        "support": {
-            "source": "https://git.drupalcode.org/project/profile"
-        }
-    },
-    {
-        "name": "drupal/recaptcha",
-        "version": "2.5.0",
-        "version_normalized": "2.5.0.0",
-        "source": {
-            "type": "git",
-            "url": "https://git.drupalcode.org/project/recaptcha.git",
-            "reference": "8.x-2.5"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://ftp.drupal.org/files/projects/recaptcha-8.x-2.5.zip",
-            "reference": "8.x-2.5",
-            "shasum": "ffc4e334c2b09cb04b75fa9e0df3f63d1ebde0bc"
-        },
-        "require": {
-            "drupal/captcha": "^1.0.0-alpha1",
-            "drupal/core": "~8.0"
-        },
-        "type": "drupal-module",
-        "extra": {
-            "branch-alias": {
-                "dev-2.x": "2.x-dev"
-            },
-            "drupal": {
-                "version": "8.x-2.5",
-                "datestamp": "1580340616",
-                "security-coverage": {
-                    "status": "covered",
-                    "message": "Covered by Drupal's security advisory policy"
-                }
-            }
-        },
-        "installation-source": "dist",
-        "notification-url": "https://packages.drupal.org/8/downloads",
-        "license": [
-            "GPL-2.0+"
-        ],
-        "authors": [
-            {
-                "name": "hass",
-                "homepage": "https://www.drupal.org/u/hass"
-            },
-            {
-                "name": "See other contributors",
-                "homepage": "https://www.drupal.org/node/147903/committers"
-            },
-            {
-                "name": "diolan",
-                "homepage": "https://www.drupal.org/user/2336786"
-            },
-            {
-                "name": "hass",
-                "homepage": "https://www.drupal.org/user/85918"
-            },
-            {
-                "name": "id.medion",
-                "homepage": "https://www.drupal.org/user/2542592"
-            }
-        ],
-        "description": "Protect your website from spam and abuse while letting real people pass through with ease.",
-        "homepage": "https://www.drupal.org/project/recaptcha",
-        "support": {
-            "source": "https://git.drupal.org/project/recaptcha.git",
-            "issues": "https://www.drupal.org/project/issues/recaptcha"
-        }
-    },
-    {
-        "name": "drupal/responsive_tables_filter",
-        "version": "1.4.0",
-        "version_normalized": "1.4.0.0",
-        "source": {
-            "type": "git",
-            "url": "https://git.drupalcode.org/project/responsive_tables_filter.git",
-            "reference": "8.x-1.4"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://ftp.drupal.org/files/projects/responsive_tables_filter-8.x-1.4.zip",
-            "reference": "8.x-1.4",
-            "shasum": "13e722fa466492b535afc0f7af6c5660334acc83"
-        },
-        "require": {
-            "drupal/core": "~8.0"
-        },
-        "type": "drupal-module",
-        "extra": {
-            "branch-alias": {
-                "dev-1.x": "1.x-dev"
-            },
-            "drupal": {
-                "version": "8.x-1.4",
-                "datestamp": "1575995881",
-                "security-coverage": {
-                    "status": "covered",
-                    "message": "Covered by Drupal's security advisory policy"
-                }
-            }
-        },
-        "installation-source": "dist",
-        "notification-url": "https://packages.drupal.org/8/downloads",
-        "license": [
-            "GPL-2.0-or-later"
-        ],
-        "authors": [
-            {
-                "name": "mark_fullmer",
-                "homepage": "https://www.drupal.org/user/2612816"
-            }
-        ],
-        "description": "Make tables in WYSIWYG fields responsive",
-        "homepage": "https://www.drupal.org/project/responsive_tables_filter",
-        "support": {
-            "source": "https://git.drupalcode.org/project/responsive_tables_filter"
-        }
-    },
-    {
-        "name": "drupal/roleassign",
-        "version": "1.0.0-beta1",
-        "version_normalized": "1.0.0.0-beta1",
-        "source": {
-            "type": "git",
-            "url": "https://git.drupalcode.org/project/roleassign.git",
-            "reference": "8.x-1.0-beta1"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://ftp.drupal.org/files/projects/roleassign-8.x-1.0-beta1.zip",
-            "reference": "8.x-1.0-beta1",
-            "shasum": "54848544164fdd7abcdb21b192eaf9788dc2da6d"
-        },
-        "require": {
-            "drupal/core": "^8 || ^9"
-        },
-        "type": "drupal-module",
-        "extra": {
-            "branch-alias": {
-                "dev-1.x": "1.x-dev"
-            },
-            "drupal": {
-                "version": "8.x-1.0-beta1",
-                "datestamp": "1582203772",
-                "security-coverage": {
-                    "status": "not-covered",
-                    "message": "Beta releases are not covered by Drupal security advisories."
-                }
-            }
-        },
-        "installation-source": "dist",
-        "notification-url": "https://packages.drupal.org/8/downloads",
-        "license": [
-            "GPL-2.0+"
-        ],
-        "authors": [
-            {
-                "name": "salvis",
-                "homepage": "https://www.drupal.org/user/82964"
-            }
-        ],
-        "description": "Allows site administrators to further delegate the task of managing user''s roles.",
-        "homepage": "http://drupal.org/project/roleassign",
-        "support": {
-            "source": "https://git.drupalcode.org/project/roleassign",
-            "issues": "https://www.drupal.org/project/issues/roleassign"
-        }
-    },
-    {
-        "name": "drupal/search_api",
-        "version": "1.15.0",
-        "version_normalized": "1.15.0.0",
-        "source": {
-            "type": "git",
-            "url": "https://git.drupalcode.org/project/search_api.git",
-            "reference": "8.x-1.15"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://ftp.drupal.org/files/projects/search_api-8.x-1.15.zip",
-            "reference": "8.x-1.15",
-            "shasum": "12c13141adb6b687fe36781ac9269a49ef810323"
-        },
-        "require": {
-            "drupal/core": "^8.6"
-        },
-        "conflict": {
-            "drupal/search_api_solr": "2.* || 3.0 || 3.1"
-        },
-        "require-dev": {
-            "drupal/language_fallback_fix": "@dev",
-            "drupal/search_api_autocomplete": "@dev",
-            "drupal/search_api_db": "*"
-        },
-        "suggest": {
-            "drupal/facets": "Adds the ability to create faceted searches.",
-            "drupal/search_api_autocomplete": "Allows adding autocomplete suggestions to search fields.",
-            "drupal/search_api_solr": "Adds support for using Apache Solr as a backend."
-        },
-        "type": "drupal-module",
-        "extra": {
-            "branch-alias": {
-                "dev-1.x": "1.x-dev"
-            },
-            "drupal": {
-                "version": "8.x-1.15",
-                "datestamp": "1573122785",
-                "security-coverage": {
-                    "status": "covered",
-                    "message": "Covered by Drupal's security advisory policy"
-                }
-            },
-            "drush": {
-                "services": {
-                    "drush.services.yml": "^9"
-                }
-            }
-        },
-        "installation-source": "dist",
-        "notification-url": "https://packages.drupal.org/8/downloads",
-        "license": [
-            "GPL-2.0+"
-        ],
-        "authors": [
-            {
-                "name": "Thomas Seidl",
-                "homepage": "https://www.drupal.org/u/drunken-monkey"
-            },
-            {
-                "name": "Nick Veenhof",
-                "homepage": "https://www.drupal.org/u/nick_vh"
-            },
-            {
-                "name": "See other contributors",
-                "homepage": "https://www.drupal.org/node/790418/committers"
-            }
-        ],
-        "description": "Provides a generic framework for modules offering search capabilities.",
-        "homepage": "https://www.drupal.org/project/search_api",
-        "support": {
-            "source": "http://git.drupal.org/project/search_api.git",
-            "issues": "https://www.drupal.org/project/issues/search_api",
-            "irc": "irc://irc.freenode.org/drupal-search-api"
-        }
-    },
-    {
-        "name": "drupal/search_api_solr",
-        "version": "3.8.0",
-        "version_normalized": "3.8.0.0",
-        "source": {
-            "type": "git",
-            "url": "https://git.drupalcode.org/project/search_api_solr.git",
-            "reference": "8.x-3.8"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://ftp.drupal.org/files/projects/search_api_solr-8.x-3.8.zip",
-            "reference": "8.x-3.8",
-            "shasum": "5c47090d817410ae06a6e096f2aabf3f99e43520"
-        },
-        "require": {
-            "consolidation/annotated-command": "^2.12",
-            "drupal/core": "^8.7",
-            "drupal/search_api": "~1.14",
-            "ext-dom": "*",
-            "ext-json": "*",
-            "ext-simplexml": "*",
-            "maennchen/zipstream-php": "^1.2.0",
-            "php": "^7.1.3",
-            "solarium/solarium": "~5.0.3|~5.1.4",
-            "zendframework/zend-stdlib": "^3.0.1"
-        },
-        "conflict": {
-            "drupal/core": "<8.7",
-            "drupal/search_api_solr_multilingual": "<3.0.0"
-        },
-        "require-dev": {
-            "drupal/devel": "2.x-dev",
-            "drupal/facets": "1.x-dev",
-            "drupal/geofield": "1.x-dev",
-            "drupal/search_api_autocomplete": "1.x-dev",
-            "drupal/search_api_location": "1.x-dev",
-            "drupal/search_api_spellcheck": "3.x-dev",
-            "monolog/monolog": "^1.25",
-            "phayes/geophp": "^1.2"
-        },
-        "suggest": {
-            "drupal/facets": "Provides facetted search.",
-            "drupal/search_api_autocomplete": "Provides auto complete for search boxes.",
-            "drupal/search_api_location": "Provides location searches.",
-            "drupal/search_api_spellcheck": "Provides spell checking and 'Did You Mean?'."
-        },
-        "type": "drupal-module",
-        "extra": {
-            "branch-alias": {
-                "dev-3.x": "3.x-dev"
-            },
-            "drupal": {
-                "version": "8.x-3.8",
-                "datestamp": "1577980383",
-                "security-coverage": {
-                    "status": "covered",
-                    "message": "Covered by Drupal's security advisory policy"
-                }
-            },
-            "drush": {
-                "services": {
-                    "drush.services.yml": "^9"
-                }
-            }
-        },
-        "installation-source": "dist",
-        "notification-url": "https://packages.drupal.org/8/downloads",
-        "license": [
-            "GPL-2.0+"
-        ],
-        "authors": [
-            {
-                "name": "Markus Kalkbrenner",
-                "homepage": "https://www.drupal.org/u/mkalkbrenner"
-            },
-            {
-                "name": "Other contributors",
-                "homepage": "https://www.drupal.org/node/982682/committers"
-            },
-            {
-                "name": "amateescu",
-                "homepage": "https://www.drupal.org/user/729614"
-            },
-            {
-                "name": "cspitzlay",
-                "homepage": "https://www.drupal.org/user/419305"
-            },
-            {
-                "name": "drunken monkey",
-                "homepage": "https://www.drupal.org/user/205582"
-            },
-            {
-                "name": "mkalkbrenner",
-                "homepage": "https://www.drupal.org/user/124705"
-            }
-        ],
-        "description": "Offers an implementation of the Search API that uses an Apache Solr server for indexing content.",
-        "homepage": "https://www.drupal.org/project/search_api_solr",
-        "support": {
-            "source": "http://git.drupal.org/project/search_api_solr.git",
-            "issues": "https://www.drupal.org/project/issues/search_api_solr",
-            "irc": "https://drupalchat.me/channel/search"
-        }
-    },
-    {
-        "name": "drupal/smtp",
-        "version": "1.0.0-beta7",
-        "version_normalized": "1.0.0.0-beta7",
-        "source": {
-            "type": "git",
-            "url": "https://git.drupalcode.org/project/smtp.git",
-            "reference": "8.x-1.0-beta7"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://ftp.drupal.org/files/projects/smtp-8.x-1.0-beta7.zip",
-            "reference": "8.x-1.0-beta7",
-            "shasum": "d3936f9ca2b52b2a8782c14855b4f26bd6bef69f"
-        },
-        "require": {
-            "drupal/core": "~8.0"
-        },
-        "type": "drupal-module",
         "extra": {
             "branch-alias": {
                 "dev-1.x": "1.x-dev"
@@ -2844,14 +2363,7 @@
                 "lib/Drupal/Core/Site/Settings.php"
             ]
         },
-        "scripts": {
-            "pre-autoload-dump": [
-                "Drupal\\Core\\Composer\\Composer::preAutoloadDump"
-            ],
-            "post-autoload-dump": [
-                "Drupal\\Core\\Composer\\Composer::ensureHtaccess"
-            ]
-        },
+        "notification-url": "https://packagist.org/downloads/",
         "license": [
             "GPL-2.0"
         ],
@@ -2890,22 +2402,23 @@
     },
     {
         "name": "drupal/core-composer-scaffold",
-        "version": "8.8.3",
-        "version_normalized": "8.8.3.0",
+        "version": "8.8.4",
+        "version_normalized": "8.8.4.0",
         "source": {
             "type": "git",
             "url": "https://github.com/drupal/core-composer-scaffold.git",
-            "reference": "984129ae3152d570c9448e52869f04a22fc75269"
+            "reference": "4825cb5234c28dff79ad298db582dfb23ff4ca59"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/drupal/core-composer-scaffold/zipball/984129ae3152d570c9448e52869f04a22fc75269",
-            "reference": "984129ae3152d570c9448e52869f04a22fc75269",
+            "url": "https://api.github.com/repos/drupal/core-composer-scaffold/zipball/4825cb5234c28dff79ad298db582dfb23ff4ca59",
+            "reference": "4825cb5234c28dff79ad298db582dfb23ff4ca59",
             "shasum": ""
         },
         "require": {
             "drupal/core": "~8.0"
         },
+        "time": "2020-03-10T10:15:17+00:00",
         "type": "composer-plugin",
         "extra": {
             "branch-alias": {
@@ -2926,6 +2439,7 @@
                 "Drupal\\Composer\\Plugin\\Scaffold\\": ""
             }
         },
+        "notification-url": "https://packagist.org/downloads/",
         "license": [
             "GPL-2.0-or-later"
         ],
@@ -2991,8 +2505,8 @@
     },
     {
         "name": "drupal/core-project-message",
-        "version": "8.8.3",
-        "version_normalized": "8.8.3.0",
+        "version": "8.8.4",
+        "version_normalized": "8.8.4.0",
         "source": {
             "type": "git",
             "url": "https://github.com/drupal/core-project-message.git",
@@ -3007,6 +2521,7 @@
         "require": {
             "drupal/core": "^8.7.7 || ^9"
         },
+        "time": "2020-02-21T09:36:23+00:00",
         "type": "composer-plugin",
         "extra": {
             "branch-alias": {
@@ -3026,6 +2541,7 @@
                 }
             }
         },
+        "notification-url": "https://packagist.org/downloads/",
         "license": [
             "GPL-2.0+"
         ],
@@ -3063,17 +2579,17 @@
     },
     {
         "name": "drupal/core-recommended",
-        "version": "8.8.3",
-        "version_normalized": "8.8.3.0",
+        "version": "8.8.4",
+        "version_normalized": "8.8.4.0",
         "source": {
             "type": "git",
             "url": "https://github.com/drupal/core-recommended.git",
-            "reference": "c43bf9881a299de9189440e0772579775b1f93f1"
+            "reference": "4155bff03954bae498029899f44e8adf697b20e6"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/drupal/core-recommended/zipball/c43bf9881a299de9189440e0772579775b1f93f1",
-            "reference": "c43bf9881a299de9189440e0772579775b1f93f1",
+            "url": "https://api.github.com/repos/drupal/core-recommended/zipball/4155bff03954bae498029899f44e8adf697b20e6",
+            "reference": "4155bff03954bae498029899f44e8adf697b20e6",
             "shasum": ""
         },
         "require": {
@@ -3086,7 +2602,7 @@
             "doctrine/common": "v2.7.3",
             "doctrine/inflector": "v1.2.0",
             "doctrine/lexer": "1.0.2",
-            "drupal/core": "8.8.3",
+            "drupal/core": "8.8.4",
             "easyrdf/easyrdf": "0.9.1",
             "egulias/email-validator": "2.1.11",
             "guzzlehttp/guzzle": "6.3.3",
@@ -3135,7 +2651,9 @@
             "drupal/search_api": "~1.12",
             "drupal/xls_serialization": "~1.0"
         },
+        "time": "2020-03-18T16:26:33+00:00",
         "type": "metapackage",
+        "notification-url": "https://packagist.org/downloads/",
         "license": [
             "GPL-2.0+"
         ],
@@ -3173,8 +2691,8 @@
     },
     {
         "name": "drupal/core-vendor-hardening",
-        "version": "8.8.3",
-        "version_normalized": "8.8.3.0",
+        "version": "8.8.4",
+        "version_normalized": "8.8.4.0",
         "source": {
             "type": "git",
             "url": "https://github.com/drupal/core-vendor-hardening.git",
@@ -3189,6 +2707,7 @@
         "require": {
             "drupal/core": "~8.0"
         },
+        "time": "2020-02-21T09:36:23+00:00",
         "type": "composer-plugin",
         "extra": {
             "branch-alias": {
@@ -3223,6 +2742,7 @@
                 "homepage": "https://www.drupal.org/user/2959439"
             }
         },
+        "notification-url": "https://packagist.org/downloads/",
         "license": [
             "GPL-2.0-or-later"
         ],
