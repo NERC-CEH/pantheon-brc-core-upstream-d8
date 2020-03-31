@@ -27,11 +27,11 @@ class UseLeadingBackslashSniff implements Sniff
     /**
      * Returns an array of tokens this test wants to listen for.
      *
-     * @return array
+     * @return array<int|string>
      */
     public function register()
     {
-        return array(T_USE);
+        return [T_USE];
 
     }//end register()
 
@@ -61,7 +61,7 @@ class UseLeadingBackslashSniff implements Sniff
             true
         );
 
-        if ($startPtr !== null && $tokens[$startPtr]['code'] === T_NS_SEPARATOR) {
+        if ($startPtr !== false && $tokens[$startPtr]['code'] === T_NS_SEPARATOR) {
             $error = 'When importing a class with "use", do not include a leading \\';
             $fix   = $phpcsFile->addFixableError($error, $startPtr, 'SeparatorStart');
             if ($fix === true) {

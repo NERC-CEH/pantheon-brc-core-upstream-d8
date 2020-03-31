@@ -27,11 +27,11 @@ class GlobalConstantSniff implements Sniff
     /**
      * Returns an array of tokens this test wants to listen for.
      *
-     * @return array
+     * @return array<int|string>
      */
     public function register()
     {
-        return array(T_CONST);
+        return [T_CONST];
 
     }//end register()
 
@@ -43,7 +43,7 @@ class GlobalConstantSniff implements Sniff
      * @param int                         $stackPtr  The position of the current token
      *                                               in the stack passed in $tokens.
      *
-     * @return void
+     * @return void|int
      */
     public function process(File $phpcsFile, $stackPtr)
     {
@@ -55,8 +55,9 @@ class GlobalConstantSniff implements Sniff
         }
 
         $coreVersion = Project::getCoreVersion($phpcsFile);
-        if ($coreVersion !== '8.x') {
-            return;
+        if ($coreVersion < 8) {
+            // No need to check this file again, mark it as done.
+            return ($phpcsFile->numTokens + 1);
         }
 
         // Allow constants if they are deprecated.

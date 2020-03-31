@@ -69,7 +69,7 @@ class DeleteJob extends ConfirmFormBase {
       $queue_backend->deleteJob($this->jobId);
     }
 
-    drupal_set_message($this->t('Job @job_id has been deleted.', [
+    $this->messenger()->addStatus($this->t('Job @job_id has been deleted.', [
       '@job_id' => $this->jobId,
     ]));
     $form_state->setRedirectUrl($this->getCancelUrl());

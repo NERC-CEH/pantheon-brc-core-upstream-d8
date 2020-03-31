@@ -8,5 +8,5 @@ services:
     parent: default_plugin_manager
 
   advancedqueue.processor:
-    class: \Drupal\advancedqueue\Processor
+    class: Drupal\advancedqueue\Processor
     arguments: ['@event_dispatcher', '@datetime.time', '@plugin.manager.advancedqueue_job_type']

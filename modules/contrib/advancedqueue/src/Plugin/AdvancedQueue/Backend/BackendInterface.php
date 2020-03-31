@@ -3,7 +3,7 @@
 namespace Drupal\advancedqueue\Plugin\AdvancedQueue\Backend;
 
 use Drupal\advancedqueue\Job;
-use Drupal\Component\Plugin\ConfigurablePluginInterface;
+use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
 
@@ -15,7 +15,7 @@ use Drupal\Core\Plugin\PluginFormInterface;
  * terms), meaning that the order of jobs is preserved, and every job is
  * guaranteed to be executed at least once.
  */
-interface BackendInterface extends ConfigurablePluginInterface, PluginFormInterface, PluginInspectionInterface {
+interface BackendInterface extends ConfigurableInterface, PluginFormInterface, PluginInspectionInterface {
 
   /**
    * Gets the backend label.

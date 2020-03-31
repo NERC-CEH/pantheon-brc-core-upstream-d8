@@ -26,11 +26,11 @@ class DbSelectBracesSniff extends FunctionCall
     /**
      * Returns an array of function names this test wants to listen for.
      *
-     * @return array
+     * @return array<string>
      */
     public function registerFunctionNames()
     {
-        return array('db_select');
+        return ['db_select'];
 
     }//end registerFunctionNames()
 

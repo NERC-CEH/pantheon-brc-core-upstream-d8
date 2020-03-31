@@ -26,11 +26,11 @@ class CheckPlainSniff extends FunctionCall
     /**
      * Returns an array of function names this test wants to listen for.
      *
-     * @return array
+     * @return array<string>
      */
     public function registerFunctionNames()
     {
-        return array('check_plain');
+        return ['check_plain'];
 
     }//end registerFunctionNames()
 

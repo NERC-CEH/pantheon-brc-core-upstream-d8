@@ -27,11 +27,11 @@ class CurlSslVerifierSniff extends FunctionCall
     /**
      * Returns an array of function names this test wants to listen for.
      *
-     * @return array
+     * @return array<string>
      */
     public function registerFunctionNames()
     {
-        return array('curl_setopt');
+        return ['curl_setopt'];
 
     }//end registerFunctionNames()
 

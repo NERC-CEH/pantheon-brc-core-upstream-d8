@@ -29,11 +29,11 @@ class RoutingAccessSniff implements Sniff
     /**
      * Returns an array of tokens this test wants to listen for.
      *
-     * @return array
+     * @return array<int|string>
      */
     public function register()
     {
-        return array(T_INLINE_HTML);
+        return [T_INLINE_HTML];
 
     }//end register()
 
@@ -45,7 +45,7 @@ class RoutingAccessSniff implements Sniff
      * @param int                         $stackPtr  The position of the current token
      *                                               in the stack passed in $tokens.
      *
-     * @return int
+     * @return void|int
      */
     public function process(File $phpcsFile, $stackPtr)
     {

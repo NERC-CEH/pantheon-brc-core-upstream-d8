@@ -27,14 +27,14 @@ class TCheckPlainSniff extends FunctionCall
     /**
      * Returns an array of function names this test wants to listen for.
      *
-     * @return array
+     * @return array<string>
      */
     public function registerFunctionNames()
     {
-        return array(
-                't',
-                'watchdog',
-               );
+        return [
+            't',
+            'watchdog',
+        ];
 
     }//end registerFunctionNames()
 

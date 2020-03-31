@@ -9,8 +9,3 @@ dependencies:
   - drupal:node
   - drupal:views
   - drupal:entity_test
-
-# Information added by Drupal.org packaging script on 2020-03-18
-version: '8.8.4'
-project: 'drupal'
-datestamp: 1584560599

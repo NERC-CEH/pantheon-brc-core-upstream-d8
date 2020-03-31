@@ -3,10 +3,8 @@
 namespace Drupal\advancedqueue\Command;
 
 // @codingStandardsIgnoreStart
-use Drupal\advancedqueue\JobResult;
 use Drupal\advancedqueue\ProcessorInterface;
 use Drupal\Console\Core\Command\Command;
-use Drupal\Console\Core\Command\Shared\CommandTrait;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -24,8 +22,6 @@ use Drupal\Console\Core\Style\DrupalStyle;
  * )
  */
 class QueueProcessCommand extends Command {
-
-  use CommandTrait;
 
   /**
    * The entity type manager.

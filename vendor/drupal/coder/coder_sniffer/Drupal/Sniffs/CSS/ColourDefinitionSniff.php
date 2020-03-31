@@ -27,19 +27,19 @@ class ColourDefinitionSniff implements Sniff
     /**
      * A list of tokenizers this sniff supports.
      *
-     * @var array
+     * @var array<string>
      */
-    public $supportedTokenizers = array('CSS');
+    public $supportedTokenizers = ['CSS'];
 
 
     /**
      * Returns the token types that this sniff is interested in.
      *
-     * @return array(int)
+     * @return array<int|string>
      */
     public function register()
     {
-        return array(T_COLOUR);
+        return [T_COLOUR];
 
     }//end register()
 
@@ -61,10 +61,10 @@ class ColourDefinitionSniff implements Sniff
         $expected = strtolower($colour);
         if ($colour !== $expected) {
             $error = 'CSS colours must be defined in lowercase; expected %s but found %s';
-            $data  = array(
-                      $expected,
-                      $colour,
-                     );
+            $data  = [
+                $expected,
+                $colour,
+            ];
             $fix   = $phpcsFile->addFixableError($error, $stackPtr, 'NotLower', $data);
             if ($fix === true) {
                 $phpcsFile->fixer->replaceToken($stackPtr, $expected);

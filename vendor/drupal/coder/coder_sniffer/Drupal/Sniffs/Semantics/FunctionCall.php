@@ -33,28 +33,28 @@ abstract class FunctionCall implements Sniff
     /**
      * The token position of the function call.
      *
-     * @var int
+     * @var integer
      */
     protected $functionCall;
 
     /**
      * The token position of the opening bracket of the function call.
      *
-     * @var int
+     * @var integer
      */
     protected $openBracket;
 
     /**
      * The token position of the closing bracket of the function call.
      *
-     * @var int
+     * @var integer
      */
     protected $closeBracket;
 
     /**
      * Internal cache to save the calculated arguments of the function call.
      *
-     * @var array
+     * @var array<int, array>
      */
     protected $arguments;
 
@@ -62,7 +62,7 @@ abstract class FunctionCall implements Sniff
      * Whether method invocations with the same function name should be processed,
      * too.
      *
-     * @var bool
+     * @var boolean
      */
     protected $includeMethodCalls = false;
 
@@ -70,11 +70,11 @@ abstract class FunctionCall implements Sniff
     /**
      * Returns an array of tokens this test wants to listen for.
      *
-     * @return array
+     * @return array<int|string>
      */
     public function register()
     {
-        return array(T_STRING);
+        return [T_STRING];
 
     }//end register()
 
@@ -108,7 +108,7 @@ abstract class FunctionCall implements Sniff
         $this->functionCall = $stackPtr;
         $this->openBracket  = $openBracket;
         $this->closeBracket = $tokens[$openBracket]['parenthesis_closer'];
-        $this->arguments    = array();
+        $this->arguments    = [];
 
         $this->processFunctionCall($phpcsFile, $stackPtr, $openBracket, $this->closeBracket);
 
@@ -170,7 +170,7 @@ abstract class FunctionCall implements Sniff
      * @param int $number Indicates which argument should be examined, starting with
      *                    1 for the first argument.
      *
-     * @return array(string => int)
+     * @return array<string, int>|false
      */
     public function getArgument($number)
     {
@@ -204,10 +204,10 @@ abstract class FunctionCall implements Sniff
             // Update the end token of the current argument.
             $end = $this->phpcsFile->findPrevious(Tokens::$emptyTokens, ($nextSeperator - 1), null, true);
             // Save the calculated findings for the current argument.
-            $this->arguments[$counter] = array(
-                                          'start' => $start,
-                                          'end'   => $end,
-                                         );
+            $this->arguments[$counter] = [
+                'start' => $start,
+                'end'   => $end,
+            ];
             if ($counter === $number) {
                 break;
             }
@@ -222,10 +222,10 @@ abstract class FunctionCall implements Sniff
             return false;
         }
 
-        $this->arguments[$counter] = array(
-                                      'start' => $start,
-                                      'end'   => $end,
-                                     );
+        $this->arguments[$counter] = [
+            'start' => $start,
+            'end'   => $end,
+        ];
         return $this->arguments[$counter];
 
     }//end getArgument()

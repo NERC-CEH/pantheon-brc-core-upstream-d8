@@ -1,4 +1,10 @@
 services:
+  advancedqueue.queue_clear:
+    class: Drupal\advancedqueue\Command\QueueClearCommand
+    arguments: ['@entity_type.manager', '@database']
+    tags:
+      - { name: drupal.command }
+
   advancedqueue.queue_list:
     class: Drupal\advancedqueue\Command\QueueListCommand
     arguments: ['@entity_type.manager']

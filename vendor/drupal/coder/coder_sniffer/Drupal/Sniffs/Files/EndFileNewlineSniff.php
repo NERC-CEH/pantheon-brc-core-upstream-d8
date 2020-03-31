@@ -29,26 +29,26 @@ class EndFileNewlineSniff implements Sniff
     /**
      * A list of tokenizers this sniff supports.
      *
-     * @var array
+     * @var array<string>
      */
-    public $supportedTokenizers = array(
-                                   'PHP',
-                                   'JS',
-                                   'CSS',
-                                  );
+    public $supportedTokenizers = [
+        'PHP',
+        'JS',
+        'CSS',
+    ];
 
 
     /**
      * Returns an array of tokens this test wants to listen for.
      *
-     * @return array
+     * @return array<int|string>
      */
     public function register()
     {
-        return array(
-                T_OPEN_TAG,
-                T_INLINE_HTML,
-               );
+        return [
+            T_OPEN_TAG,
+            T_INLINE_HTML,
+        ];
 
     }//end register()
 
@@ -60,7 +60,7 @@ class EndFileNewlineSniff implements Sniff
      * @param int                         $stackPtr  The position of the current token in
      *                                               the stack passed in $tokens.
      *
-     * @return void
+     * @return int|void
      */
     public function process(File $phpcsFile, $stackPtr)
     {
@@ -101,12 +101,12 @@ class EndFileNewlineSniff implements Sniff
         }
 
         $lastCodeLine = $tokens[$lastCode]['line'];
-        $blankLines   = ($lastLine - $lastCodeLine + 1);
+        $blankLines   = (string) ($lastLine - $lastCodeLine + 1);
         $phpcsFile->recordMetric($stackPtr, 'Number of newlines at EOF', $blankLines);
 
         if ($blankLines > 1) {
             $error = 'Expected 1 newline at end of file; %s found';
-            $data  = array($blankLines);
+            $data  = [$blankLines];
             $fix   = $phpcsFile->addFixableError($error, $lastCode, 'TooMany', $data);
 
             if ($fix === true) {

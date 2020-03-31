@@ -26,11 +26,11 @@ class MessageTSniff extends FunctionCall
     /**
      * Returns an array of function names this test wants to listen for.
      *
-     * @return array
+     * @return array<string>
      */
     public function registerFunctionNames()
     {
-        return array('drupal_set_message');
+        return ['drupal_set_message'];
 
     }//end registerFunctionNames()
 

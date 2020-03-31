@@ -129,19 +129,14 @@ class ConnectionTester {
       $mailer->SMTPDebug = FALSE;
       $mailer->Host = $this->configGet('smtp_host') . ';' . $this->configGet('smtp_hostbackup');
       $mailer->Port = $this->configGet('smtp_port');
-      //$mailer->SMTPSecure == in_array($this->configGet('smtp_protocol'), ['ssl', 'tls']) ? $this->configGet('smtp_protocol') : '';
-	  $mailer->SMTPSecure = in_array($this->configGet('smtp_protocol'), ['ssl', 'tls']) ? $this->configGet('smtp_protocol') : '';
+      $mailer->SMTPSecure == in_array($this->configGet('smtp_protocol'), ['ssl', 'tls']) ? $this->configGet('smtp_protocol') : '';
       if ($helo = $this->configGet('smtp_client_helo')) {
         $mailer->Helo = $helo;
       }
       if ($username = $this->configGet('smtp_username') && $password = $this->configGet('smtp_password')) {
-		$username = $this->configGet('smtp_username');
-		$password = $this->configGet('smtp_password');
-		if ($username && $password) {
         $mailer->SMTPAuth = TRUE;
         $mailer->Username = $username;
         $mailer->Password = $password;
-		}
       }
     }
 

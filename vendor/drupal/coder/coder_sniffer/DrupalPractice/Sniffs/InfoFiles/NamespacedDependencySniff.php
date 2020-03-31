@@ -12,6 +12,8 @@ namespace DrupalPractice\Sniffs\InfoFiles;
 
 use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Sniffs\Sniff;
+use Symfony\Component\Yaml\Yaml;
+use Symfony\Component\Yaml\Exception\ParseException;
 
 /**
  * Checks that all declared dependencies are namespaced.
@@ -27,11 +29,11 @@ class NamespacedDependencySniff implements Sniff
     /**
      * Returns an array of tokens this test wants to listen for.
      *
-     * @return array
+     * @return array<int|string>
      */
     public function register()
     {
-        return array(T_INLINE_HTML);
+        return [T_INLINE_HTML];
 
     }//end register()
 
@@ -43,7 +45,7 @@ class NamespacedDependencySniff implements Sniff
      * @param int                         $stackPtr  The position of the current token
      *                                               in the stack passed in $tokens.
      *
-     * @return int
+     * @return int|void
      */
     public function process(File $phpcsFile, $stackPtr)
     {
@@ -51,6 +53,19 @@ class NamespacedDependencySniff implements Sniff
 
         $fileExtension = strtolower(substr($phpcsFile->getFilename(), -9));
         if ($fileExtension !== '.info.yml') {
+            return ($phpcsFile->numTokens + 1);
+        }
+
+        $contents = file_get_contents($phpcsFile->getFilename());
+        try {
+            $info = Yaml::parse($contents);
+            // Themes are allowed to have not namespaced dependencies, see
+            // https://www.drupal.org/project/drupal/issues/474684.
+            if (isset($info['type']) === true && $info['type'] === 'theme') {
+                return ($phpcsFile->numTokens + 1);
+            }
+        } catch (ParseException $e) {
+            // If the YAML is invalid we ignore this file.
             return ($phpcsFile->numTokens + 1);
         }
 

@@ -28,7 +28,7 @@ function advancedqueue_theme() {
     'advancedqueue_state_icon' => [
       'variables' => [
         'state' => NULL,
-      ]
-    ]
+      ],
+    ],
   ];
 }

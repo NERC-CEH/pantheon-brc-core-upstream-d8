@@ -9,7 +9,6 @@
 
 namespace Drupal\Sniffs\InfoFiles;
 
-use Drupal\Sniffs\InfoFiles\ClassFilesSniff;
 use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Sniffs\Sniff;
 
@@ -28,11 +27,11 @@ class AutoAddedKeysSniff implements Sniff
     /**
      * Returns an array of tokens this test wants to listen for.
      *
-     * @return array
+     * @return array<int|string>
      */
     public function register()
     {
-        return array(T_INLINE_HTML);
+        return [T_INLINE_HTML];
 
     }//end register()
 
@@ -71,8 +70,8 @@ class AutoAddedKeysSniff implements Sniff
             $phpcsFile->addWarning($warning, $stackPtr, 'Project');
         }
 
-        if (isset($info['timestamp']) === true) {
-            $warning = 'Remove "timestamp" from the info file, it will be added by drupal.org packaging automatically';
+        if (isset($info['datestamp']) === true) {
+            $warning = 'Remove "datestamp" from the info file, it will be added by drupal.org packaging automatically';
             $phpcsFile->addWarning($warning, $stackPtr, 'Timestamp');
         }
 

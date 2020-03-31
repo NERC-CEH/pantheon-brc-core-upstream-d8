@@ -67,7 +67,10 @@
         "drupal-scaffold": {
             "locations": {
                 "web-root": "./"
-            }
+            },
+		"drupal-core-vendor-hardening": {
+			"vendor/package": ["test", "documentation"]
+		  }		
         },
         "installer-paths": {
             "core": ["type:drupal-core"],

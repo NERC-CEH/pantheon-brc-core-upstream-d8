@@ -69,7 +69,7 @@ class ReleaseJob extends ConfirmFormBase {
       $queue_backend->releaseJob($this->jobId);
     }
 
-    drupal_set_message($this->t('Job @job_id has been released.', [
+    $this->messenger()->addStatus($this->t('Job @job_id has been released.', [
       '@job_id' => $this->jobId,
     ]));
     $form_state->setRedirectUrl($this->getCancelUrl());

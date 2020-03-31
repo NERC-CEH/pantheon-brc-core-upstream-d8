@@ -1,7 +1,12 @@
 <?php
 
 /**
- * Implements hook_views_data ().
+ * @file
+ * Provide views data for the Advanced Queue module.
+ */
+
+/**
+ * Implements hook_views_data().
  */
 function advancedqueue_views_data() {
   $data['advancedqueue'] = [];

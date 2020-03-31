@@ -129,7 +129,9 @@ class Database extends BackendBase implements SupportsDeletingJobsInterface, Sup
     foreach ($jobs as $job) {
       $job->setQueueId($this->queueId);
       $job->setState(Job::STATE_QUEUED);
-      $job->setAvailableTime($this->time->getCurrentTime() + $delay);
+      if (!$job->getAvailableTime()) {
+        $job->setAvailableTime($this->time->getCurrentTime() + $delay);
+      }
 
       $fields = $job->toArray();
       unset($fields['id']);

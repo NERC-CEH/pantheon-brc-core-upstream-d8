@@ -24,29 +24,19 @@ use PHP_CodeSniffer\Sniffs\Sniff;
 class OpenBracketSpacingSniff implements Sniff
 {
 
-    /**
-     * A list of tokenizers this sniff supports.
-     *
-     * @var array
-     */
-    public $supportedTokenizers = array(
-                                   'PHP',
-                                   'JS',
-                                  );
-
 
     /**
      * Returns an array of tokens this test wants to listen for.
      *
-     * @return array
+     * @return array<int|string>
      */
     public function register()
     {
-        return array(
-                T_OPEN_CURLY_BRACKET,
-                T_OPEN_PARENTHESIS,
-                T_OPEN_SHORT_ARRAY,
-               );
+        return [
+            T_OPEN_CURLY_BRACKET,
+            T_OPEN_PARENTHESIS,
+            T_OPEN_SHORT_ARRAY,
+        ];
 
     }//end register()
 
@@ -83,7 +73,7 @@ class OpenBracketSpacingSniff implements Sniff
                 $error,
                 ($stackPtr + 1),
                 'OpeningWhitespace',
-                array($tokens[$stackPtr]['content'])
+                [$tokens[$stackPtr]['content']]
             );
             if ($fix === true) {
                 $phpcsFile->fixer->replaceToken(($stackPtr + 1), '');

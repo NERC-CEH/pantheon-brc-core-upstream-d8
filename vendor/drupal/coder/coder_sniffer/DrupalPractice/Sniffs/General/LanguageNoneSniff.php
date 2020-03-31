@@ -26,14 +26,14 @@ class LanguageNoneSniff implements Sniff
     /**
      * Returns an array of tokens this test wants to listen for.
      *
-     * @return array
+     * @return array<int|string>
      */
     public function register()
     {
-        return array(
-                T_OPEN_SQUARE_BRACKET,
-                T_OPEN_SHORT_ARRAY,
-               );
+        return [
+            T_OPEN_SQUARE_BRACKET,
+            T_OPEN_SHORT_ARRAY,
+        ];
 
     }//end register()
 
