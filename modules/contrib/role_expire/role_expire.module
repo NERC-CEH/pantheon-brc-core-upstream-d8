@@ -616,7 +616,7 @@ function _role_expire_get_role() {
 function _role_expire_validate_role_expires(&$form, FormStateInterface &$form_state) {
 
   $values = $form_state->getValues();
-  date_default_timezone_set(drupal_get_user_timezone());
+  date_default_timezone_set(date_default_timezone_get());
   $time = \Drupal::time()->getRequestTime();
 
   foreach ($values as $name => $value) {

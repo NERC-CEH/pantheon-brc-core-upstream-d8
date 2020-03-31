@@ -1900,6 +1900,89 @@
         }
     },
     {
+        "name": "drupal/admin_toolbar",
+        "version": "2.2.0",
+        "version_normalized": "2.2.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://git.drupalcode.org/project/admin_toolbar.git",
+            "reference": "8.x-2.2"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://ftp.drupal.org/files/projects/admin_toolbar-8.x-2.2.zip",
+            "reference": "8.x-2.2",
+            "shasum": "41ea0e3321e6d1e190c486be49a99e60446d8dd7"
+        },
+        "require": {
+            "drupal/core": "^8.8.0 || ^9.0"
+        },
+        "type": "drupal-module",
+        "extra": {
+            "branch-alias": {
+                "dev-2.x": "2.x-dev"
+            },
+            "drupal": {
+                "version": "8.x-2.2",
+                "datestamp": "1585017179",
+                "security-coverage": {
+                    "status": "covered",
+                    "message": "Covered by Drupal's security advisory policy"
+                }
+            }
+        },
+        "installation-source": "dist",
+        "notification-url": "https://packages.drupal.org/8/downloads",
+        "license": [
+            "GPL-2.0+"
+        ],
+        "authors": [
+            {
+                "name": "Wilfrid Roze (eme)",
+                "homepage": "https://www.drupal.org/u/eme",
+                "role": "Maintainer"
+            },
+            {
+                "name": "Romain Jarraud (romainj)",
+                "homepage": "https://www.drupal.org/u/romainj",
+                "role": "Maintainer"
+            },
+            {
+                "name": "Adrian Cid Almaguer (adriancid)",
+                "homepage": "https://www.drupal.org/u/adriancid",
+                "email": "adriancid@gmail.com",
+                "role": "Maintainer"
+            },
+            {
+                "name": "Mohamed Anis Taktak (matio89)",
+                "homepage": "https://www.drupal.org/u/matio89",
+                "role": "Maintainer"
+            },
+            {
+                "name": "fethi.krout",
+                "homepage": "https://www.drupal.org/user/3206765"
+            },
+            {
+                "name": "matio89",
+                "homepage": "https://www.drupal.org/user/2320090"
+            },
+            {
+                "name": "romainj",
+                "homepage": "https://www.drupal.org/user/370706"
+            }
+        ],
+        "description": "Provides a drop-down menu interface to the core Drupal Toolbar.",
+        "homepage": "http://drupal.org/project/admin_toolbar",
+        "keywords": [
+            "Drupal",
+            "Toolbar"
+        ],
+        "support": {
+            "source": "http://cgit.drupalcode.org/admin_toolbar",
+            "issues": "https://www.drupal.org/project/issues/admin_toolbar"
+        }
+    },
+    {
         "name": "drupal/advancedqueue",
         "version": "1.0.0-rc1",
         "version_normalized": "1.0.0.0-RC1",
@@ -3573,6 +3656,89 @@
         }
     },
     {
+        "name": "drupal/entity_embed",
+        "version": "1.1.0",
+        "version_normalized": "1.1.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://git.drupalcode.org/project/entity_embed.git",
+            "reference": "8.x-1.1"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://ftp.drupal.org/files/projects/entity_embed-8.x-1.1.zip",
+            "reference": "8.x-1.1",
+            "shasum": "f2c3f4b3071cbd69db94c5255e1db89510995b5d"
+        },
+        "require": {
+            "drupal/core": "^8.8 || ^9",
+            "drupal/embed": "^1.3"
+        },
+        "require-dev": {
+            "drupal/entity_browser": "^2.2"
+        },
+        "type": "drupal-module",
+        "extra": {
+            "branch-alias": {
+                "dev-1.x": "1.x-dev"
+            },
+            "drupal": {
+                "version": "8.x-1.1",
+                "datestamp": "1585252806",
+                "security-coverage": {
+                    "status": "covered",
+                    "message": "Covered by Drupal's security advisory policy"
+                }
+            }
+        },
+        "installation-source": "dist",
+        "notification-url": "https://packages.drupal.org/8/downloads",
+        "license": [
+            "GPL-2.0+"
+        ],
+        "authors": [
+            {
+                "name": "Dave Reid",
+                "homepage": "https://www.drupal.org/user/53892"
+            },
+            {
+                "name": "Devin Carlson",
+                "homepage": "https://www.drupal.org/user/290182"
+            },
+            {
+                "name": "Drupal Media Team",
+                "homepage": "https://www.drupal.org/user/3260690"
+            },
+            {
+                "name": "Wim Leers",
+                "homepage": "https://www.drupal.org/user/99777"
+            },
+            {
+                "name": "cs_shadow",
+                "homepage": "https://www.drupal.org/user/2828287"
+            },
+            {
+                "name": "oknate",
+                "homepage": "https://www.drupal.org/user/471638"
+            },
+            {
+                "name": "phenaproxima",
+                "homepage": "https://www.drupal.org/user/205645"
+            },
+            {
+                "name": "slashrsm",
+                "homepage": "https://www.drupal.org/user/744628"
+            }
+        ],
+        "description": "Allows any entity to be embedded within a text area using a WYSIWYG editor.",
+        "homepage": "https://www.drupal.org/project/entity_embed",
+        "support": {
+            "source": "https://git.drupalcode.org/project/entity_embed",
+            "issues": "https://www.drupal.org/project/issues/entity_embed",
+            "irc": "irc://irc.freenode.org/drupal-media"
+        }
+    },
+    {
         "name": "drupal/entity_reference_revisions",
         "version": "1.8.0",
         "version_normalized": "1.8.0.0",
@@ -4001,6 +4167,75 @@
         }
     },
     {
+        "name": "drupal/page_manager",
+        "version": "4.0.0-beta5",
+        "version_normalized": "4.0.0.0-beta5",
+        "source": {
+            "type": "git",
+            "url": "https://git.drupalcode.org/project/page_manager.git",
+            "reference": "8.x-4.0-beta5"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://ftp.drupal.org/files/projects/page_manager-8.x-4.0-beta5.zip",
+            "reference": "8.x-4.0-beta5",
+            "shasum": "729f45714c87bcf6aacfd1ddb748c51b4290d1a4"
+        },
+        "require": {
+            "drupal/core": "^8.5 || ^9",
+            "drupal/ctools": "~3.1"
+        },
+        "type": "drupal-module",
+        "extra": {
+            "branch-alias": {
+                "dev-4.x": "4.x-dev"
+            },
+            "drupal": {
+                "version": "8.x-4.0-beta5",
+                "datestamp": "1585603617",
+                "security-coverage": {
+                    "status": "not-covered",
+                    "message": "Project has not opted into security advisory coverage!"
+                }
+            }
+        },
+        "installation-source": "dist",
+        "notification-url": "https://packages.drupal.org/8/downloads",
+        "license": [
+            "GPL-2.0+"
+        ],
+        "authors": [
+            {
+                "name": "Tim Plunkett",
+                "homepage": "https://www.drupal.org/u/tim.plunkett",
+                "role": "Maintainer"
+            },
+            {
+                "name": "dsnopek",
+                "homepage": "https://www.drupal.org/user/266527"
+            },
+            {
+                "name": "japerry",
+                "homepage": "https://www.drupal.org/user/45640"
+            },
+            {
+                "name": "manuel.adan",
+                "homepage": "https://www.drupal.org/user/516420"
+            },
+            {
+                "name": "phenaproxima",
+                "homepage": "https://www.drupal.org/user/205645"
+            }
+        ],
+        "description": "Provides a way to place blocks on a custom page.",
+        "homepage": "https://www.drupal.org/project/page_manager",
+        "support": {
+            "source": "https://git.drupal.org/project/page_manager.git",
+            "issues": "https://www.drupal.org/project/issues/page_manager",
+            "irc": "irc://irc.freenode.org/drupal-contribute"
+        }
+    },
+    {
         "name": "drupal/pathauto",
         "version": "1.6.0",
         "version_normalized": "1.6.0.0",
@@ -4250,6 +4485,63 @@
         "homepage": "https://www.drupal.org/project/responsive_tables_filter",
         "support": {
             "source": "https://git.drupalcode.org/project/responsive_tables_filter"
+        }
+    },
+    {
+        "name": "drupal/role_expire",
+        "version": "1.4.0",
+        "version_normalized": "1.4.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://git.drupalcode.org/project/role_expire.git",
+            "reference": "8.x-1.4"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://ftp.drupal.org/files/projects/role_expire-8.x-1.4.zip",
+            "reference": "8.x-1.4",
+            "shasum": "d7cbcf9facca69bd74419b75fec174504bcd9136"
+        },
+        "require": {
+            "drupal/core": "^8.8 || ^9"
+        },
+        "type": "drupal-module",
+        "extra": {
+            "branch-alias": {
+                "dev-1.x": "1.x-dev"
+            },
+            "drupal": {
+                "version": "8.x-1.4",
+                "datestamp": "1584722397",
+                "security-coverage": {
+                    "status": "covered",
+                    "message": "Covered by Drupal's security advisory policy"
+                }
+            }
+        },
+        "installation-source": "dist",
+        "notification-url": "https://packages.drupal.org/8/downloads",
+        "license": [
+            "GPL-2.0-or-later"
+        ],
+        "authors": [
+            {
+                "name": "bdziewierz",
+                "homepage": "https://www.drupal.org/user/37286"
+            },
+            {
+                "name": "rcodina",
+                "homepage": "https://www.drupal.org/user/2635031"
+            },
+            {
+                "name": "stewsnooze",
+                "homepage": "https://www.drupal.org/user/243255"
+            }
+        ],
+        "description": "Enables user roles to expire on given time and day.",
+        "homepage": "https://www.drupal.org/project/role_expire",
+        "support": {
+            "source": "https://git.drupalcode.org/project/role_expire"
         }
     },
     {
@@ -4726,6 +5018,69 @@
         }
     },
     {
+        "name": "drupal/video_embed_field",
+        "version": "2.3.0",
+        "version_normalized": "2.3.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://git.drupalcode.org/project/video_embed_field.git",
+            "reference": "8.x-2.3"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://ftp.drupal.org/files/projects/video_embed_field-8.x-2.3.zip",
+            "reference": "8.x-2.3",
+            "shasum": "d9b4b3bde48edf49d1aa038aae6736496558caf4"
+        },
+        "require": {
+            "drupal/core": "^8.8 || ^9"
+        },
+        "require-dev": {
+            "drupal/colorbox": "^1.0",
+            "drupal/media_entity": "*",
+            "drupal/media_entity_embeddable_video": "*",
+            "drupal/video_embed_media": "*"
+        },
+        "type": "drupal-module",
+        "extra": {
+            "branch-alias": {
+                "dev-2.x": "2.x-dev"
+            },
+            "drupal": {
+                "version": "8.x-2.3",
+                "datestamp": "1584489966",
+                "security-coverage": {
+                    "status": "covered",
+                    "message": "Covered by Drupal's security advisory policy"
+                }
+            }
+        },
+        "installation-source": "dist",
+        "notification-url": "https://packages.drupal.org/8/downloads",
+        "license": [
+            "GPL-2.0+"
+        ],
+        "authors": [
+            {
+                "name": "Sam152",
+                "homepage": "https://www.drupal.org/user/1485048"
+            },
+            {
+                "name": "jec006",
+                "homepage": "https://www.drupal.org/user/855980"
+            },
+            {
+                "name": "plopesc",
+                "homepage": "https://www.drupal.org/user/282415"
+            }
+        ],
+        "description": "A pluggable field type for storing videos from external video hosts such as Vimeo and YouTube.",
+        "homepage": "https://www.drupal.org/project/video_embed_field",
+        "support": {
+            "source": "https://git.drupalcode.org/project/video_embed_field"
+        }
+    },
+    {
         "name": "drupal/views_data_export",
         "version": "1.0.0-beta4",
         "version_normalized": "1.0.0.0-beta4",
@@ -4801,18 +5156,18 @@
     },
     {
         "name": "drupal/we_megamenu",
-        "version": "1.7.0",
-        "version_normalized": "1.7.0.0",
+        "version": "1.9.0",
+        "version_normalized": "1.9.0.0",
         "source": {
             "type": "git",
             "url": "https://git.drupalcode.org/project/we_megamenu.git",
-            "reference": "8.x-1.7"
+            "reference": "8.x-1.9"
         },
         "dist": {
             "type": "zip",
-            "url": "https://ftp.drupal.org/files/projects/we_megamenu-8.x-1.7.zip",
-            "reference": "8.x-1.7",
-            "shasum": "39df675e4eeb4931f400f4ab039c18ed92b30862"
+            "url": "https://ftp.drupal.org/files/projects/we_megamenu-8.x-1.9.zip",
+            "reference": "8.x-1.9",
+            "shasum": "be47ad1473a76ad376fab21b53383b2b5d17cd0b"
         },
         "require": {
             "drupal/core": "~8.0"
@@ -4823,8 +5178,8 @@
                 "dev-1.x": "1.x-dev"
             },
             "drupal": {
-                "version": "8.x-1.7",
-                "datestamp": "1575618784",
+                "version": "8.x-1.9",
+                "datestamp": "1585670713",
                 "security-coverage": {
                     "status": "covered",
                     "message": "Covered by Drupal's security advisory policy"

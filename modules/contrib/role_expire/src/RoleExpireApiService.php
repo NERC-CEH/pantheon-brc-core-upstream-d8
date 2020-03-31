@@ -216,7 +216,7 @@ class RoleExpireApiService {
   public function getExpired($time = '') {
     $return = [];
     if (!$time) {
-      date_default_timezone_set(drupal_get_user_timezone());
+      date_default_timezone_set(date_default_timezone_get());
       $time = \Drupal::time()->getRequestTime();
     }
 

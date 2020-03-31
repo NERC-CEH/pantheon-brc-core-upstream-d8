@@ -35,6 +35,13 @@ class UiRoleExpireTest extends BrowserTestBase {
   public static $modules = ['role_expire'];
 
   /**
+   * Default theme.
+   *
+   * @var string
+   */
+  protected $defaultTheme = 'stark';
+
+  /**
    * Tests that users can assign a default role after a role expires.
    */
   public function testRoleExpireAdminPage() {

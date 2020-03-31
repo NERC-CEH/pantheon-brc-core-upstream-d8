@@ -37,6 +37,13 @@ class RoleExpireApiTest extends BrowserTestBase {
   public static $modules = ['role_expire'];
 
   /**
+   * Default theme.
+   *
+   * @var string
+   */
+  protected $defaultTheme = 'stark';
+
+  /**
    * {@inheritdoc}
    */
   public function setUp() {
