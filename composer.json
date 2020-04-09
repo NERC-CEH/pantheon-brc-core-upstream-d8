@@ -55,7 +55,6 @@
         "drupal/search_api_solr": "^3.8",
         "drupal/smtp": "^1.0@beta",
         "drupal/video_embed_field": "^2.3",
-        "drupal/views_bootstrap": "^4.2",
         "drupal/views_data_export": "1.0-beta4",
         "drupal/views_templates": "^1.1",
         "drupal/we_megamenu": "^1.9",

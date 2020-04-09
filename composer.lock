@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "665bc954eb8676b79c58bfe7d9e8d339",
+    "content-hash": "56c9429fa36cf1734311bdc388d31994",
     "packages": [
         {
             "name": "academicpuma/citeproc-php",
@@ -4605,65 +4605,6 @@
             "homepage": "https://www.drupal.org/project/video_embed_field",
             "support": {
                 "source": "https://git.drupalcode.org/project/video_embed_field"
-            }
-        },
-        {
-            "name": "drupal/views_bootstrap",
-            "version": "4.2.0",
-            "source": {
-                "type": "git",
-                "url": "https://git.drupalcode.org/project/views_bootstrap.git",
-                "reference": "8.x-4.2"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://ftp.drupal.org/files/projects/views_bootstrap-8.x-4.2.zip",
-                "reference": "8.x-4.2",
-                "shasum": "7354305f30f7018a39f6a22cad10e724112bccfd"
-            },
-            "require": {
-                "drupal/core": "*"
-            },
-            "type": "drupal-module",
-            "extra": {
-                "branch-alias": {
-                    "dev-4.x": "4.x-dev"
-                },
-                "drupal": {
-                    "version": "8.x-4.2",
-                    "datestamp": "1579753985",
-                    "security-coverage": {
-                        "status": "covered",
-                        "message": "Covered by Drupal's security advisory policy"
-                    }
-                }
-            },
-            "notification-url": "https://packages.drupal.org/8/downloads",
-            "license": [
-                "GPL-2.0-or-later"
-            ],
-            "authors": [
-                {
-                    "name": "aburrows",
-                    "homepage": "https://www.drupal.org/user/577844"
-                },
-                {
-                    "name": "ericpugh",
-                    "homepage": "https://www.drupal.org/user/130084"
-                },
-                {
-                    "name": "ikeigenwijs",
-                    "homepage": "https://www.drupal.org/user/583238"
-                },
-                {
-                    "name": "mrded",
-                    "homepage": "https://www.drupal.org/user/556088"
-                }
-            ],
-            "description": "Allows for different styles to be used in views to work with Bootstrap 4 components.",
-            "homepage": "https://www.drupal.org/project/views_bootstrap",
-            "support": {
-                "source": "https://git.drupalcode.org/project/views_bootstrap"
             }
         },
         {

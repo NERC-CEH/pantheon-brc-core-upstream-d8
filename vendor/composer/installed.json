@@ -5377,67 +5377,6 @@
         }
     },
     {
-        "name": "drupal/views_bootstrap",
-        "version": "4.2.0",
-        "version_normalized": "4.2.0.0",
-        "source": {
-            "type": "git",
-            "url": "https://git.drupalcode.org/project/views_bootstrap.git",
-            "reference": "8.x-4.2"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://ftp.drupal.org/files/projects/views_bootstrap-8.x-4.2.zip",
-            "reference": "8.x-4.2",
-            "shasum": "7354305f30f7018a39f6a22cad10e724112bccfd"
-        },
-        "require": {
-            "drupal/core": "*"
-        },
-        "type": "drupal-module",
-        "extra": {
-            "branch-alias": {
-                "dev-4.x": "4.x-dev"
-            },
-            "drupal": {
-                "version": "8.x-4.2",
-                "datestamp": "1579753985",
-                "security-coverage": {
-                    "status": "covered",
-                    "message": "Covered by Drupal's security advisory policy"
-                }
-            }
-        },
-        "installation-source": "dist",
-        "notification-url": "https://packages.drupal.org/8/downloads",
-        "license": [
-            "GPL-2.0-or-later"
-        ],
-        "authors": [
-            {
-                "name": "aburrows",
-                "homepage": "https://www.drupal.org/user/577844"
-            },
-            {
-                "name": "ericpugh",
-                "homepage": "https://www.drupal.org/user/130084"
-            },
-            {
-                "name": "ikeigenwijs",
-                "homepage": "https://www.drupal.org/user/583238"
-            },
-            {
-                "name": "mrded",
-                "homepage": "https://www.drupal.org/user/556088"
-            }
-        ],
-        "description": "Allows for different styles to be used in views to work with Bootstrap 4 components.",
-        "homepage": "https://www.drupal.org/project/views_bootstrap",
-        "support": {
-            "source": "https://git.drupalcode.org/project/views_bootstrap"
-        }
-    },
-    {
         "name": "drupal/views_data_export",
         "version": "1.0.0-beta4",
         "version_normalized": "1.0.0.0-beta4",
