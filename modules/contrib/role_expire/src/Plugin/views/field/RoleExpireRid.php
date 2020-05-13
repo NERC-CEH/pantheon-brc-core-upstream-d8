@@ -1,13 +1,5 @@
 <?php
 
-/**
- * @file
- * Definition of Drupal\role_expire\Plugin\views\field\RoleExpireExpiryData.
- *
- * References:
- * Class Date from Date.php (core files).
- */
-
 namespace Drupal\role_expire\Plugin\views\field;
 
 use Drupal\views\ViewExecutable;
@@ -85,7 +77,7 @@ class RoleExpireRid extends PrerenderList {
    * @{inheritdoc}
    */
   public function preRender(&$values) {
-    $this->items = array();
+    $this->items = [];
 
     if (is_array($values)) {
       foreach ($values as $user) {
@@ -103,4 +95,5 @@ class RoleExpireRid extends PrerenderList {
   public function render_item($count, $item) {
     return $item['role'];
   }
+
 }

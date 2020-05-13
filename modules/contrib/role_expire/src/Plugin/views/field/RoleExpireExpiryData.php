@@ -1,13 +1,5 @@
 <?php
 
-/**
- * @file
- * Definition of Drupal\role_expire\Plugin\views\field\RoleExpireExpiryData.
- *
- * References:
- * Class Date from Date.php (core files).
- */
-
 namespace Drupal\role_expire\Plugin\views\field;
 
 use Drupal\views\ViewExecutable;
@@ -91,14 +83,15 @@ class RoleExpireExpiryData extends PrerenderList {
   }
 
   /**
-   * Define the available options
+   * Define the available options.
+   *
    * @return array
    */
   protected function defineOptions() {
     $options = parent::defineOptions();
 
-    $options['custom_date_format'] = array('default' => 'Y-m-d H:i');
-    $options['timezone'] = array('default' => '');
+    $options['custom_date_format'] = ['default' => 'Y-m-d H:i'];
+    $options['timezone'] = ['default' => ''];
 
     return $options;
   }
@@ -108,20 +101,20 @@ class RoleExpireExpiryData extends PrerenderList {
    */
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
 
-    $form['custom_date_format'] = array(
+    $form['custom_date_format'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Custom date format'),
       '#description' => $this->t('See <a href="http://us.php.net/manual/en/function.date.php" target="_blank">the PHP docs</a> for date formats.'),
       '#default_value' => isset($this->options['custom_date_format']) ? $this->options['custom_date_format'] : '',
-    );
+    ];
 
-    $form['timezone'] = array(
+    $form['timezone'] = [
       '#type' => 'select',
       '#title' => $this->t('Timezone'),
       '#description' => $this->t('Timezone to be used for date output.'),
-      '#options' => array('' => $this->t('- Default site/user timezone -')) + system_time_zones(FALSE),
+      '#options' => ['' => $this->t('- Default site/user timezone -')] + system_time_zones(FALSE),
       '#default_value' => $this->options['timezone'],
-    );
+    ];
 
     parent::buildOptionsForm($form, $form_state);
   }
@@ -130,7 +123,7 @@ class RoleExpireExpiryData extends PrerenderList {
    * @{inheritdoc}
    */
   public function preRender(&$values) {
-    $this->items = array();
+    $this->items = [];
 
     if (is_array($values)) {
 
@@ -141,7 +134,7 @@ class RoleExpireExpiryData extends PrerenderList {
         $expirations = $this->roleExpireApi->getAllUserRecords($user->uid);
         foreach ($expirations as $role => $timestamp) {
           $date = $this->dateFormatter->format($timestamp, 'custom', $format, $timezone);
-          $this->items[$user->uid][$role]['expireData'] = $this->t('@role (@date)', array('@role' => $role, '@date' => $date));
+          $this->items[$user->uid][$role]['expireData'] = $this->t('@role (@date)', ['@role' => $role, '@date' => $date]);
         }
       }
     }
@@ -153,4 +146,5 @@ class RoleExpireExpiryData extends PrerenderList {
   public function render_item($count, $item) {
     return $item['expireData'];
   }
+
 }

@@ -38,7 +38,8 @@ function role_expire_schema() {
     ),
     'primary key' => array('uid', 'rid'),
   );
-  $schema['role_expire_length'] = array(
+  // Moved to configuration since 8.x-1.5.
+  /*$schema['role_expire_length'] = array(
     'description' => t('Length in days to assign each role by default.'),
     'fields' => array(
       'rid' => array(
@@ -55,7 +56,7 @@ function role_expire_schema() {
       ),
     ),
     'primary key' => array('rid'),
-  );
+  );*/
   return $schema;
 }
 
@@ -90,4 +91,29 @@ function role_expire_update_8101() {
         ->execute();
     }
   }
+}
+
+/**
+ * Migrate default durations table to configuration.
+ */
+function role_expire_update_8102() {
+  $connection = Database::getConnection();
+
+  // Fetch out all the current durations.
+  $result = $connection->query('SELECT rid,duration FROM {role_expire_length}');
+  $durations = [];
+  while ($row = $result->fetchObject()) {
+    $durations[$row->rid] = $row->duration;
+  }
+
+  // Save current configuration.
+  if (!empty($durations)) {
+    \Drupal::configFactory()
+      ->getEditable('role_expire.config')
+      ->set('role_expire_default_duration_roles', $durations)
+      ->save();
+  }
+
+  // Drop current database table.
+  $connection->schema()->dropTable('role_expire_length');
 }

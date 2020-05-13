@@ -4,3 +4,10 @@ role_expire.config:
     role_expire_default_roles:
       type: string
       label: 'Roles to assign after a role expires'
+    # rid are the keys, values are the strtotime-compatible default duration
+    role_expire_default_duration_roles:
+      type: sequence
+      label: 'Default duration for each role'
+      sequence:
+        type: string
+        label: 'Default duration'

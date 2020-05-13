@@ -4,11 +4,37 @@ namespace Drupal\role_expire\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\role_expire\RoleExpireApiService;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Configure order for this site.
  */
 class RoleExpireConfigurationForm extends ConfigFormBase {
+
+  /**
+   * Role expire API service.
+   *
+   * @var \Drupal\role_expire\RoleExpireApiService
+   */
+  protected $roleExpireApi;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(RoleExpireApiService $roleExpireApi) {
+    $this->roleExpireApi = $roleExpireApi;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      // Load the services required to construct this class.
+      $container->get('role_expire.api')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -30,43 +56,40 @@ class RoleExpireConfigurationForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $config = $this->config('role_expire.config');
+    $excluded_roles = ['anonymous', 'authenticated'];
 
-    $excluded_roles = array('anonymous', 'authenticated');
-
-    $parsed_roles = array();
+    $parsed_roles = [];
     $roles = user_roles();
-    foreach ($roles as $label => $role) {
+    foreach ($roles as $role) {
       $parsed_roles[$role->id()] = $role->label();
     }
 
-    $values_raw = $config->get('role_expire_default_roles');
-    $values = empty($values_raw) ? array() : json_decode($values_raw, TRUE);
+    $values = $this->roleExpireApi->getRolesAfterExpiration();
 
-    $default = array(
-      0 => $this->t('- None -')
-    );
+    $default = [
+      0 => $this->t('- None -'),
+    ];
     // It is important to respect the keys on this array merge.
     $roles_select = $default + $parsed_roles;
     unset($roles_select['anonymous']);
     unset($roles_select['authenticated']);
 
-    $form['general'] = array(
+    $form['general'] = [
       '#type' => 'fieldset',
-      '#title' => t('General settings'),
+      '#title' => $this->t('General settings'),
       '#weight' => 1,
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
-    );
+    ];
 
     foreach ($parsed_roles as $rid => $role_name) {
       if (!in_array($rid, $excluded_roles)) {
-        $form['general'][$rid] = array(
+        $form['general'][$rid] = [
           '#type' => 'select',
           '#options' => $roles_select,
-          '#title' => $this->t('Role to assign after the role ":r" expires', array(':r' => $role_name)),
+          '#title' => $this->t('Role to assign after the role ":r" expires', [':r' => $role_name]),
           '#default_value' => isset($values[$rid]) ? $values[$rid] : 0,
-        );
+        ];
       }
     }
 
@@ -79,12 +102,12 @@ class RoleExpireConfigurationForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
 
-    $excluded_roles = array('anonymous', 'authenticated');
+    $excluded_roles = ['anonymous', 'authenticated'];
 
-    $data = array();
-    $parsed_roles = array();
+    $data = [];
+    $parsed_roles = [];
     $roles = user_roles();
-    foreach ($roles as $label => $role) {
+    foreach ($roles as $role) {
       $parsed_roles[$role->id()] = $role->label();
     }
     foreach ($parsed_roles as $rid => $role_name) {

@@ -2,7 +2,6 @@
 
 namespace Drupal\role_expire\Plugin\RulesAction;
 
-use Drupal\role_expire\RoleExpireApiService;
 use Drupal\rules\Core\RulesActionBase;
 use Drupal\rules\Exception\InvalidArgumentException;
 use Drupal\user\UserInterface;

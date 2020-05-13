@@ -1,3 +1,10 @@
+Role expire 8.x-1.5, 2020-04-14
+-------------------------------
+Code cleanup using PHP CodeSniffer
+Remove Role Expire deprecated API calls
+Remove duplicated code on configuration form
+#3123747: Default duration should be saved in config
+
 Role expire 8.x-1.4, 2020-03-20
 -------------------------------
 Full compatibility with Drupal 9
@@ -16,7 +23,6 @@ Simplify call to writeRecord in processDefaultRoleDurationForUser API call
 
 Role expire 8.x-1.2, 2019-09-23
 -------------------------------
-
 #3080679: End sessions when expiring roles
 #3080861: Exclude authenticated and anonymous role while assigning new role after expiration
 Fixed views fields "Role expiration date/time" and "Role expiration role" to avoid row duplicates
@@ -24,7 +30,6 @@ Tests: Moved helper functions to a Trait
 
 Role expire 8.x-1.1, 2019-02-07
 -------------------------------
-
 README improvement
 Added tests
 Source code improvements (dependency injection)
@@ -33,26 +38,21 @@ Remove usage of deprecated drupal_set_message method
 
 Role expire 8.x-1.0, 2018-09-11
 -------------------------------
-
 Move all API functions to a new service, deprecate old API calls
 #2998705: More flexibility for default durations
 
 Role expire 8.x-1.0-rc3, 2018-08-12
 ------------------------------------
-
 Basic integration with views: same fields as 7.x version
 
 Role expire 8.x-1.0-rc2, 2018-08-10
 ------------------------------------
-
 Basic views integration added!
 
 Role expire 8.x-1.0-rc1, 2018-02-18
 -----------------------------------
-
 Rules integration added!
 
 Role expire 8.x-1.0-beta1, 2017-08-30
 -------------------------------------
-
 First Drupal 8 version.

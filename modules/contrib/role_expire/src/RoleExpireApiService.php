@@ -36,7 +36,7 @@ class RoleExpireApiService {
    * Constructs a new RoleExpireApiService object.
    */
   public function __construct(ConfigFactory $configFactory, Connection $connection) {
-    $this->config = $configFactory->get('role_expire.config');
+    $this->config = $configFactory;
     $this->database = $connection;
     $this->sessionManager = \Drupal::service('session_manager');
   }
@@ -165,11 +165,9 @@ class RoleExpireApiService {
    */
   public function getDefaultDuration($rid) {
 
-    $query = $this->database->select('role_expire_length', 'n');
-    $query->fields('n', ['duration']);
-    $query->condition('n.rid', $rid, '=');
-    $result = $query->execute()->fetchField();
-
+    $values_raw = $this->config->get('role_expire.config')->get('role_expire_default_duration_roles');
+    $values = empty($values_raw) ? [] : $values_raw;
+    $result = isset($values[$rid]) ? $values[$rid] : '';
     return (!empty($result)) ? $result : '';
   }
 
@@ -184,13 +182,12 @@ class RoleExpireApiService {
   public function setDefaultDuration($rid, $duration) {
 
     if (!empty($duration)) {
-      // Delete previous default duration if it exists.
-      $this->deleteDefaultDuration($rid);
-
       // Insert new default duration.
-      $query = $this->database->insert('role_expire_length')->fields(['rid', 'duration']);
-      $query->values(['rid' => $rid, 'duration' => Html::escape($duration)]);
-      $query->execute();
+      $config = $this->config->getEditable('role_expire.config');
+      $values_raw = $config->get('role_expire_default_duration_roles');
+      $values = empty($values_raw) ? [] : $values_raw;
+      $values[$rid] = Html::escape($duration);
+      $config->set('role_expire_default_duration_roles', $values)->save();
     }
   }
 
@@ -201,7 +198,13 @@ class RoleExpireApiService {
    *   Required. The role_id to remove.
    */
   public function deleteDefaultDuration($rid) {
-    $this->database->delete('role_expire_length')->condition('rid', $rid)->execute();
+    $config = $this->config->getEditable('role_expire.config');
+    $values_raw = $config->get('role_expire_default_duration_roles');
+    $values = empty($values_raw) ? [] : $values_raw;
+    if (isset($values[$rid])) {
+      unset($values[$rid]);
+    }
+    $config->set('role_expire_default_duration_roles', $values)->save();
   }
 
   /**
@@ -245,7 +248,7 @@ class RoleExpireApiService {
    *   configuration is not set.
    */
   public function getRolesAfterExpiration() {
-    $values_raw = $this->config->get('role_expire_default_roles');
+    $values_raw = $this->config->get('role_expire.config')->get('role_expire_default_roles');
     $values = empty($values_raw) ? [] : json_decode($values_raw, TRUE);
     return $values;
   }

@@ -4,7 +4,7 @@ type: module
 configure: role_expire.config
 core_version_requirement: ^8.8 || ^9
 
-# Information added by Drupal.org packaging script on 2020-03-20
-version: '8.x-1.4'
+# Information added by Drupal.org packaging script on 2020-04-14
+version: '8.x-1.6'
 project: 'role_expire'
-datestamp: 1584722399
+datestamp: 1586881606

@@ -76,6 +76,7 @@ class ComposerStaticInit661549edb94e478a0f9597e672580f65
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Container\\' => 14,
             'Psr\\Cache\\' => 10,
+            'PHPMailer\\PHPMailer\\' => 20,
         ),
         'O' => 
         array (
@@ -283,6 +284,10 @@ class ComposerStaticInit661549edb94e478a0f9597e672580f65
         'Psr\\Cache\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/cache/src',
+        ),
+        'PHPMailer\\PHPMailer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
         ),
         'OomphInc\\ComposerInstallersExtender\\' => 
         array (

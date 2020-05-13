@@ -23,6 +23,8 @@ class RoleExpiresEvent extends Event {
 
   /**
    * The rid of the role which the user has lost.
+   *
+   * @var string
    */
   public $ridBefore;
 
@@ -31,8 +33,7 @@ class RoleExpiresEvent extends Event {
    *
    * @param \Drupal\user\UserInterface $account
    *   The account of the user logged in.
-   *
-   * @param $rid
+   * @param string $ridBefore
    *   The role name that has expired.
    */
   public function __construct(UserInterface $account, $ridBefore) {

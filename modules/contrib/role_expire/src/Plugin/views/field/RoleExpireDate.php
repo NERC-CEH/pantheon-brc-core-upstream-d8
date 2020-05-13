@@ -1,13 +1,5 @@
 <?php
 
-/**
- * @file
- * Definition of Drupal\role_expire\Plugin\views\field\RoleExpireExpiryData.
- *
- * References:
- * Class Date from Date.php (core files).
- */
-
 namespace Drupal\role_expire\Plugin\views\field;
 
 use Drupal\views\ViewExecutable;
@@ -114,7 +106,7 @@ class RoleExpireDate extends PrerenderList {
     $options = parent::defineOptions();
 
     $options['date_format'] = ['default' => 'small'];
-    $options['custom_date_format'] = array('default' => 'Y-m-d H:i');
+    $options['custom_date_format'] = ['default' => 'Y-m-d H:i'];
     $options['timezone'] = ['default' => ''];
 
     return $options;
@@ -135,8 +127,8 @@ class RoleExpireDate extends PrerenderList {
       '#type' => 'select',
       '#title' => $this->t('Date format'),
       '#options' => $date_formats + [
-          'custom' => $this->t('Custom'),
-        ],
+        'custom' => $this->t('Custom'),
+      ],
       '#default_value' => isset($this->options['date_format']) ? $this->options['date_format'] : 'small',
     ];
     $form['custom_date_format'] = [
@@ -171,7 +163,7 @@ class RoleExpireDate extends PrerenderList {
    * @{inheritdoc}
    */
   public function preRender(&$values) {
-    $this->items = array();
+    $this->items = [];
 
     if (is_array($values)) {
 
@@ -201,4 +193,5 @@ class RoleExpireDate extends PrerenderList {
   public function render_item($count, $item) {
     return $item['date'];
   }
+
 }
