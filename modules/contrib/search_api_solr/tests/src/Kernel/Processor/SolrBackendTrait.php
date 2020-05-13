@@ -3,13 +3,7 @@
 namespace Drupal\Tests\search_api_solr\Kernel\Processor;
 
 use Drupal\search_api\Entity\Server;
-use Drupal\search_api_solr\Utility\SolrCommitTrait;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
 use Symfony\Component\Yaml\Yaml;
-
-defined('TRAVIS_BUILD_DIR') || define('TRAVIS_BUILD_DIR', getenv('TRAVIS_BUILD_DIR') ?: '.');
-defined('SOLR_CLOUD') || define('SOLR_CLOUD', getenv('SOLR_CLOUD') ?: 'false');
 
 /**
  * Helper to exchange the DB backend for a Solr backend in processor tests.
@@ -17,26 +11,19 @@ defined('SOLR_CLOUD') || define('SOLR_CLOUD', getenv('SOLR_CLOUD') ?: 'false');
 trait SolrBackendTrait {
 
   /**
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $travisLogger;
-
-  use SolrCommitTrait;
-
-  /**
    * Swap the DB backend for a Solr backend.
    *
    * This function has to be called from the test setUp() function.
+   *
+   * @param string $module
+   *   The module that provides the server config.
+   * @param $config
+   *   The server config
    */
-  protected function enableSolrServer() {
-    $this->installConfig([
-      'devel',
-    ]);
-
-    $config = '/config/install/search_api.server.solr_search_server' . ('true' === SOLR_CLOUD ? '_cloud' : '') . '.yml';
+  protected function enableSolrServer($module, $config) {
     $this->server = Server::create(
       Yaml::parse(file_get_contents(
-        drupal_get_path('module', 'search_api_solr_test') . $config
+        drupal_get_path('module', $module) . $config
       ))
     );
     $this->server->save();
@@ -47,12 +34,8 @@ trait SolrBackendTrait {
     $index_storage = $this->container
       ->get('entity_type.manager')
       ->getStorage('search_api_index');
-    $index_storage->resetCache([$this->index->id()]);
+    $index_storage->resetCache(array($this->index->id()));
     $this->index = $index_storage->load($this->index->id());
-
-    $logger = new Logger('search_api_solr');
-    $logger->pushHandler(new StreamHandler(TRAVIS_BUILD_DIR . '/solr.query.log', Logger::DEBUG));
-    \Drupal::service('search_api_solr_devel.solarium_request_logger')->setLogger($logger);
   }
 
   /**
@@ -60,7 +43,7 @@ trait SolrBackendTrait {
    */
   protected function indexItems() {
     $index_status = parent::indexItems();
-    $this->ensureCommit($this->index);
+    sleep(2);
     return $index_status;
   }
 
@@ -69,7 +52,7 @@ trait SolrBackendTrait {
    */
   protected function tearDown() {
     $this->index->clear();
-    $this->ensureCommit($this->index);
+    sleep(2);
     parent::tearDown();
   }
 

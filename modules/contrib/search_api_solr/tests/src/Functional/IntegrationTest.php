@@ -2,18 +2,13 @@
 
 namespace Drupal\Tests\search_api_solr\Functional;
 
-use Drupal\search_api\Entity\Index;
-use Drupal\search_api_solr\Utility\SolrCommitTrait;
-use Drupal\Tests\search_api\Functional\IntegrationTest as SearchApiIntegrationTest;
-
 /**
  * Tests the overall functionality of the Search API framework and admin UI.
  *
  * @group search_api_solr
  */
-class IntegrationTest extends SearchApiIntegrationTest {
+class IntegrationTest extends \Drupal\Tests\search_api\Functional\IntegrationTest {
 
-  use SolrCommitTrait;
   /**
    * The backend of the search server used for this test.
    *
@@ -24,10 +19,10 @@ class IntegrationTest extends SearchApiIntegrationTest {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  public static $modules = array(
     'search_api_solr',
     'search_api_solr_test',
-  ];
+  );
 
   /**
    * {@inheritdoc}
@@ -36,7 +31,7 @@ class IntegrationTest extends SearchApiIntegrationTest {
     if ($this->indexId) {
       if ($index = $this->getIndex()) {
         $index->clear();
-        $this->ensureCommit($index);
+        sleep(2);
       }
     }
     parent::tearDown();
@@ -107,8 +102,8 @@ class IntegrationTest extends SearchApiIntegrationTest {
     $edit += [
       'backend_config[connector_config][host]' => 'localhost',
       'backend_config[connector_config][port]' => '8983',
-      'backend_config[connector_config][path]' => '/foo',
-      'backend_config[connector_config][core]' => 'bar',
+      'backend_config[connector_config][path]' => '/',
+      'backend_config[connector_config][core]' => '',
     ];
     $this->submitForm($edit, 'Save');
 
@@ -122,7 +117,7 @@ class IntegrationTest extends SearchApiIntegrationTest {
     $edit = [
       'backend_config[connector_config][host]' => 'localhost',
       'backend_config[connector_config][port]' => '8983',
-      'backend_config[connector_config][path]' => '/',
+      'backend_config[connector_config][path]' => '/solr',
       'backend_config[connector_config][core]' => 'd8',
     ];
     $this->submitForm($edit, 'Save');
@@ -134,13 +129,10 @@ class IntegrationTest extends SearchApiIntegrationTest {
    *
    * @return int
    *   The number of successfully indexed items.
-   *
-   * @throws \Drupal\search_api\SearchApiException
    */
   protected function indexItems() {
     $index_status = parent::indexItems();
-    $index = Index::load($this->indexId);
-    $this->ensureCommit($index);
+    sleep(2);
     return $index_status;
   }
 

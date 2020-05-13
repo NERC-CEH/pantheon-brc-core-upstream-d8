@@ -75,7 +75,11 @@ function collapsiblock_block_form_form_builder($entity_type, Block $block, &$for
  * Implements hook_block_view_alter().
  */
 function collapsiblock_block_view_alter(array &$build, \Drupal\Core\Block\BlockPluginInterface $block) {
-  if (empty($build['#block'])) return;
+
+  if (empty($build['#block'])) {
+    return;
+  }
+
   $block_entity = $build['#block'];
   $action = $block_entity->getThirdPartySetting('collapsiblock', 'collapse_action');
 
