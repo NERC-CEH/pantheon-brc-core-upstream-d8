@@ -23,7 +23,6 @@ function template_preprocess_views_bootstrap_accordion(array &$vars) {
   $vars['id'] = ViewsBootstrap::getUniqueId($view);
   $panel_title_field = $view->style_plugin->options['panel_title_field'];
   $vars['attributes']['class'][] = 'panel-group';
-  $vars['options'] = $view->style_plugin->options;
   if ($panel_title_field) {
     foreach ($vars['rows'] as $id => $row) {
       $vars['rows'][$id] = [];
@@ -33,43 +32,16 @@ function template_preprocess_views_bootstrap_accordion(array &$vars) {
   }
   else {
     // @TODO: This would be better as valdiation errors on the style plugin options form.
-    \Drupal::messenger()->addWarning(t('@style style will not display without the "@field" setting.',
+    drupal_set_message(t('@style style will not display without the "@field" setting.',
       [
         '@style' => $view->style_plugin->definition['title'],
         '@field' => 'Panel title',
       ]
-    ));
+    ), 'warning');
   }
   // @TODO: Make sure that $vars['rows'] is rendered array.
   // @SEE: Have a look template_preprocess_views_view_unformatted()
   // and views-view-unformatted.html.twig
-}
-
-/**
- * Prepares variables for views cards templates.
- *
- * Default template: views-bootstrap-cards.html.twig.
- *
- * @param array $vars
- *   An associative array containing:
- *   - view: A ViewExecutable object.
- *   - rows: The raw row data.
- */
-function template_preprocess_views_bootstrap_cards(array &$vars) {
-  $view = $vars['view'];
-  $vars['id'] = ViewsBootstrap::getUniqueId($view);
-
-  // card rows.
-  $image = $view->style_plugin->options['card_image_field'];
-  $title = $view->style_plugin->options['card_title_field'];
-  $content = $view->style_plugin->options['card_content_field'];
-
-  foreach ($vars['rows'] as $id => $row) {
-    $vars['rows'][$id] = [];
-    $vars['rows'][$id]['image'] = $view->style_plugin->getField($id, $image);
-    $vars['rows'][$id]['title'] = $view->style_plugin->getField($id, $title);
-    $vars['rows'][$id]['content'] = $view->style_plugin->getField($id, $content);
-  }
 }
 
 /**
@@ -94,9 +66,6 @@ function template_preprocess_views_bootstrap_carousel(array &$vars) {
   $vars['indicators'] = $view->style_plugin->options['indicators'];
   $vars['pause'] = $view->style_plugin->options['pause'] ? 'hover' : FALSE;
   $vars['wrap'] = $view->style_plugin->options['wrap'];
-  $vars['effect'] = $view->style_plugin->options['effect'];
-  $vars['use_caption'] = $view->style_plugin->options['use_caption'];
-  $vars['ride'] = $view->style_plugin->options['ride'];
 
   // Carousel rows.
   $image = $view->style_plugin->options['image'];
@@ -134,16 +103,16 @@ function template_preprocess_views_bootstrap_grid(array &$vars) {
   $vars['id'] = ViewsBootstrap::getUniqueId($view);
   $vars['attributes']['class'][] = 'grid';
   $options = $view->style_plugin->options;
+  $options['automatic_width'] = ['default' => TRUE];
+  $horizontal = ($options['alignment'] === 'horizontal');
 
-  $vars['row_attributes'] = new Attribute();
-  foreach (ViewsBootstrap::getBreakpoints() as $breakpoint) {
-    if ($options["col_$breakpoint"] == 'none') {
-      continue;
-    }
-    $vars['row_attributes']->addClass($options["col_$breakpoint"]);
+  foreach (['xs', 'sm', 'md', 'lg'] as $size) {
+    $vars["col_" . $size] = $options["col_" . $size];
+    // Get the value from the size sting.
+    $vars['sizes'][$size] = ViewsBootstrap::getColSize($options["col_" . $size]);
   }
-
   $vars['options'] = $options;
+
 }
 
 /**
@@ -231,12 +200,12 @@ function template_preprocess_views_bootstrap_tab(array &$vars) {
   }
   else {
     // @TODO: This would be better as valdiation errors on the style plugin options form.
-    \Drupal::messenger()->addWarning(t('@style style will not display without the "@field" setting.',
+    drupal_set_message(t('@style style will not display without the "@field" setting.',
       [
         '@style' => $view->style_plugin->definition['title'],
         '@field' => 'Tab title',
       ]
-    ));
+    ), 'warning');
   }
 }
 

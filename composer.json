@@ -66,7 +66,7 @@
         "drupal/token": "^1.7",
         "drupal/token_filter": "^1.2",
         "drupal/video_embed_field": "^2.4",
-        "drupal/views_bootstrap": "^4.2",
+        "drupal/views_bootstrap": "3.1",
         "drupal/views_data_export": "^1.0@RC",
         "drupal/views_templates": "^1.1",
         "drupal/we_megamenu": "^1.9",

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "087bb20d972689c4277ec6d73f890480",
+    "content-hash": "998e7571b10a2beba1117d12984bed53",
     "packages": [
         {
             "name": "academicpuma/citeproc-php",
@@ -4989,17 +4989,17 @@
         },
         {
             "name": "drupal/views_bootstrap",
-            "version": "4.2.0",
+            "version": "3.1.0",
             "source": {
                 "type": "git",
                 "url": "https://git.drupalcode.org/project/views_bootstrap.git",
-                "reference": "8.x-4.2"
+                "reference": "8.x-3.1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://ftp.drupal.org/files/projects/views_bootstrap-8.x-4.2.zip",
-                "reference": "8.x-4.2",
-                "shasum": "7354305f30f7018a39f6a22cad10e724112bccfd"
+                "url": "https://ftp.drupal.org/files/projects/views_bootstrap-8.x-3.1.zip",
+                "reference": "8.x-3.1",
+                "shasum": "7fd556457f028fa736d1422a9b5a763566fd7d2e"
             },
             "require": {
                 "drupal/core": "*"
@@ -5007,8 +5007,8 @@
             "type": "drupal-module",
             "extra": {
                 "drupal": {
-                    "version": "8.x-4.2",
-                    "datestamp": "1579753985",
+                    "version": "8.x-3.1",
+                    "datestamp": "1537360681",
                     "security-coverage": {
                         "status": "covered",
                         "message": "Covered by Drupal's security advisory policy"
@@ -5017,7 +5017,7 @@
             },
             "notification-url": "https://packages.drupal.org/8/downloads",
             "license": [
-                "GPL-2.0-or-later"
+                "GPL-2.0+"
             ],
             "authors": [
                 {
@@ -5037,8 +5037,11 @@
                     "homepage": "https://www.drupal.org/user/556088"
                 }
             ],
-            "description": "Allows for different styles to be used in views to work with Bootstrap 4 components.",
+            "description": "Integrate the Bootstrap framework with Views.",
             "homepage": "https://www.drupal.org/project/views_bootstrap",
+            "keywords": [
+                "Drupal"
+            ],
             "support": {
                 "source": "https://git.drupalcode.org/project/views_bootstrap"
             }
