@@ -55,6 +55,7 @@
         "drupal/menu_block": "^1.6",
         "drupal/menu_breadcrumb": "^1.12",
         "drupal/migrate_upgrade": "^3.2",
+        "drupal/module_filter": "^3.1",
         "drupal/page_manager": "^4.0@beta",
         "drupal/panels": "^4.6",
         "drupal/pathauto": "^1.8",
