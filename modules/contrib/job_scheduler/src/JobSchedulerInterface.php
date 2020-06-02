@@ -2,7 +2,6 @@
 
 namespace Drupal\job_scheduler;
 
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\job_scheduler\Entity\JobSchedule;
 
 /**

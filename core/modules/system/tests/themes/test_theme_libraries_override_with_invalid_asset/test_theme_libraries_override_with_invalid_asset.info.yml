@@ -9,8 +9,3 @@ libraries-override:
   # \Drupal\Core\Asset\Exception\InvalidLibrariesOverrideSpecificationException.
   core/drupal.dialog:
     css: false
-
-# Information added by Drupal.org packaging script on 2020-05-20
-version: '8.8.6'
-project: 'drupal'
-datestamp: 1589989103

@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitbd3d4f4ee12b0f17896172b1eebb86ad
+class ComposerStaticInitfecfd7ceec5483b488adbd29547e891b
 {
     public static $files = array (
         '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
@@ -12,6 +12,7 @@ class ComposerStaticInitbd3d4f4ee12b0f17896172b1eebb86ad
         '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
         'bd9634f2d41831496de0d3dfe4c94881' => __DIR__ . '/..' . '/symfony/polyfill-php56/bootstrap.php',
         '25072dd6e2470089de65ae7bf11d3109' => __DIR__ . '/..' . '/symfony/polyfill-php72/bootstrap.php',
+        'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
         '667aeda72477189d0494fecd327c3641' => __DIR__ . '/..' . '/symfony/var-dumper/Resources/functions/dump.php',
         '7b11c4dc42b3b3023073cb14e519683c' => __DIR__ . '/..' . '/ralouphie/getallheaders/src/getallheaders.php',
         'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
@@ -55,6 +56,7 @@ class ComposerStaticInitbd3d4f4ee12b0f17896172b1eebb86ad
         'S' => 
         array (
             'Symfony\\Polyfill\\Util\\' => 22,
+            'Symfony\\Polyfill\\Php80\\' => 23,
             'Symfony\\Polyfill\\Php72\\' => 23,
             'Symfony\\Polyfill\\Php70\\' => 23,
             'Symfony\\Polyfill\\Php56\\' => 23,
@@ -202,6 +204,10 @@ class ComposerStaticInitbd3d4f4ee12b0f17896172b1eebb86ad
         'Symfony\\Polyfill\\Util\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-util',
+        ),
+        'Symfony\\Polyfill\\Php80\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-php80',
         ),
         'Symfony\\Polyfill\\Php72\\' => 
         array (
@@ -523,7 +529,7 @@ class ComposerStaticInitbd3d4f4ee12b0f17896172b1eebb86ad
         array (
             'LibRIS' => 
             array (
-                0 => __DIR__ . '/..' . '/technosophos/LibRIS/src',
+                0 => __DIR__ . '/..' . '/technosophos/libris/src',
             ),
         ),
         'E' => 
@@ -583,17 +589,19 @@ class ComposerStaticInitbd3d4f4ee12b0f17896172b1eebb86ad
         'Error' => __DIR__ . '/..' . '/symfony/polyfill-php70/Resources/stubs/Error.php',
         'ParseError' => __DIR__ . '/..' . '/symfony/polyfill-php70/Resources/stubs/ParseError.php',
         'SessionUpdateTimestampHandlerInterface' => __DIR__ . '/..' . '/symfony/polyfill-php70/Resources/stubs/SessionUpdateTimestampHandlerInterface.php',
+        'Stringable' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Stringable.php',
         'TypeError' => __DIR__ . '/..' . '/symfony/polyfill-php70/Resources/stubs/TypeError.php',
+        'ValueError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/ValueError.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitbd3d4f4ee12b0f17896172b1eebb86ad::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitbd3d4f4ee12b0f17896172b1eebb86ad::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInitbd3d4f4ee12b0f17896172b1eebb86ad::$prefixesPsr0;
-            $loader->fallbackDirsPsr0 = ComposerStaticInitbd3d4f4ee12b0f17896172b1eebb86ad::$fallbackDirsPsr0;
-            $loader->classMap = ComposerStaticInitbd3d4f4ee12b0f17896172b1eebb86ad::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitfecfd7ceec5483b488adbd29547e891b::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitfecfd7ceec5483b488adbd29547e891b::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInitfecfd7ceec5483b488adbd29547e891b::$prefixesPsr0;
+            $loader->fallbackDirsPsr0 = ComposerStaticInitfecfd7ceec5483b488adbd29547e891b::$fallbackDirsPsr0;
+            $loader->classMap = ComposerStaticInitfecfd7ceec5483b488adbd29547e891b::$classMap;
 
         }, null, ClassLoader::class);
     }

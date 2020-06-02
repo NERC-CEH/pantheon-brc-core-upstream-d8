@@ -309,8 +309,3 @@ libraries-extend:
     - stable/drupal.ajax
   user/drupal.user:
     - stable/drupal.user
-
-# Information added by Drupal.org packaging script on 2020-05-20
-version: '8.8.6'
-project: 'drupal'
-datestamp: 1589989103

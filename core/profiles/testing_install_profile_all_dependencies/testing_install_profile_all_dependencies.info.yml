@@ -10,8 +10,3 @@ dependencies:
 install: []
 themes:
   - classy
-
-# Information added by Drupal.org packaging script on 2020-05-20
-version: '8.8.6'
-project: 'drupal'
-datestamp: 1589989103
