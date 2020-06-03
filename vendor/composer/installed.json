@@ -4145,8 +4145,8 @@
     },
     {
         "name": "drupal/entity_embed",
-        "version": "1.1.0",
-        "version_normalized": "1.1.0.0",
+        "version": "1.2.0-rc7",
+        "version_normalized": "1.2.0.0-RC7",
         "source": {
             "type": "git",
             "url": "https://git.drupalcode.org/project/entity_embed.git",
