@@ -2,6 +2,7 @@
 
 namespace Drupal\range\Plugin\views\filter;
 
+use Drupal\Core\Database\Query\Condition;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Plugin\views\filter\FilterPluginBase;
 
@@ -97,10 +98,10 @@ class Range extends FilterPluginBase {
     list($op_left, $op_right) = array_slice($operators, $inlude_endpoints ? 2 : 0, 2);
 
     if ($this->operator === 'within') {
-      $this->query->addWhere($this->options['group'], db_and()->condition($field_from, $this->value, $op_left)->condition($field_to, $this->value, $op_right));
+      $this->query->addWhere($this->options['group'], (new Condition('AND'))->condition($field_from, $this->value, $op_left)->condition($field_to, $this->value, $op_right));
     }
     else {
-      $this->query->addWhere($this->options['group'], db_or()->condition($field_from, $this->value, $op_right)->condition($field_to, $this->value, $op_left));
+      $this->query->addWhere($this->options['group'], (new Condition('OR'))->condition($field_from, $this->value, $op_right)->condition($field_to, $this->value, $op_left));
     }
   }
 

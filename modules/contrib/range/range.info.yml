@@ -1,13 +1,12 @@
-name: Numeric range
+name: Numeric Range
 type: module
 description: 'Defines a numeric range field type.'
 package: Field types
-# core: 8.x
+core_version_requirement: ^8.8 || ^9
 dependencies:
-  - field
+  - drupal:field
 
-# Information added by Drupal.org packaging script on 2017-03-12
-version: '8.x-1.1'
-core: '8.x'
+# Information added by Drupal.org packaging script on 2020-06-02
+version: '8.x-1.2'
 project: 'range'
-datestamp: 1489346588
+datestamp: 1591131490

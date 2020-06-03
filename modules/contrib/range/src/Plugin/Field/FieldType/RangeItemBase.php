@@ -39,11 +39,19 @@ abstract class RangeItemBase extends FieldItemBase implements RangeItemInterface
     return [
       'min' => '',
       'max' => '',
+      'field' => [
+        'prefix' => '',
+        'suffix' => '',
+      ],
       'from' => [
         'prefix' => '',
         'suffix' => '',
       ],
       'to' => [
+        'prefix' => '',
+        'suffix' => '',
+      ],
+      'combined' => [
         'prefix' => '',
         'suffix' => '',
       ],
@@ -68,8 +76,10 @@ abstract class RangeItemBase extends FieldItemBase implements RangeItemInterface
       '#default_value' => $this->getSetting('max'),
       '#description' => $this->t('The maximum value that should be allowed in this field. Leave blank for no maximum.'),
     ];
+    $element += $this->fieldSettingsFormSubElementPrefixSuffix($this->t('FIELD'), 'field');
     $element += $this->fieldSettingsFormSubElementPrefixSuffix($this->t('FROM'), 'from');
     $element += $this->fieldSettingsFormSubElementPrefixSuffix($this->t('TO'), 'to');
+    $element += $this->fieldSettingsFormSubElementPrefixSuffix($this->t('COMBINED'), 'combined');
 
     return $element;
   }

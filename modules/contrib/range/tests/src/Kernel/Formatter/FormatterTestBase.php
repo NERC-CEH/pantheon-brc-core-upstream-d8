@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\range\Kernel\Formatter;
 
-use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\range\Traits\RangeTestTrait;
 use Drupal\entity_test\Entity\EntityTest;
@@ -48,6 +47,13 @@ abstract class FormatterTestBase extends KernelTestBase {
   protected $displayType;
 
   /**
+   * Display type settings.
+   *
+   * @var array
+   */
+  protected $defaultSettings;
+
+  /**
    * Entity, used for testing.
    *
    * @var \Drupal\entity_test\Entity\EntityTest
@@ -57,7 +63,7 @@ abstract class FormatterTestBase extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installConfig(['system']);
@@ -75,41 +81,306 @@ abstract class FormatterTestBase extends KernelTestBase {
 
   /**
    * Tests formatter.
-   *
-   * @dataProvider formatterDataProvider
    */
-  public function testFieldFormatter(array $display_settings, $from, $to, $expected_output) {
+  public function testFieldFormatter() {
+    // PHPUnit @dataProvider is calling setUp()/tearDown() with each data set
+    // causing tests to be up to 20x slower.
+    foreach ($this->formatterDataProvider() as list($display_settings, $from, $to, $expected)) {
+      $this->assertFieldFormatter($display_settings, $from, $to, $expected);
+    }
+  }
+
+  /**
+   * Asserts that field formatter does its job.
+   */
+  protected function assertFieldFormatter(array $display_settings, $from, $to, $expected) {
     $this->entity->{$this->fieldName} = [
       'from' => $from,
       'to' => $to,
     ];
 
-    $this->setViewDisplayComponent($this->fieldType, $this->displayType, $display_settings);
-    $this->renderEntityFields($this->entity);
-    $this->assertText($expected_output);
+    $content = $this->entity->{$this->fieldName}->get(0)->view([
+      'type' => $this->displayType,
+      'settings' => $display_settings,
+    ]);
+    $renderer = $this->container->get('renderer');
+    $this->assertEquals($expected, $renderer->renderRoot($content));
   }
 
   /**
-   * Data provider for testFieldFormatter().
+   * Formatter settings data provider.
    *
    * @return array
    *   Nested arrays of values to check:
    *     - $display_settings
    *     - $from
    *     - $to
-   *     - $expected_output
+   *     - $expected
    */
-  abstract public function formatterDataProvider();
+  protected function formatterDataProvider() {
+    // Loop over the specific formatter settings.
+    foreach ($this->fieldFormatterDataProvider() as list($settings, $from, $to, $expected_from, $expected_to)) {
+      // Loop over the base formatter settings.
+      foreach ($this->fieldFormatterBaseDataProvider() as list($base_settings, $expected_format_separate, $expected_format_combined)) {
+        $diplay_settings = $settings + $base_settings + $this->defaultSettings;
+        $expected_format = $expected_from !== $expected_to ? $expected_format_separate : $expected_format_combined;
+        yield [
+          $diplay_settings,
+          $from, $to,
+          sprintf($expected_format, $expected_from, $expected_to),
+        ];
+      }
+    }
+  }
 
   /**
-   * Renders fields of a given entity.
+   * Base formatter settings data provider.
    *
-   * @param \Drupal\Core\Entity\FieldableEntityInterface $entity
-   *   The entity object with attached fields to render.
+   * @return array
+   *   Nested arrays of values to check:
+   *     - $base_settings
+   *     - $expected_format_separate
+   *     - $expected_format_combined
    */
-  protected function renderEntityFields(FieldableEntityInterface $entity) {
-    $content = $this->viewDisplay->build($entity);
-    $this->render($content);
+  protected function fieldFormatterBaseDataProvider() {
+    yield [
+      [],
+      '%s-%s',
+      '%s',
+    ];
+    yield [
+      [
+        'range_combine' => FALSE,
+      ],
+      '%s-%s',
+      '%s-%s',
+    ];
+    yield [
+      [
+        'range_separator' => '|',
+      ],
+      '%s|%s',
+      '%s',
+    ];
+    yield [
+      [
+        'range_combine' => FALSE,
+        'range_separator' => '=',
+      ],
+      '%s=%s',
+      '%s=%s',
+    ];
+    yield [
+      [
+        'field_prefix_suffix' => TRUE,
+      ],
+      'field_prefix%s-%sfield_suffix',
+      'field_prefix%sfield_suffix',
+    ];
+    yield [
+      [
+        'from_prefix_suffix' => TRUE,
+      ],
+      'from_prefix%sfrom_suffix-%s',
+      'from_prefix%sfrom_suffix',
+    ];
+    yield [
+      [
+        'to_prefix_suffix' => TRUE,
+      ],
+      '%s-to_prefix%sto_suffix',
+      'to_prefix%sto_suffix',
+    ];
+    yield [
+      [
+        'combined_prefix_suffix' => TRUE,
+      ],
+      '%s-%s',
+      'combined_prefix%scombined_suffix',
+    ];
+    yield [
+      [
+        'range_combine' => FALSE,
+        'combined_prefix_suffix' => TRUE,
+      ],
+      '%s-%s',
+      '%s-%s',
+    ];
+    yield [
+      [
+        'field_prefix_suffix' => TRUE,
+        'from_prefix_suffix' => TRUE,
+      ],
+      'field_prefixfrom_prefix%sfrom_suffix-%sfield_suffix',
+      'field_prefixfrom_prefix%sfrom_suffixfield_suffix',
+    ];
+    yield [
+      [
+        'field_prefix_suffix' => TRUE,
+        'to_prefix_suffix' => TRUE,
+      ],
+      'field_prefix%s-to_prefix%sto_suffixfield_suffix',
+      'field_prefixto_prefix%sto_suffixfield_suffix',
+    ];
+    yield [
+      [
+        'field_prefix_suffix' => TRUE,
+        'combined_prefix_suffix' => TRUE,
+      ],
+      'field_prefix%s-%sfield_suffix',
+      'field_prefixcombined_prefix%scombined_suffixfield_suffix',
+    ];
+    yield [
+      [
+        'range_combine' => FALSE,
+        'field_prefix_suffix' => TRUE,
+        'combined_prefix_suffix' => TRUE,
+      ],
+      'field_prefix%s-%sfield_suffix',
+      'field_prefix%s-%sfield_suffix',
+    ];
+    yield [
+      [
+        'from_prefix_suffix' => TRUE,
+        'to_prefix_suffix' => TRUE,
+      ],
+      'from_prefix%sfrom_suffix-to_prefix%sto_suffix',
+      'from_prefix%sto_suffix',
+    ];
+    yield [
+      [
+        'from_prefix_suffix' => TRUE,
+        'combined_prefix_suffix' => TRUE,
+      ],
+      'from_prefix%sfrom_suffix-%s',
+      'combined_prefix%scombined_suffix',
+    ];
+    yield [
+      [
+        'range_combine' => FALSE,
+        'from_prefix_suffix' => TRUE,
+        'combined_prefix_suffix' => TRUE,
+      ],
+      'from_prefix%sfrom_suffix-%s',
+      'from_prefix%sfrom_suffix-%s',
+    ];
+    yield [
+      [
+        'to_prefix_suffix' => TRUE,
+        'combined_prefix_suffix' => TRUE,
+      ],
+      '%s-to_prefix%sto_suffix',
+      'combined_prefix%scombined_suffix',
+    ];
+    yield [
+      [
+        'range_combine' => FALSE,
+        'to_prefix_suffix' => TRUE,
+        'combined_prefix_suffix' => TRUE,
+      ],
+      '%s-to_prefix%sto_suffix',
+      '%s-to_prefix%sto_suffix',
+    ];
+    yield [
+      [
+        'field_prefix_suffix' => TRUE,
+        'from_prefix_suffix' => TRUE,
+        'to_prefix_suffix' => TRUE,
+      ],
+      'field_prefixfrom_prefix%sfrom_suffix-to_prefix%sto_suffixfield_suffix',
+      'field_prefixfrom_prefix%sto_suffixfield_suffix',
+    ];
+    yield [
+      [
+        'field_prefix_suffix' => TRUE,
+        'from_prefix_suffix' => TRUE,
+        'combined_prefix_suffix' => TRUE,
+      ],
+      'field_prefixfrom_prefix%sfrom_suffix-%sfield_suffix',
+      'field_prefixcombined_prefix%scombined_suffixfield_suffix',
+    ];
+    yield [
+      [
+        'range_combine' => FALSE,
+        'field_prefix_suffix' => TRUE,
+        'from_prefix_suffix' => TRUE,
+        'combined_prefix_suffix' => TRUE,
+      ],
+      'field_prefixfrom_prefix%sfrom_suffix-%sfield_suffix',
+      'field_prefixfrom_prefix%sfrom_suffix-%sfield_suffix',
+    ];
+    yield [
+      [
+        'field_prefix_suffix' => TRUE,
+        'to_prefix_suffix' => TRUE,
+        'combined_prefix_suffix' => TRUE,
+      ],
+      'field_prefix%s-to_prefix%sto_suffixfield_suffix',
+      'field_prefixcombined_prefix%scombined_suffixfield_suffix',
+    ];
+    yield [
+      [
+        'range_combine' => FALSE,
+        'field_prefix_suffix' => TRUE,
+        'to_prefix_suffix' => TRUE,
+        'combined_prefix_suffix' => TRUE,
+      ],
+      'field_prefix%s-to_prefix%sto_suffixfield_suffix',
+      'field_prefix%s-to_prefix%sto_suffixfield_suffix',
+    ];
+    yield [
+      [
+        'from_prefix_suffix' => TRUE,
+        'to_prefix_suffix' => TRUE,
+        'combined_prefix_suffix' => TRUE,
+      ],
+      'from_prefix%sfrom_suffix-to_prefix%sto_suffix',
+      'combined_prefix%scombined_suffix',
+    ];
+    yield [
+      [
+        'range_combine' => FALSE,
+        'from_prefix_suffix' => TRUE,
+        'to_prefix_suffix' => TRUE,
+        'combined_prefix_suffix' => TRUE,
+      ],
+      'from_prefix%sfrom_suffix-to_prefix%sto_suffix',
+      'from_prefix%sfrom_suffix-to_prefix%sto_suffix',
+    ];
+    yield [
+      [
+        'field_prefix_suffix' => TRUE,
+        'from_prefix_suffix' => TRUE,
+        'to_prefix_suffix' => TRUE,
+        'combined_prefix_suffix' => TRUE,
+      ],
+      'field_prefixfrom_prefix%sfrom_suffix-to_prefix%sto_suffixfield_suffix',
+      'field_prefixcombined_prefix%scombined_suffixfield_suffix',
+    ];
+    yield [
+      [
+        'range_combine' => FALSE,
+        'field_prefix_suffix' => TRUE,
+        'from_prefix_suffix' => TRUE,
+        'to_prefix_suffix' => TRUE,
+        'combined_prefix_suffix' => TRUE,
+      ],
+      'field_prefixfrom_prefix%sfrom_suffix-to_prefix%sto_suffixfield_suffix',
+      'field_prefixfrom_prefix%sfrom_suffix-to_prefix%sto_suffixfield_suffix',
+    ];
   }
+
+  /**
+   * Specific formatter settings data provider.
+   *
+   * @return array
+   *   Nested arrays of values to check:
+   *     - $settings
+   *     - $from
+   *     - $to
+   *     - $expected_from
+   *     - $expected_to
+   */
+  abstract protected function fieldFormatterDataProvider();
 
 }

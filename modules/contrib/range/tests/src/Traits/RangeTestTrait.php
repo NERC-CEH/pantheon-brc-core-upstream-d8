@@ -122,6 +122,10 @@ trait RangeTestTrait {
         return [
           'min' => 0,
           'max' => 100000,
+          'field' => [
+            'prefix' => 'field_prefix',
+            'suffix' => 'field_suffix',
+          ],
           'from' => [
             'prefix' => 'from_prefix',
             'suffix' => 'from_suffix',
@@ -130,8 +134,31 @@ trait RangeTestTrait {
             'prefix' => 'to_prefix',
             'suffix' => 'to_suffix',
           ],
+          'combined' => [
+            'prefix' => 'combined_prefix',
+            'suffix' => 'combined_suffix',
+          ],
         ];
     }
+  }
+
+  /**
+   * Returns test range widget settings.
+   *
+   * @return array
+   *   Range widget settings.
+   */
+  protected function getWidgetSettings() {
+    return [
+      'label' => [
+        'from' => 'from_label',
+        'to' => 'to_label',
+      ],
+      'placeholder' => [
+        'from' => 'from_placeholder',
+        'to' => 'to_placeholder',
+      ],
+    ];
   }
 
   /**

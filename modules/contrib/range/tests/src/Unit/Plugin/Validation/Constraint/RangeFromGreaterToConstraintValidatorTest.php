@@ -2,11 +2,12 @@
 
 namespace Drupal\Tests\range\Unit\Plugin\Validation\Constraint;
 
+use Drupal\range\Plugin\Validation\Constraint\RangeFromGreaterToConstraint;
+use Drupal\range\Plugin\Validation\Constraint\RangeFromGreaterToConstraintValidator;
 use Drupal\range\RangeItemInterface;
 use Drupal\Tests\UnitTestCase;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Drupal\range\Plugin\Validation\Constraint\RangeFromGreaterToConstraint;
-use Drupal\range\Plugin\Validation\Constraint\RangeFromGreaterToConstraintValidator;
+use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 /**
  * Tests the RangeFromGreaterToConstraintValidator validator.
@@ -28,7 +29,7 @@ class RangeFromGreaterToConstraintValidatorTest extends UnitTestCase {
    * @dataProvider providerValidate
    */
   public function testValidate(RangeItemInterface $value, $valid) {
-    $context = $this->getMock(ExecutionContextInterface::class);
+    $context = $this->createMock(ExecutionContextInterface::class);
 
     if ($valid) {
       $context->expects($this->never())
@@ -64,7 +65,7 @@ class RangeFromGreaterToConstraintValidatorTest extends UnitTestCase {
     ];
 
     foreach ($cases as $case) {
-      $item = $this->getMock('Drupal\range\RangeItemInterface');
+      $item = $this->createMock('Drupal\range\RangeItemInterface');
       $item->expects($this->any())
         ->method('getValue')
         ->willReturn($case['range']);
@@ -76,13 +77,14 @@ class RangeFromGreaterToConstraintValidatorTest extends UnitTestCase {
 
   /**
    * @covers ::validate
-   * @expectedException \Symfony\Component\Validator\Exception\UnexpectedTypeException
    */
   public function testInvalidValueType() {
-    $context = $this->getMock(ExecutionContextInterface::class);
+    $context = $this->createMock(ExecutionContextInterface::class);
     $constraint = new RangeFromGreaterToConstraint();
     $validate = new RangeFromGreaterToConstraintValidator();
     $validate->initialize($context);
+
+    $this->expectException(UnexpectedTypeException::class);
     $validate->validate(new \stdClass(), $constraint);
   }
 

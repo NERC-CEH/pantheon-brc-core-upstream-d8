@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\range\Kernel\Formatter;
 
+use Drupal\range\Plugin\Field\FieldFormatter\RangeUnformattedFormatter;
+
 /**
  * Tests the unformatted formatter.
  *
@@ -12,9 +14,10 @@ class UnformattedlFormatterTest extends FormatterTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     $this->fieldType = 'range_float';
     $this->displayType = 'range_unformatted';
+    $this->defaultSettings = RangeUnformattedFormatter::defaultSettings();
 
     parent::setUp();
   }
@@ -22,10 +25,25 @@ class UnformattedlFormatterTest extends FormatterTestBase {
   /**
    * {@inheritdoc}
    */
-  public function formatterDataProvider() {
+  public function fieldFormatterDataProvider() {
     return [
-      [[], 1234.5678, 7856.4321, '1234.5678-7856.4321'],
-      [['range_separator' => '|'], 1234.5678, 7856.4321, '1234.5678|7856.4321'],
+      // Test separate values.
+      [
+        [],
+        1234.5678, 7856.4321,
+        '1234.5678', '7856.4321',
+      ],
+      [
+        [],
+        -10, 400,
+        '-10', '400',
+      ],
+      // Test combined values.
+      [
+        [],
+        1234.5678, 1234.5678,
+        '1234.5678', '1234.5678',
+      ],
     ];
   }
 

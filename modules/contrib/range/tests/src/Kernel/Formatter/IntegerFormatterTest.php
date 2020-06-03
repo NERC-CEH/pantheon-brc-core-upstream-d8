@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\range\Kernel\Formatter;
 
+use Drupal\range\Plugin\Field\FieldFormatter\RangeIntegerFormatter;
+
 /**
  * Tests the integer formatter.
  *
@@ -12,9 +14,10 @@ class IntegerFormatterTest extends FormatterTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     $this->fieldType = 'range_integer';
     $this->displayType = 'range_integer';
+    $this->defaultSettings = RangeIntegerFormatter::defaultSettings();
 
     parent::setUp();
   }
@@ -22,81 +25,29 @@ class IntegerFormatterTest extends FormatterTestBase {
   /**
    * {@inheritdoc}
    */
-  public function formatterDataProvider() {
+  public function fieldFormatterDataProvider() {
     return [
       // Test separate values.
       [
         [],
-        1234,
-        5678,
-        '1234-5678',
+        1234, 5678,
+        '1234', '5678',
       ],
       [
         ['thousand_separator' => ' '],
-        1234,
-        5678,
-        '1 234-5 678',
-      ],
-      [
-        ['range_separator' => '|'],
-        1234,
-        5678,
-        '1234|5678',
-      ],
-      [
-        ['from_prefix_suffix' => TRUE],
-        1234,
-        5678,
-        'from_prefix1234from_suffix-5678',
-      ],
-      [
-        ['to_prefix_suffix' => TRUE],
-        1234,
-        5678,
-        '1234-to_prefix5678to_suffix',
-      ],
-      [
-        ['from_prefix_suffix' => TRUE, 'to_prefix_suffix' => TRUE],
-        1234,
-        5678,
-        'from_prefix1234from_suffix-to_prefix5678to_suffix',
+        1234, 5678,
+        '1 234', '5 678',
       ],
       // Test combined values.
       [
         [],
-        1234,
-        1234,
-        '1234',
+        1234, 1234,
+        '1234', '1234',
       ],
       [
-        ['range_combine' => FALSE],
-        1234,
-        1234,
-        '1234-1234',
-      ],
-      [
-        ['thousand_separator' => ' '],
-        1234,
-        1234,
-        '1 234',
-      ],
-      [
-        ['from_prefix_suffix' => TRUE],
-        1234,
-        1234,
-        'from_prefix1234',
-      ],
-      [
-        ['to_prefix_suffix' => TRUE],
-        1234,
-        1234,
-        '1234to_suffix',
-      ],
-      [
-        ['from_prefix_suffix' => TRUE, 'to_prefix_suffix' => TRUE],
-        1234,
-        1234,
-        'from_prefix1234to_suffix',
+        ['thousand_separator' => ','],
+        1234, 1234,
+        '1,234', '1,234',
       ],
     ];
   }

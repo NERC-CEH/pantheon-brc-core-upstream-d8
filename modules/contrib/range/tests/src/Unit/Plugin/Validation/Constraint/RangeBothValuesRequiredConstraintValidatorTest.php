@@ -2,11 +2,12 @@
 
 namespace Drupal\Tests\range\Unit\Plugin\Validation\Constraint;
 
+use Drupal\range\Plugin\Validation\Constraint\RangeBothValuesRequiredConstraint;
+use Drupal\range\Plugin\Validation\Constraint\RangeBothValuesRequiredConstraintValidator;
 use Drupal\range\RangeItemInterface;
 use Drupal\Tests\UnitTestCase;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Drupal\range\Plugin\Validation\Constraint\RangeBothValuesRequiredConstraint;
-use Drupal\range\Plugin\Validation\Constraint\RangeBothValuesRequiredConstraintValidator;
+use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 /**
  * Tests the RangeBothValuesRequiredConstraintValidator validator.
@@ -28,7 +29,7 @@ class RangeBothValuesRequiredConstraintValidatorTest extends UnitTestCase {
    * @dataProvider providerValidate
    */
   public function testValidate(RangeItemInterface $value, $valid) {
-    $context = $this->getMock(ExecutionContextInterface::class);
+    $context = $this->createMock(ExecutionContextInterface::class);
 
     if ($valid) {
       $context->expects($this->never())
@@ -70,7 +71,7 @@ class RangeBothValuesRequiredConstraintValidatorTest extends UnitTestCase {
     ];
 
     foreach ($cases as $case) {
-      $item = $this->getMock('Drupal\range\RangeItemInterface');
+      $item = $this->createMock('Drupal\range\RangeItemInterface');
       $item->expects($this->any())
         ->method('getValue')
         ->willReturn($case['range']);
@@ -82,13 +83,14 @@ class RangeBothValuesRequiredConstraintValidatorTest extends UnitTestCase {
 
   /**
    * @covers ::validate
-   * @expectedException \Symfony\Component\Validator\Exception\UnexpectedTypeException
    */
   public function testInvalidValueType() {
-    $context = $this->getMock(ExecutionContextInterface::class);
+    $context = $this->createMock(ExecutionContextInterface::class);
     $constraint = new RangeBothValuesRequiredConstraint();
     $validate = new RangeBothValuesRequiredConstraintValidator();
     $validate->initialize($context);
+
+    $this->expectException(UnexpectedTypeException::class);
     $validate->validate(new \stdClass(), $constraint);
   }
 

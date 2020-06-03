@@ -2,6 +2,7 @@
 
 namespace Drupal\range\Plugin\views\argument;
 
+use Drupal\Core\Database\Query\Condition;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Plugin\views\argument\ArgumentPluginBase;
 
@@ -79,10 +80,10 @@ class Range extends ArgumentPluginBase {
     list($op_left, $op_right) = array_slice($operators, $inlude_endpoints ? 2 : 0, 2);
 
     if ($this->options['operator'] === 'within') {
-      $this->query->addWhere(0, db_and()->condition($field_from, $this->argument, $op_left)->condition($field_to, $this->argument, $op_right));
+      $this->query->addWhere(0, (new Condition('AND'))->condition($field_from, $this->argument, $op_left)->condition($field_to, $this->argument, $op_right));
     }
     else {
-      $this->query->addWhere(0, db_or()->condition($field_from, $this->argument, $op_right)->condition($field_to, $this->argument, $op_left));
+      $this->query->addWhere(0, (new Condition('OR'))->condition($field_from, $this->argument, $op_right)->condition($field_to, $this->argument, $op_left));
     }
   }
 

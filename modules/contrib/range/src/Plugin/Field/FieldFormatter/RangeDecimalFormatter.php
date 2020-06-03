@@ -20,7 +20,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   }
  * )
  */
-class RangeDecimalFormatter extends RangeFormatterBase {
+class RangeDecimalFormatter extends RangeIntegerFormatter {
 
   /**
    * {@inheritdoc}
@@ -43,7 +43,7 @@ class RangeDecimalFormatter extends RangeFormatterBase {
       '#title' => $this->t('Decimal marker'),
       '#options' => ['.' => $this->t('Decimal point'), ',' => $this->t('Comma')],
       '#default_value' => $this->getSetting('decimal_separator'),
-      '#weight' => 5,
+      '#weight' => 10,
     ];
     $range = range(0, 10);
     $elements['scale'] = [
@@ -52,7 +52,7 @@ class RangeDecimalFormatter extends RangeFormatterBase {
       '#options' => array_combine($range, $range),
       '#default_value' => $this->getSetting('scale'),
       '#description' => $this->t('The number of digits to the right of the decimal.'),
-      '#weight' => 6,
+      '#weight' => 15,
     ];
 
     return $elements;
@@ -61,7 +61,7 @@ class RangeDecimalFormatter extends RangeFormatterBase {
   /**
    * {@inheritdoc}
    */
-  protected function numberFormat($number) {
+  protected function formatNumber($number) {
     return number_format($number, $this->getSetting('scale'), $this->getSetting('decimal_separator'), $this->getSetting('thousand_separator'));
   }
 

@@ -12,43 +12,41 @@ class RangeUnformattedFormatterUiTest extends RangeFormatterUiTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     $this->fieldType = 'range_float';
+    $this->formatterType = 'range_unformatted';
 
     parent::setUp();
   }
 
   /**
-   * Tests Unformatted formatter.
+   * {@inheritdoc}
    */
-  public function testUnformattedFormatter() {
+  public function testFormatterUi() {
+    parent::testFormatterUi();
+
     $this->drupalGet('entity_test/structure/entity_test/display');
 
     // Enable Unformatted formatter.
     $edit = [
       "fields[$this->fieldName][parent]" => 'content',
       "fields[$this->fieldName][region]" => 'content',
-      "fields[$this->fieldName][type]" => 'range_unformatted',
+      "fields[$this->fieldName][type]" => $this->formatterType,
     ];
     $this->submitForm($edit, 'Save');
 
     // Ensure that summary is correct.
-    $this->assertSession()->pageTextContains('1234.123456789-4321.0987654321');
-    $this->assertSession()->pageTextNotContains('Equivalent values will be combined into a single value.');
-    $this->assertSession()->pageTextNotContains('Display with FROM value prefix and suffix.');
-    $this->assertSession()->pageTextNotContains('Display with TO value prefix and suffix.');
+    $this->session->pageTextContains('1234.123456789-4321.0987654321');
 
     // Go to formatter settings form.
     $this->submitForm([], $this->fieldName . '_settings_edit');
 
     // Ensure that form displays correct set of fields.
-    $this->assertSession()->fieldValueEquals('Range separator', '-');
-    $this->assertSession()->fieldNotExists('Thousand marker');
-    $this->assertSession()->fieldNotExists('Decimal marker');
-    $this->assertSession()->fieldNotExists('Scale');
-    $this->assertSession()->fieldNotExists('Combine equivalent values');
-    $this->assertSession()->fieldNotExists('Display FROM value prefix and suffix');
-    $this->assertSession()->fieldNotExists('Display TO value prefix and suffix');
+    $this->session->fieldValueEquals('Range separator', '-');
+    $this->session->fieldNotExists('Thousand marker');
+    $this->session->fieldNotExists('Decimal marker');
+    $this->session->fieldNotExists('Scale');
+    $this->session->fieldNotExists('Format');
 
     // Update formatter settings.
     $edit = [
@@ -57,13 +55,13 @@ class RangeUnformattedFormatterUiTest extends RangeFormatterUiTestBase {
     $this->submitForm($edit, 'Save');
 
     // Ensure that summary is correct.
-    $this->assertSession()->pageTextContains('1234.123456789=4321.0987654321');
+    $this->session->pageTextContains('1234.123456789=4321.0987654321');
 
     // Go to formatter settings form.
     $this->submitForm([], $this->fieldName . '_settings_edit');
 
     // Ensure that form displays correct set of fields.
-    $this->assertSession()->fieldValueEquals('Range separator', '=');
+    $this->session->fieldValueEquals('Range separator', '=');
   }
 
 }

@@ -45,7 +45,7 @@ class WidgetTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installConfig(['system']);
@@ -65,17 +65,20 @@ class WidgetTest extends KernelTestBase {
       $this->fieldName = $this->getFieldName($this->fieldType);
       $this->createField($this->fieldType);
       $this->createFormDisplay();
-      $this->setFormDisplayComponent($this->fieldType);
+      $widget_settings = $this->getWidgetSettings();
+      $this->setFormDisplayComponent($this->fieldType, $widget_settings);
       // Test field widget.
       $entity = EntityTest::create([]);
-      $this->renderEntityForm($entity);
-      $this->assertFieldByXPath($this->constructRangeFieldXpath($this->fieldName . '[0][from]'));
-      $this->assertFieldByXPath($this->constructRangeFieldXpath($this->fieldName . '[0][to]'));
-      $settings = $this->getFieldSettings($this->fieldType);
-      $this->assertText($settings['from']['prefix']);
-      $this->assertText($settings['from']['suffix']);
-      $this->assertText($settings['to']['prefix']);
-      $this->assertText($settings['to']['suffix']);
+      $content = $this->renderEntityForm($entity);
+      $this->assertFieldByXPath($this->constructRangeFieldXpath('from'));
+      $this->assertFieldByXPath($this->constructRangeFieldXpath('to'));
+      $field_settings = $this->getFieldSettings($this->fieldType);
+      $this->assertStringContainsString($widget_settings['label']['from'], $content);
+      $this->assertStringContainsString($widget_settings['label']['to'], $content);
+      $this->assertStringContainsString($field_settings['field']['prefix'] . $field_settings['from']['prefix'], $content);
+      $this->assertStringContainsString($field_settings['from']['suffix'], $content);
+      $this->assertStringContainsString($field_settings['to']['prefix'], $content);
+      $this->assertStringContainsString($field_settings['to']['suffix'] . $field_settings['field']['suffix'], $content);
       // Delete field.
       $this->deleteField();
     }
@@ -91,15 +94,17 @@ class WidgetTest extends KernelTestBase {
    *   XPath for specified value.
    */
   protected function constructRangeFieldXpath($name) {
-    $settings = $this->getFieldSettings($this->fieldType);
+    $field_settings = $this->getFieldSettings($this->fieldType);
+    $widget_settings = $this->getWidgetSettings();
 
-    $xpath = '//input[@name=:name][@type=:type][@min=:min][@max=:max][@step=:step]';
+    $xpath = '//input[@name=:name][@type=:type][@min=:min][@max=:max][@step=:step][@placeholder=:placeholder]';
     return $this->buildXPathQuery($xpath, [
-      ':name' => $name,
+      ':name' => "{$this->fieldName}[0][$name]",
       ':type' => 'number',
-      ':min' => $settings['min'],
-      ':max' => $settings['max'],
+      ':min' => $field_settings['min'],
+      ':max' => $field_settings['max'],
       ':step' => $this->getExpectedStepValue(),
+      ':placeholder' => $widget_settings['placeholder'][$name],
     ]);
   }
 
@@ -110,8 +115,10 @@ class WidgetTest extends KernelTestBase {
    *   The entity object with attached fields to render.
    */
   protected function renderEntityForm(FieldableEntityInterface $entity) {
-    $form = \Drupal::service('entity.form_builder')->getForm($entity, 'default');
-    $this->render($form);
+    $form = $this->container
+      ->get('entity.form_builder')
+      ->getForm($entity, 'default');
+    return $this->render($form);
   }
 
   /**
