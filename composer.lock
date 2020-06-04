@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6112aa471ca567a29e1fdce8b93c5820",
+    "content-hash": "5806a9af305a34a7243e4fa0a574e84e",
     "packages": [
         {
             "name": "academicpuma/citeproc-php",
@@ -4678,6 +4678,55 @@
             "homepage": "https://www.drupal.org/project/inline_entity_form",
             "support": {
                 "source": "https://git.drupalcode.org/project/inline_entity_form"
+            }
+        },
+        {
+            "name": "drupal/insert_view_adv",
+            "version": "1.0.0-beta1",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/insert_view_adv.git",
+                "reference": "8.x-1.0-beta1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/insert_view_adv-8.x-1.0-beta1.zip",
+                "reference": "8.x-1.0-beta1",
+                "shasum": "1378c78b7ff75d7988534b73f7167a100e9860d7"
+            },
+            "require": {
+                "drupal/core": "^8.0||^9.0"
+            },
+            "require-dev": {
+                "drupal/bueditor": "*"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "8.x-1.0-beta1",
+                    "datestamp": "1590137407",
+                    "security-coverage": {
+                        "status": "not-covered",
+                        "message": "Project has not opted into security advisory coverage!"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0+"
+            ],
+            "authors": [
+                {
+                    "name": "Artem Dmitriiev (a.dmitriiev)",
+                    "homepage": "https://www.drupal.org/u/a.dmitriiev",
+                    "role": "Maintainer"
+                }
+            ],
+            "description": "Allows to include the views displays into WYSIWYG editors.",
+            "homepage": "https://www.drupal.org/project/insert_view_adv",
+            "support": {
+                "source": "https://git.drupalcode.org/project/insert_view_adv",
+                "issues": "https://drupal.org/project/issues/insert_view_adv"
             }
         },
         {
@@ -10746,6 +10795,7 @@
         "drupal/commerce_recurring": 10,
         "drupal/entity_update": 5,
         "drupal/inline_entity_form": 5,
+        "drupal/insert_view_adv": 10,
         "drupal/masquerade": 10,
         "drupal/page_manager": 10,
         "drupal/roleassign": 10,

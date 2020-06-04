@@ -4808,6 +4808,57 @@
         }
     },
     {
+        "name": "drupal/insert_view_adv",
+        "version": "1.0.0-beta1",
+        "version_normalized": "1.0.0.0-beta1",
+        "source": {
+            "type": "git",
+            "url": "https://git.drupalcode.org/project/insert_view_adv.git",
+            "reference": "8.x-1.0-beta1"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://ftp.drupal.org/files/projects/insert_view_adv-8.x-1.0-beta1.zip",
+            "reference": "8.x-1.0-beta1",
+            "shasum": "1378c78b7ff75d7988534b73f7167a100e9860d7"
+        },
+        "require": {
+            "drupal/core": "^8.0||^9.0"
+        },
+        "require-dev": {
+            "drupal/bueditor": "*"
+        },
+        "type": "drupal-module",
+        "extra": {
+            "drupal": {
+                "version": "8.x-1.0-beta1",
+                "datestamp": "1590137407",
+                "security-coverage": {
+                    "status": "not-covered",
+                    "message": "Project has not opted into security advisory coverage!"
+                }
+            }
+        },
+        "installation-source": "dist",
+        "notification-url": "https://packages.drupal.org/8/downloads",
+        "license": [
+            "GPL-2.0+"
+        ],
+        "authors": [
+            {
+                "name": "Artem Dmitriiev (a.dmitriiev)",
+                "homepage": "https://www.drupal.org/u/a.dmitriiev",
+                "role": "Maintainer"
+            }
+        ],
+        "description": "Allows to include the views displays into WYSIWYG editors.",
+        "homepage": "https://www.drupal.org/project/insert_view_adv",
+        "support": {
+            "source": "https://git.drupalcode.org/project/insert_view_adv",
+            "issues": "https://drupal.org/project/issues/insert_view_adv"
+        }
+    },
+    {
         "name": "drupal/job_scheduler",
         "version": "3.1.0",
         "version_normalized": "3.1.0.0",
