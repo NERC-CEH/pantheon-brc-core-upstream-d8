@@ -141,6 +141,7 @@ class ComposerStaticInitfecfd7ceec5483b488adbd29547e891b
             'Doctrine\\Common\\Cache\\' => 22,
             'Doctrine\\Common\\Annotations\\' => 28,
             'Doctrine\\Common\\' => 16,
+            'Defuse\\Crypto\\' => 14,
         ),
         'C' => 
         array (
@@ -436,6 +437,10 @@ class ComposerStaticInitfecfd7ceec5483b488adbd29547e891b
         'Doctrine\\Common\\' => 
         array (
             0 => __DIR__ . '/..' . '/doctrine/common/lib/Doctrine/Common',
+        ),
+        'Defuse\\Crypto\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/defuse/php-encryption/src',
         ),
         'Consolidation\\SiteProcess\\' => 
         array (
