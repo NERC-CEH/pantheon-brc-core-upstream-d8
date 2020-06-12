@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "328b3fae57ac313ec1699499978bac85",
+    "content-hash": "4886da010b942e09cd5615ebb2a202ab",
     "packages": [
         {
             "name": "academicpuma/citeproc-php",
@@ -4524,26 +4524,26 @@
         },
         {
             "name": "drupal/feeds",
-            "version": "3.0.0-alpha7",
+            "version": "3.0.0-alpha8",
             "source": {
                 "type": "git",
                 "url": "https://git.drupalcode.org/project/feeds.git",
-                "reference": "8.x-3.0-alpha7"
+                "reference": "8.x-3.0-alpha8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://ftp.drupal.org/files/projects/feeds-8.x-3.0-alpha7.zip",
-                "reference": "8.x-3.0-alpha7",
-                "shasum": "b12f18aa27e2aa8ef291b127f119065a62847ac5"
+                "url": "https://ftp.drupal.org/files/projects/feeds-8.x-3.0-alpha8.zip",
+                "reference": "8.x-3.0-alpha8",
+                "shasum": "d28a51aa5fce7e5d8ce533f61b6f3ada554688cb"
             },
             "require": {
-                "drupal/core": "^8.7.0"
+                "drupal/core": "^8.8 || ^9"
             },
             "type": "drupal-module",
             "extra": {
                 "drupal": {
-                    "version": "8.x-3.0-alpha7",
-                    "datestamp": "1587040476",
+                    "version": "8.x-3.0-alpha8",
+                    "datestamp": "1591294325",
                     "security-coverage": {
                         "status": "not-covered",
                         "message": "Project has not opted into security advisory coverage!"
@@ -4552,7 +4552,7 @@
             },
             "notification-url": "https://packages.drupal.org/8/downloads",
             "license": [
-                "GPL-2.0+"
+                "GPL-2.0-or-later"
             ],
             "authors": [
                 {
@@ -11829,6 +11829,7 @@
         "audiolabs/bibtexparser": 20,
         "drupal/commerce_recurring": 10,
         "drupal/entity_update": 5,
+        "drupal/feeds": 15,
         "drupal/inline_entity_form": 5,
         "drupal/insert_view_adv": 10,
         "drupal/masquerade": 10,
