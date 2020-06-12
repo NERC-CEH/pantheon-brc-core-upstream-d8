@@ -4,6 +4,7 @@ namespace Drupal\super_login;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Extension\ModuleExtensionList;
 
 /**
  * Configure Super Login settings for this site.
@@ -198,7 +199,7 @@ class super_loginSettingsForm extends ConfigFormBase {
     $config->save();
 
     parent::submitForm($form, $form_state);
-    $module_data = system_rebuild_module_data();
+    $module_data = \Drupal::service('extension.list.module')->reset()->getList();
   }
 
 }

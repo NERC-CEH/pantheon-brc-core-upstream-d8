@@ -1,5 +1,5 @@
 super_login.settings:
-  path: '/admin/structure/super_login/settings'
+  path: '/admin/config/people/super_login/settings'
   defaults:
     _form: '\Drupal\super_login\Super_loginSettingsForm'
     _title: 'Super Login Configuration'

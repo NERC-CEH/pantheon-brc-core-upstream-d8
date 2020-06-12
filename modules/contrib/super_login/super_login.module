@@ -8,7 +8,6 @@
 use Drupal\Core\Url;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
-use Drupal\Component\Utility\Html;
 
 /**
  * Implements hook_form_alter().
@@ -53,20 +52,11 @@ function super_login_form_alter(&$form, FormStateInterface $form_state, $form_id
     $form['#attached']['library'][] = 'super_login/super_login_js';
     $form['#attached']['drupalSettings']['show_messages'] = $config->get('super_login.messages');
     $form['title'] = [
-      '#type' => 'html_tag',
-        '#tag' => 'p',
-        '#attributes' => [
-        'class' => ['login-title'],
-      ],
-        '#weight' => -100,
-      ];
-
-      $form['title']['value'] = [
-        '#plain_text' => t($config->get('super_login.login_title')),
-      ];
-
+      '#markup' => '<p class="login-title">' . t($config->get('super_login.login_title')) . '</p>',
+      '#weight' => -100,
+    ];
+        
     $internal_link = Link::createFromRoute(t($config->get('super_login.forgot_pw_text')), 'user.pass')->toString();
-
     $form['reset'] = [
       '#markup' => '<p class="forgot-password">' . $internal_link . '</p>',
       '#weight' => 1,
@@ -74,24 +64,14 @@ function super_login_form_alter(&$form, FormStateInterface $form_state, $form_id
 
     if ($config->get('super_login.capslock')) {
       $form['capslock'] = [
-        '#type' => 'container',
-        '#id' => 'capslockdiv',
+        '#markup' => '<div id="capslockdiv"><p>' . t($config->get('super_login.capslock_msg')) . '</p></div>',
         '#weight' => 2,
-      ];
-
-      $form['capslock']['wrapper'] = [
-        '#type' => 'html_tag',
-        '#tag' => 'p',
-      ];
-
-      $form['capslock']['wrapper']['value'] = [
-        '#plain_text' => t($config->get('super_login.capslock_msg')),
       ];
     }
 
     $user_config = \Drupal::config('user.settings');
 
-    if ($user_config->get('register') != USER_REGISTER_ADMINISTRATORS_ONLY) {
+    if ($user_config->get('register') != \Drupal\user\UserInterface::REGISTER_ADMINISTRATORS_ONLY) {
       $actions_suffix = '<div class="actions-suffix">';
       
       $internal_link = Link::createFromRoute(t($config->get('super_login.new_account_text')), 'user.register')->toString();
@@ -100,7 +80,7 @@ function super_login_form_alter(&$form, FormStateInterface $form_state, $form_id
       $form['actions']['#suffix'] = $actions_suffix;
     }
 
-    $form['name']['#title'] = t(Html::escape($config->get('super_login.login_text')));
+    $form['name']['#title'] = t($config->get('super_login.login_text'));
     $form['name']['#size'] = 50;
     $form['pass']['#size'] = 50;
 
@@ -135,16 +115,8 @@ function super_login_form_alter(&$form, FormStateInterface $form_state, $form_id
     $form['#attached']['drupalSettings']['show_messages'] = $config->get('super_login.messages');
 
     $form['title'] = [
-      '#type' => 'html_tag',
-      '#tag' => 'p',
-      '#attributes' => [
-        'class' => ['login-title'],
-      ],
+      '#markup' => '<p class="login-title">' . t($config->get('super_login.password_reset_title')) . '</p>',
       '#weight' => -100,
-    ];
-
-    $form['title']['value'] = [
-      '#plain_text' => t($config->get('super_login.password_reset_title')),
     ];
 
     $internal_link = Link::createFromRoute(t($config->get('super_login.back_link')), 'user.login')->toString();

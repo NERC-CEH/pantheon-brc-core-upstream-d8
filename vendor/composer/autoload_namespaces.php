@@ -10,7 +10,6 @@ return array(
     'Stack' => array($vendorDir . '/stack/builder/src'),
     'Solarium\\' => array($vendorDir . '/solarium/solarium/library'),
     'PhpMarc' => array($vendorDir . '/caseyamcl/php-marc21/lib'),
-    'PEAR' => array($vendorDir . '/pear/pear_exception'),
     'LibRIS' => array($vendorDir . '/technosophos/libris/src'),
     'EasyRdf_' => array($vendorDir . '/easyrdf/easyrdf/lib'),
     'Doctrine\\Common\\Collections\\' => array($vendorDir . '/doctrine/collections/lib'),
