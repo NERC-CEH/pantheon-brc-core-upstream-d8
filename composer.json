@@ -46,6 +46,7 @@
         "drupal/core-recommended": "^8.8",
         "drupal/core-vendor-hardening": "^9.0",
         "drupal/ctools": "^3.4",
+        "drupal/devel_entity_updates": "^3.0",
         "drupal/ds": "^3.7",
         "drupal/editor_advanced_link": "^1.8",
         "drupal/embed": "^1.4",
@@ -56,6 +57,7 @@
         "drupal/feeds": "^3.0@alpha",
         "drupal/field_defaults": "^1.1",
         "drupal/field_group": "^3.0",
+        "drupal/field_permissions": "^1.0",
         "drupal/fontawesome": "^2.16",
         "drupal/google_analytics": "^3.1",
         "drupal/inline_entity_form": "^1.0@RC",
@@ -95,7 +97,7 @@
         "drupal/views_templates": "^1.1",
         "drupal/we_megamenu": "^1.9",
         "oomphinc/composer-installers-extender": "^1.1",
-        "technosophos/libris": "^2.0"
+        "technosophos/libris": "2.0.2"
     },
     "conflict": {
         "drupal/drupal": "*"
