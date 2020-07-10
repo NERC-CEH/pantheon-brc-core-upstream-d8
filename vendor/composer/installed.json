@@ -3503,6 +3503,56 @@
         }
     },
     {
+        "name": "drupal/consumers",
+        "version": "1.11.0",
+        "version_normalized": "1.11.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://git.drupalcode.org/project/consumers.git",
+            "reference": "8.x-1.11"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://ftp.drupal.org/files/projects/consumers-8.x-1.11.zip",
+            "reference": "8.x-1.11",
+            "shasum": "2f440f4f61d5a85575504612b6b52d1d54ecd22f"
+        },
+        "require": {
+            "drupal/core": "^8 || ^9"
+        },
+        "type": "drupal-module",
+        "extra": {
+            "drupal": {
+                "version": "8.x-1.11",
+                "datestamp": "1585606458",
+                "security-coverage": {
+                    "status": "covered",
+                    "message": "Covered by Drupal's security advisory policy"
+                }
+            }
+        },
+        "installation-source": "dist",
+        "notification-url": "https://packages.drupal.org/8/downloads",
+        "license": [
+            "GPL-2.0-or-later"
+        ],
+        "authors": [
+            {
+                "name": "e0ipso",
+                "homepage": "https://www.drupal.org/user/550110"
+            },
+            {
+                "name": "eojthebrave",
+                "homepage": "https://www.drupal.org/user/79230"
+            }
+        ],
+        "description": "Declare all the consumers of your API",
+        "homepage": "https://www.drupal.org/project/consumers",
+        "support": {
+            "source": "https://git.drupalcode.org/project/consumers"
+        }
+    },
+    {
         "name": "drupal/core",
         "version": "8.9.1",
         "version_normalized": "8.9.1.0",
@@ -6999,6 +7049,73 @@
         }
     },
     {
+        "name": "drupal/simple_oauth",
+        "version": "4.5.0",
+        "version_normalized": "4.5.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://git.drupalcode.org/project/simple_oauth.git",
+            "reference": "8.x-4.5"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://ftp.drupal.org/files/projects/simple_oauth-8.x-4.5.zip",
+            "reference": "8.x-4.5",
+            "shasum": "e453816aeb9e7c3a2d83dcb3eff855f27b365546"
+        },
+        "require": {
+            "drupal/consumers": "^1.2",
+            "drupal/core": "^8 || ^9",
+            "league/oauth2-server": "^7.1",
+            "php": ">=7.0"
+        },
+        "type": "drupal-module",
+        "extra": {
+            "drupal": {
+                "version": "8.x-4.5",
+                "datestamp": "1588250233",
+                "security-coverage": {
+                    "status": "covered",
+                    "message": "Covered by Drupal's security advisory policy"
+                }
+            },
+            "drush": {
+                "services": {
+                    "drush.services.yml": "^9"
+                }
+            }
+        },
+        "installation-source": "dist",
+        "notification-url": "https://packages.drupal.org/8/downloads",
+        "license": [
+            "GPL-2.0+"
+        ],
+        "authors": [
+            {
+                "name": "Mateu Aguiló Bosch",
+                "homepage": "https://www.drupal.org/user/405824",
+                "email": "mateu.aguilo.bosch@gmail.com"
+            },
+            {
+                "name": "e0ipso",
+                "homepage": "https://www.drupal.org/user/550110"
+            },
+            {
+                "name": "mglaman",
+                "homepage": "https://www.drupal.org/user/2416470"
+            },
+            {
+                "name": "pcambra",
+                "homepage": "https://www.drupal.org/user/122101"
+            }
+        ],
+        "description": "The Simple OAuth module for Drupal",
+        "homepage": "https://www.drupal.org/project/simple_oauth",
+        "support": {
+            "source": "https://git.drupalcode.org/project/simple_oauth"
+        }
+    },
+    {
         "name": "drupal/smtp",
         "version": "1.0.0-rc3",
         "version_normalized": "1.0.0.0-RC3",
@@ -7549,6 +7666,56 @@
         "homepage": "https://www.drupal.org/project/token_filter",
         "support": {
             "source": "https://git.drupalcode.org/project/token_filter"
+        }
+    },
+    {
+        "name": "drupal/user_registrationpassword",
+        "version": "1.0.0-alpha5",
+        "version_normalized": "1.0.0.0-alpha5",
+        "source": {
+            "type": "git",
+            "url": "https://git.drupalcode.org/project/user_registrationpassword.git",
+            "reference": "8.x-1.0-alpha5"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://ftp.drupal.org/files/projects/user_registrationpassword-8.x-1.0-alpha5.zip",
+            "reference": "8.x-1.0-alpha5",
+            "shasum": "2443b1e7d1c080863c907da569187add5b0c0814"
+        },
+        "require": {
+            "drupal/core": "^8.8 || ^9"
+        },
+        "type": "drupal-module",
+        "extra": {
+            "drupal": {
+                "version": "8.x-1.0-alpha5",
+                "datestamp": "1592713735",
+                "security-coverage": {
+                    "status": "not-covered",
+                    "message": "Alpha releases are not covered by Drupal security advisories."
+                }
+            }
+        },
+        "installation-source": "dist",
+        "notification-url": "https://packages.drupal.org/8/downloads",
+        "license": [
+            "GPL-2.0-or-later"
+        ],
+        "authors": [
+            {
+                "name": "Rob C",
+                "homepage": "https://www.drupal.org/user/313382"
+            },
+            {
+                "name": "jide",
+                "homepage": "https://www.drupal.org/user/146088"
+            }
+        ],
+        "description": "Let users register with a password on the registration form when verification mail is required.",
+        "homepage": "https://www.drupal.org/project/user_registrationpassword",
+        "support": {
+            "source": "https://git.drupalcode.org/project/user_registrationpassword"
         }
     },
     {
@@ -8877,6 +9044,73 @@
         ]
     },
     {
+        "name": "lcobucci/jwt",
+        "version": "3.3.2",
+        "version_normalized": "3.3.2.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/lcobucci/jwt.git",
+            "reference": "56f10808089e38623345e28af2f2d5e4eb579455"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/lcobucci/jwt/zipball/56f10808089e38623345e28af2f2d5e4eb579455",
+            "reference": "56f10808089e38623345e28af2f2d5e4eb579455",
+            "shasum": ""
+        },
+        "require": {
+            "ext-mbstring": "*",
+            "ext-openssl": "*",
+            "php": "^5.6 || ^7.0"
+        },
+        "require-dev": {
+            "mikey179/vfsstream": "~1.5",
+            "phpmd/phpmd": "~2.2",
+            "phpunit/php-invoker": "~1.1",
+            "phpunit/phpunit": "^5.7 || ^7.3",
+            "squizlabs/php_codesniffer": "~2.3"
+        },
+        "time": "2020-05-22T08:21:12+00:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "3.1-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Lcobucci\\JWT\\": "src"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Luís Otávio Cobucci Oblonczyk",
+                "email": "lcobucci@gmail.com",
+                "role": "Developer"
+            }
+        ],
+        "description": "A simple library to work with JSON Web Token and JSON Web Signature",
+        "keywords": [
+            "JWS",
+            "jwt"
+        ],
+        "funding": [
+            {
+                "url": "https://github.com/lcobucci",
+                "type": "github"
+            },
+            {
+                "url": "https://www.patreon.com/lcobucci",
+                "type": "patreon"
+            }
+        ]
+    },
+    {
         "name": "league/container",
         "version": "2.4.1",
         "version_normalized": "2.4.1.0",
@@ -9000,6 +9234,137 @@
             "import",
             "read",
             "write"
+        ]
+    },
+    {
+        "name": "league/event",
+        "version": "2.2.0",
+        "version_normalized": "2.2.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/thephpleague/event.git",
+            "reference": "d2cc124cf9a3fab2bb4ff963307f60361ce4d119"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/thephpleague/event/zipball/d2cc124cf9a3fab2bb4ff963307f60361ce4d119",
+            "reference": "d2cc124cf9a3fab2bb4ff963307f60361ce4d119",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.4.0"
+        },
+        "require-dev": {
+            "henrikbjorn/phpspec-code-coverage": "~1.0.1",
+            "phpspec/phpspec": "^2.2"
+        },
+        "time": "2018-11-26T11:52:41+00:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.2-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "League\\Event\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Frank de Jonge",
+                "email": "info@frenky.net"
+            }
+        ],
+        "description": "Event package",
+        "keywords": [
+            "emitter",
+            "event",
+            "listener"
+        ]
+    },
+    {
+        "name": "league/oauth2-server",
+        "version": "7.4.0",
+        "version_normalized": "7.4.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/thephpleague/oauth2-server.git",
+            "reference": "2eb1cf79e59d807d89c256e7ac5e2bf8bdbd4acf"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/thephpleague/oauth2-server/zipball/2eb1cf79e59d807d89c256e7ac5e2bf8bdbd4acf",
+            "reference": "2eb1cf79e59d807d89c256e7ac5e2bf8bdbd4acf",
+            "shasum": ""
+        },
+        "require": {
+            "defuse/php-encryption": "^2.1",
+            "ext-openssl": "*",
+            "lcobucci/jwt": "^3.2.2",
+            "league/event": "^2.1",
+            "php": ">=7.0.0",
+            "psr/http-message": "^1.0.1"
+        },
+        "replace": {
+            "league/oauth2server": "*",
+            "lncd/oauth2": "*"
+        },
+        "require-dev": {
+            "phpstan/phpstan": "^0.9.2",
+            "phpstan/phpstan-phpunit": "^0.9.4",
+            "phpstan/phpstan-strict-rules": "^0.9.0",
+            "phpunit/phpunit": "^6.3 || ^7.0",
+            "roave/security-advisories": "dev-master",
+            "zendframework/zend-diactoros": "^1.3.2"
+        },
+        "time": "2019-05-05T09:22:01+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "League\\OAuth2\\Server\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Alex Bilbie",
+                "email": "hello@alexbilbie.com",
+                "homepage": "http://www.alexbilbie.com",
+                "role": "Developer"
+            },
+            {
+                "name": "Andy Millington",
+                "email": "andrew@noexceptions.io",
+                "homepage": "https://www.noexceptions.io",
+                "role": "Developer"
+            }
+        ],
+        "description": "A lightweight and powerful OAuth 2.0 authorization and resource server library with support for all the core specification grants. This library will allow you to secure your API with OAuth and allow your applications users to approve apps that want to access their data from your API.",
+        "homepage": "https://oauth2.thephpleague.com/",
+        "keywords": [
+            "Authentication",
+            "api",
+            "auth",
+            "authorisation",
+            "authorization",
+            "oauth",
+            "oauth 2",
+            "oauth 2.0",
+            "oauth2",
+            "protect",
+            "resource",
+            "secure",
+            "server"
         ]
     },
     {
