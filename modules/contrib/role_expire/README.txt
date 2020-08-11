@@ -27,6 +27,10 @@ available when you enable this module:
  * Defined expiry dates are displayed on the user's profile page, and is
    visible only to owners of the profile or users with proper permissions).
 
+   If you don't want expiry dates to be displayed on user's profile, just
+   go to admin/config/people/accounts/display and hide "Role expiration"
+   pseudo field.
+
  * Actual role expiration occurs at cron time. Cron automatically removes
    expired roles from affected users.
 
@@ -57,3 +61,5 @@ CONFIGURATION
    » Role Expire:
 
     - Configure a default role after each role expiration.
+
+    - Disable role expiration for specific roles

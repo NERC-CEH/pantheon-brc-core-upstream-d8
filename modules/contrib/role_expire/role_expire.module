@@ -20,19 +20,7 @@ use Drupal\Core\Form\FormStateInterface;
  * Add role expiration fields to user register/edit forms.
  */
 function role_expire_form_user_form_alter(&$form, FormStateInterface $form_state) {
-  $current_path = \Drupal::service('path.current')->getPath();
-  $path_args = explode('/', $current_path);
-
-  $account_id = is_numeric($path_args[2]) ? $path_args[2] : NULL;
-
-  if (!empty($account_id)) {
-    // User edit form.
-    $account = User::load($account_id);
-  }
-  else {
-    // User register form.
-    $account = NULL;
-  }
+  $account = \Drupal::routeMatch()->getParameter('user');
 
   $form = array_merge_recursive($form, role_expire_add_expiration_input($account));
   $form['#validate'][] = 'role_expire_user_form_submit_validate';
@@ -268,38 +256,54 @@ function role_expire_user_load($users) {
 }
 
 /**
- * Implements hook_ENTITY_TYPE_view().
- *
- * This new hook replaces D7 hook_user_view.
+ * Implements hook_ENTITY_TYPE_view() for user entities.
  */
 function role_expire_user_view(&$build, $entity, $display, $view_mode) {
   $account = $build['#user'];
   $currentUser = \Drupal::currentUser();
 
-  if ($currentUser->hasPermission('administer role expire') || $currentUser->hasPermission('administer users') || $currentUser->id() == $account->id()) {
+  if ($display->getComponent('role_expire')) {
 
-    // 1. Gather all role expiration information.
-    $roles = [];
-    $expiry_roles = \Drupal::service('role_expire.api')->getAllUserRecords($account->id());
-    foreach (($account->getRoles()) as $rid) {
-      if (array_key_exists($rid, $expiry_roles)) {
-        $roles[] = t("%role role expiration date: %timedate", ['%role' => ucfirst($rid), '%timedate' => \Drupal::service('date.formatter')->format($expiry_roles[$rid])]);
+    // Only show the role expire field to role administrators or the user.
+    if ($currentUser->hasPermission('administer role expire')
+        || $currentUser->hasPermission('administer users')
+        || $currentUser->id() == $account->id()
+    ) {
+
+      // 1. Gather all role expiration information.
+      $roles = [];
+      $expiry_roles = \Drupal::service('role_expire.api')->getAllUserRecords($account->id());
+      foreach (($account->getRoles()) as $rid) {
+        if (array_key_exists($rid, $expiry_roles)) {
+          $roles[] = t("%role role expiration date: %timedate", ['%role' => ucfirst($rid), '%timedate' => \Drupal::service('date.formatter')->format($expiry_roles[$rid])]);
+        }
+      }
+
+      // 2. Build role expiration information.
+      if ($roles) {
+        $build['role_expire'] = [
+          '#theme' => 'item_list',
+          '#items' => $roles,
+          '#title' => t('Role expiration'),
+          '#attributes' => ['class' => ['role-expiry-roles']],
+          '#weight' => 1000,
+        ];
       }
     }
-
-    // 2. Print all role expiration information.
-    if ($roles) {
-
-      $render_array = [
-        '#theme' => 'item_list',
-        '#items' => $roles,
-        '#title' => t('Role expiration'),
-        '#attributes' => ['class' => ['role-expiry-roles']],
-        '#weight' => 1000,
-      ];
-      $build['role_expire'] = $render_array;
-    }
   }
+}
+
+/**
+ * Implements hook_entity_extra_field_info().
+ */
+function role_expire_entity_extra_field_info() {
+  // Add pseudo field.
+  $fields['user']['user']['display']['role_expire'] = [
+    'label' => t('Role expiration'),
+    'weight' => 1000,
+  ];
+
+  return $fields;
 }
 
 /**
@@ -431,9 +435,13 @@ function _role_expire_get_role() {
   $roles = user_roles(TRUE);
   unset($roles[AccountInterface::AUTHENTICATED_ROLE]);
 
+  $enabled_roles = \Drupal::service('role_expire.api')->getEnabledExpirationRoles();
+
   // Return in the same format as in D7 version to simplify D8 upgrade.
   foreach ($roles as $role) {
-    $roles_out[$role->id()] = $role->label();
+    if (in_array($role->id(), $enabled_roles)) {
+      $roles_out[$role->id()] = $role->label();
+    }
   }
   return $roles_out;
 }

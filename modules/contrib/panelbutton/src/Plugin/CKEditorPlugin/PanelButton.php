@@ -19,9 +19,17 @@ class PanelButton extends CKEditorPluginBase {
    * {@inheritdoc}
    */
   public function getFile() {
-    $path = 'libraries/panelbutton/plugin.js';
-    if (\Drupal::moduleHandler()->moduleExists('libraries')) {
+    // @todo Remove backward compatibility conditions when we bump Drupal
+    //   requirement to 8.9.0. See https://www.drupal.org/node/3099614
+    if (\Drupal::hasService('library.libraries_directory_file_finder')) {
+      /** @var \Drupal\Core\Asset\LibrariesDirectoryFileFinder $library_file_finder */
+      $path = \Drupal::service('library.libraries_directory_file_finder')->find('panelbutton/plugin.js');
+    }
+    elseif (\Drupal::moduleHandler()->moduleExists('libraries')) {
       $path = libraries_get_path('panelbutton') . '/plugin.js';
+    }
+    else {
+      $path = 'libraries/panelbutton/plugin.js';
     }
     return $path;
   }

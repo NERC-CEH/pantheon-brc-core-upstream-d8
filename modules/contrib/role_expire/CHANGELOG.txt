@@ -1,4 +1,11 @@
-Role expire 8.x-1.5, 2020-04-14
+Role expire 8.x-1.7, 2020-06-27
+-------------------------------
+#3137887: PHP notice on registration page
+#3143191: Drupal 9 Deprecated Code Report
+#3152133: Create pseudo-field for role expire on user display
+#3142555: Provide an option to disable RE for selected roles
+
+Role expire 8.x-1.6, 2020-04-14
 -------------------------------
 Code cleanup using PHP CodeSniffer
 Remove Role Expire deprecated API calls

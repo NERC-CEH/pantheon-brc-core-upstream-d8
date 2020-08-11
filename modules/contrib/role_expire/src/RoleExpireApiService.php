@@ -5,6 +5,7 @@ namespace Drupal\role_expire;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Session\AccountInterface;
 
 /**
  * Class RoleExpireApiService.
@@ -251,6 +252,49 @@ class RoleExpireApiService {
     $values_raw = $this->config->get('role_expire.config')->get('role_expire_default_roles');
     $values = empty($values_raw) ? [] : json_decode($values_raw, TRUE);
     return $values;
+  }
+
+  /**
+   * Get role expiration status for each role.
+   *
+   * @return array
+   *   Returns an array where the key is the original rid and the value
+   *   is 0 if role should have expiration and 1 if it shouldn't.
+   */
+  public function getRolesExpirationStatus() {
+    $values_raw = $this->config->get('role_expire.config')->get('role_expire_disabled_roles');
+    $values = empty($values_raw) ? [] : json_decode($values_raw, TRUE);
+    return $values;
+  }
+
+  /**
+   * Get rid of all enabled roles.
+   *
+   * @return array
+   *   Returns an array where the values are the enabled roles.
+   */
+  public function getEnabledExpirationRoles() {
+    $out = [];
+    $roleExpirationStatus = $this->getRolesExpirationStatus();
+    foreach ($roleExpirationStatus as $rid => $disabled) {
+      if ($disabled == 0) {
+        $out[] = $rid;
+      }
+    }
+
+    if (empty($out)) {
+      /*
+       * If the module is just installed, configuration could be empty.
+       * We should return all roles to have role expiration.
+       */
+      $roles = user_roles(TRUE);
+      unset($roles[AccountInterface::AUTHENTICATED_ROLE]);
+      foreach ($roles as $role) {
+        $out[] = $role->id();
+      }
+    }
+
+    return $out;
   }
 
   /**

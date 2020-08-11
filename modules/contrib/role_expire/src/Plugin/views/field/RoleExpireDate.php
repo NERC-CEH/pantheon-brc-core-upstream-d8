@@ -77,7 +77,7 @@ class RoleExpireDate extends PrerenderList {
       $plugin_id,
       $plugin_definition,
       $container->get('date.formatter'),
-      $container->get('entity.manager')->getStorage('date_format'),
+      $container->get('entity_type.manager')->getStorage('date_format'),
       $container->get('role_expire.api')
     );
   }

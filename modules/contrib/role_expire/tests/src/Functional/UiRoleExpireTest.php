@@ -114,6 +114,48 @@ class UiRoleExpireTest extends BrowserTestBase {
   }
 
   /**
+   * Tests that users can disable expiration for specific roles.
+   */
+  public function testRoleExpireAdminPageActionDisable() {
+    $account = $this->drupalCreateUser(['administer permissions', 'administer role expire']);
+    $this->drupalLogin($account);
+
+    // Create two roles.
+    $this->createRoleWithOptionalExpirationUI('test role', 'test_role');
+    $this->createRoleWithOptionalExpirationUI('test role two', 'test_role_two');
+
+    // First role enabled and second one disabled.
+    $test_def = 1;
+    $test_two_def = 0;
+    $this->drupalGet('admin/config/system/role-expire');
+    $this->getSession()->getPage()->checkField('edit-disable-test-role');
+    $this->getSession()->getPage()->uncheckField('edit-disable-test-role-two');
+
+    $this->getSession()->getPage()->pressButton('Save configuration');
+    $this->assertSession()->statusCodeEquals(200);
+
+    $this->drupalGet('admin/config/system/role-expire');
+    $this->assertSession()->statusCodeEquals(200);
+
+    $stored_value = $this->getSession()->getPage()->findField('edit-disable-test-role')->getValue();
+    $this->assertEquals($test_def, $stored_value);
+
+    $stored_value = $this->getSession()->getPage()->findField('edit-disable-test-role-two')->getValue();
+    $this->assertEquals($test_two_def, $stored_value);
+
+    // Assign both roles to our user.
+    $this->drupalGet('user/' . $account->id() . '/edit');
+    $this->getSession()->getPage()->checkField('edit-roles-test-role');
+    $this->getSession()->getPage()->checkField('edit-roles-test-role-two');
+    $this->getSession()->getPage()->pressButton('Save');
+
+    // Check if role expiration disabling is working as expected.
+    $this->drupalGet('user/' . $account->id() . '/edit');
+    $this->assertSession()->pageTextNotContains('test role role expiration date/time');
+    $this->assertSession()->pageTextContains('test role two role expiration date/time');
+  }
+
+  /**
    * Tests that we can add a role with default expiration and assign it to a new user.
    */
   public function testRoleExpireEditUserFieldsAction() {

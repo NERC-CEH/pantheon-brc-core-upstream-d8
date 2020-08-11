@@ -65,6 +65,7 @@ class RoleExpireConfigurationForm extends ConfigFormBase {
     }
 
     $values = $this->roleExpireApi->getRolesAfterExpiration();
+    $valuesStatus = $this->roleExpireApi->getRolesExpirationStatus();
 
     $default = [
       0 => $this->t('- None -'),
@@ -78,17 +79,39 @@ class RoleExpireConfigurationForm extends ConfigFormBase {
       '#type' => 'fieldset',
       '#title' => $this->t('General settings'),
       '#weight' => 1,
-      '#collapsible' => TRUE,
-      '#collapsed' => FALSE,
+    ];
+
+    $form['general']['role_after'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Role assignment after expiration'),
+      '#weight' => 1,
+      '#open' => TRUE,
     ];
 
     foreach ($parsed_roles as $rid => $role_name) {
       if (!in_array($rid, $excluded_roles)) {
-        $form['general'][$rid] = [
+        $form['general']['role_after'][$rid] = [
           '#type' => 'select',
           '#options' => $roles_select,
           '#title' => $this->t('Role to assign after the role ":r" expires', [':r' => $role_name]),
           '#default_value' => isset($values[$rid]) ? $values[$rid] : 0,
+        ];
+      }
+    }
+
+    $form['general']['disabled_role'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Role expiration scope'),
+      '#weight' => 1,
+      '#open' => TRUE,
+    ];
+
+    foreach ($parsed_roles as $rid => $role_name) {
+      if (!in_array($rid, $excluded_roles)) {
+        $form['general']['disabled_role']['disable_' . $rid] = [
+          '#type' => 'checkbox',
+          '#title' => $this->t('Disable role expiration for :r', [':r' => $role_name]),
+          '#default_value' => isset($valuesStatus[$rid]) ? $valuesStatus[$rid] : 1,
         ];
       }
     }
@@ -105,6 +128,7 @@ class RoleExpireConfigurationForm extends ConfigFormBase {
     $excluded_roles = ['anonymous', 'authenticated'];
 
     $data = [];
+    $dataDisabled = [];
     $parsed_roles = [];
     $roles = user_roles();
     foreach ($roles as $role) {
@@ -113,11 +137,15 @@ class RoleExpireConfigurationForm extends ConfigFormBase {
     foreach ($parsed_roles as $rid => $role_name) {
       if (!in_array($rid, $excluded_roles)) {
         $data[$rid] = $values[$rid];
+        $dataDisabled[$rid] = $values['disable_' . $rid];
       }
     }
 
     $this->config('role_expire.config')
       ->set('role_expire_default_roles', json_encode($data))
+      ->save();
+    $this->config('role_expire.config')
+      ->set('role_expire_disabled_roles', json_encode($dataDisabled))
       ->save();
 
     parent::submitForm($form, $form_state);
