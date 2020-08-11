@@ -2,6 +2,8 @@
 
 namespace Drupal\commerce_paypal\Controller;
 
+use Drupal\commerce_order\Entity\OrderInterface;
+use Drupal\commerce_payment\Entity\PaymentGatewayInterface;
 use Drupal\commerce_payment\Exception\PaymentGatewayException;
 use Drupal\commerce_paypal\CheckoutSdkFactoryInterface;
 use Drupal\commerce_paypal\Plugin\Commerce\PaymentGateway\CheckoutInterface;
@@ -86,56 +88,48 @@ class CheckoutController extends ControllerBase {
   /**
    * Create/update the order in PayPal.
    *
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
-   *   The route match.
+   * @param \Drupal\commerce_order\Entity\OrderInterface $commerce_order
+   *   The order.
+   * @param \Drupal\commerce_payment\Entity\PaymentGatewayInterface $commerce_payment_gateway
+   *   The payment gateway.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The request.
    *
    * @return \Symfony\Component\HttpFoundation\Response
    *   A response.
    */
-  public function onCreate(RouteMatchInterface $route_match, Request $request) {
-    $order = $route_match->getParameter('commerce_order');
-    $payment_gateway = $route_match->getParameter('commerce_payment_gateway');
-    if (!$payment_gateway->getPlugin() instanceof CheckoutInterface) {
+  public function onCreate(OrderInterface $commerce_order, PaymentGatewayInterface $commerce_payment_gateway, Request $request) {
+    if (!$commerce_payment_gateway->getPlugin() instanceof CheckoutInterface) {
       throw new AccessException('Invalid payment gateway provided.');
     }
-    $config = $payment_gateway->getPluginConfiguration();
+    $config = $commerce_payment_gateway->getPluginConfiguration();
     $sdk = $this->checkoutSdkFactory->get($config);
     try {
       $address = NULL;
-      // Check if a billing profile or an address was sent.
-      // When this route is called in the context of the Custom card fields, the
-      // form is not yet submitted which means the billing profile is not yet
-      // associated with the order, so we extract it from the dom and pass it
-      // to the controller.
-      // If we don't do that, then the "payer" will be considered as anonymous
-      // by PayPal.
+      $body = [];
       if ($request->getContent()) {
         $body = Json::decode($request->getContent());
-
-        $profile_storage = $this->entityTypeManager->getStorage('profile');
-        if (!empty($body['billingProfile'])) {
-          $profile = $profile_storage->load($body['billingProfile']);
-
-          if (($profile && $profile->access('view')) && !$profile->get('address')->isEmpty()) {
-            $address = $profile->get('address')->first();
-          }
-        }
-        elseif (!empty($body['address'])) {
-          $profile = $profile_storage->create([
-            'type' => 'customer',
-            'address' => $body['address'],
-          ]);
-          $address = $profile->get('address')->first();
-        }
+        // Check if a billing profile or an address was sent.
+        // When this route is called in the context of the Custom card fields, the
+        // form is not yet submitted which means the billing profile is not yet
+        // associated with the order, so we extract it from the DOM and pass it
+        // to the controller.
+        // If we don't do that, then the "payer" will be considered as anonymous
+        // by PayPal.
+        $address = $this->extractAddress($commerce_order, $request);
       }
-      $response = $sdk->createOrder($order, $address);
+      $commerce_order->set('payment_gateway', $commerce_payment_gateway);
+      $commerce_order->setData('paypal_checkout_flow', $body['flow'] ?? 'mark');
+      $response = $sdk->createOrder($commerce_order, $address);
       $paypal_order = Json::decode($response->getBody()->getContents());
+      $commerce_order->setData('paypal_order_id', $paypal_order['id']);
+      $commerce_order->setRefreshState(OrderInterface::REFRESH_SKIP);
+      $commerce_order->save();
+
       return new JsonResponse(['id' => $paypal_order['id']]);
     }
     catch (BadResponseException $exception) {
-      $this->logger->error($exception->getMessage());
+      $this->logger->error($exception->getResponse()->getBody()->getContents());
       return new Response('', Response::HTTP_BAD_REQUEST);
     }
   }
@@ -160,12 +154,7 @@ class CheckoutController extends ControllerBase {
     if (!$payment_gateway_plugin instanceof CheckoutInterface) {
       throw new AccessException('Unsupported payment gateway provided.');
     }
-    $body = Json::decode($request->getContent());
-    if (!isset($body['flow']) || !in_array($body['flow'], ['mark', 'shortcut'])) {
-      throw new AccessException('Unsupported flow.');
-    }
     try {
-      $order->set('payment_gateway', $payment_gateway);
       // Note that we're using a custom route instead of the payment return
       // one since the payment return callback cannot be called from the cart
       // page.
@@ -186,6 +175,7 @@ class CheckoutController extends ControllerBase {
         'commerce_order' => $order->id(),
         'step' => $step_id,
       ])->toString();
+
       return new JsonResponse(['redirectUrl' => $redirect_url]);
     }
     catch (PaymentGatewayException $e) {
@@ -195,6 +185,55 @@ class CheckoutController extends ControllerBase {
       $this->messenger->addError(t('Payment failed at the payment server. Please review your information and try again.'));
       return new JsonResponse();
     }
+  }
+
+  /**
+   * Extracts the billing address from the request body.
+   *
+   * @param \Drupal\commerce_order\Entity\OrderInterface $order
+   *   The order.
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The request.
+   *
+   * @return \Drupal\address\AddressInterface|null
+   *   The address, NULL if empty.
+   */
+  protected function extractAddress(OrderInterface $order, Request $request) {
+    $body = Json::decode($request->getContent());
+
+    // If the "profile copy" checkbox is checked, attempt to use the
+    // shipping profile as the source of the address.
+    if (!empty($body['profileCopy'])) {
+      $profiles = $order->collectProfiles();
+
+      if (isset($profiles['shipping']) && !$profiles['shipping']->get('address')->isEmpty()) {
+        return $profiles['shipping']->get('address')->first();
+      }
+    }
+    /** @var \Drupal\profile\ProfileStorageInterface $profile_storage */
+    $profile_storage = $this->entityTypeManager->getStorage('profile');
+    if (!empty($body['profile'])) {
+      // When "_original" is passed, attempt to load/use the default profile.
+      if ($body['profile'] === '_original') {
+        $profile = $profile_storage->loadByUser($order->getCustomer(), 'customer');
+      }
+      else {
+        $profile = $profile_storage->load($body['profile']);
+      }
+
+      if (($profile && $profile->access('view')) && !$profile->get('address')->isEmpty()) {
+        return $profile->get('address')->first();
+      }
+    }
+    elseif (!empty($body['address'])) {
+      $profile = $profile_storage->create([
+        'type' => 'customer',
+        'address' => $body['address'],
+      ]);
+      return $profile->get('address')->first();
+    }
+
+    return NULL;
   }
 
 }

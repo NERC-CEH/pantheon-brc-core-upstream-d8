@@ -117,7 +117,10 @@
             });
           }
 
-          $(this).attr('data-insert-class', retain.length ? retain.join(' ') : '');
+          $(this).attr(
+            'data-insert-class',
+            retain.length ? retain.join(' ') : ''
+          );
         });
       },
 

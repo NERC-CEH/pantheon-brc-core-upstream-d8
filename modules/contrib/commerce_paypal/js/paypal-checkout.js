@@ -2,6 +2,7 @@
   'use strict';
 
   Drupal.paypalCheckout = {
+    initialized: false,
     makeCall: function(url, settings) {
       settings = settings || {};
       var ajaxSettings = {
@@ -12,38 +13,37 @@
       return $.ajax(ajaxSettings);
     },
     renderButtons: function(settings) {
-      $(settings['elementSelector']).once().each(function() {
-        paypal.Buttons({
-          createOrder: function() {
-            return Drupal.paypalCheckout.makeCall(settings.onCreateUrl).then(function(data) {
-              return data.id;
-            });
-          },
-          onApprove: function (data) {
-            Drupal.paypalCheckout.addLoader();
-            return Drupal.paypalCheckout.makeCall(settings.onApproveUrl, {
-              type: 'POST',
-              contentType: "application/json; charset=utf-8",
-              data: JSON.stringify({
-                id: data.orderID,
-                flow: settings.flow
-              })
-            }).then(function(data) {
-              if (data.hasOwnProperty('redirectUrl')) {
-                window.location.assign(data.redirectUrl);
-              }
-              else {
-                // Force a reload to see the eventual error messages.
-                location.reload(true);
-              }
-            });
-          },
-          style: settings['style']
-        }).render('#' + $(this).attr('id'));
-      });
+      paypal.Buttons({
+        createOrder: function() {
+          return Drupal.paypalCheckout.makeCall(settings.onCreateUrl, {
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+              flow: settings.flow
+            })
+          }).then(function(data) {
+            return data.id;
+          });
+        },
+        onApprove: function (data) {
+          Drupal.paypalCheckout.addLoader();
+          return Drupal.paypalCheckout.makeCall(settings.onApproveUrl).then(function(data) {
+            if (data.hasOwnProperty('redirectUrl')) {
+              window.location.assign(data.redirectUrl);
+            }
+            else {
+              // Force a reload to see the eventual error messages.
+              location.reload();
+            }
+          });
+        },
+        style: settings['style']
+      }).render('#' + settings['elementId']);
     },
     initialize: function (context, settings) {
-      if (context === document) {
+      if (context === document && !this.initialized) {
+        // Ensure we initialize the script only once.
+        this.initialized = true;
         var script = document.createElement('script');
         script.src = settings.src;
         script.type = 'text/javascript';
@@ -72,7 +72,11 @@
 
   Drupal.behaviors.commercePaypalCheckout = {
     attach: function (context, settings) {
-      Drupal.paypalCheckout.initialize(context, settings.paypalCheckout);
+      $('body').once('paypal-checkout-init').each(function() {
+        $.each(settings.paypalCheckout, function(key, value) {
+          Drupal.paypalCheckout.initialize(context, value);
+        });
+      });
     }
   };
 

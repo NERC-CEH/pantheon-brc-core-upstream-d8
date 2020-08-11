@@ -24,7 +24,7 @@ class RotateController extends ControllerBase {
     $fid = $request->query->get('fid', null);
     $degree = $request->query->get('degree', null);
     $nid = $request->query->get('nid', null);
-    $absolute = !!$request->query->get('absolute', FALSE);
+    $absolute = \Drupal::config('insert.config')->get('absolute');
 
     if ($fid === null || $degree === null || $nid === null) {
       return new JsonResponse([]);
@@ -54,9 +54,6 @@ class RotateController extends ControllerBase {
     /* @var ImageStyle $style */
     foreach (ImageStyle::loadMultiple() as $style) {
       $style->flush($image->getSource());
-      $uri = $style->buildUri($image->getSource());
-      $style->createDerivative($file->getFileUri(), $uri);
-
       $url = $style->buildUrl($image->getSource());
       $styleUrls[$style->getName()] = $this->convertUrl($url, $absolute);
     }

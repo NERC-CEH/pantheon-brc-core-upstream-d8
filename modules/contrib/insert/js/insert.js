@@ -64,24 +64,36 @@
     });
 
     $('.insert', context).each(function() {
-      var $this = $(this);
+      var $insert = $(this);
 
-      if (!$this.data('insert')) {
-        $this.data(
-          'insert',
-          new Drupal.insert[$this.data('insert-type') === 'image'
-              ? 'ImageInserter'
-              : 'FileInserter'
-            ](
-              this,
-              focusManager,
-              editorInterface,
-              drupalSettings.insert.widgets[$this.data('insert-type')]
-            )
-        );
+      if (!$insert.data('insert')) {
+        var inserter = new Drupal.insert.Inserter(this, focusManager, editorInterface);
+        $insert.data('insert', inserter);
 
-        focusManager.setDefaultTarget(determineDefaultTarget($this).get(0));
+        focusManager.setDefaultTarget(determineDefaultTarget($insert).get(0));
       }
+
+      var insertType = $insert.data('insert-type');
+
+      if (insertType !== 'file' && insertType !== 'image') {
+        return true;
+      }
+
+      // Handle default insert types; Custom (third-party) insert types are to
+      // be handled by the modules supplying such custom types.
+
+      if (!$insert.data('insert-handler')) {
+        $insert.data('insert-handler',
+          new Drupal.insert[insertType === 'image'
+            ? 'ImageHandler'
+            : 'FileHandler'
+            ](inserter, drupalSettings.insert.widgets[insertType])
+        )
+      }
+
+      $(inserter).off('.insert').on('insert.insert', function() {
+        return $insert.data('insert-handler').buildContent();
+      });
     });
 
   };

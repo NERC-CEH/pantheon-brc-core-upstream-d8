@@ -29,14 +29,16 @@
       $cardFields.find('.commerce-paypal-card-fields-wrapper').show();
       var $form = $cardFields.closest('form');
       var $submit = $form.find('.button--primary');
+      var $data = Drupal.paypalCheckout.extractBillingInfo($form);
+      $data.flow = 'custom_card_fields';
       paypal.HostedFields.render({
         createOrder: function() {
           return Drupal.paypalCheckout.makeCall(Drupal.paypalCheckout.onCreateUrl, {
             type: 'POST',
             contentType: "application/json; charset=utf-8",
-            data: JSON.stringify(Drupal.paypalCheckout.extractBillingInfo($form))
+            data: JSON.stringify($data)
           }).then(function(data) {
-            $form.find('input[name="payment_information[paypal_remote_id]"]').val(data.id);
+            $form.find('input[name="payment_information[add_payment_method][payment_details][paypal_remote_id]"]').val(data.id);
             return data.id;
           });
         },
@@ -134,22 +136,66 @@
     },
     extractBillingInfo: function ($form) {
       var billingInfo = {
-        billingProfile: null,
-        address: {}
+        profile: null,
+        address: {},
+        profileCopy: false
       };
 
-      $form.find(':input[name^="payment_information[billing_information][address][0][address]"]').each(function() {
+      // Check if the "profile copy" checkbox is present and checked. If so,
+      // we first need to check if the shipping information pane is present in
+      // the page. If it is, we need to use the address selected/entered.
+      // In case the pane isn't present, we'll try to get the collect the
+      // shipping profile using $order->collectProfiles().
+      var $profileCopyCheckbox = $(':input[name="payment_information[add_payment_method][billing_information][copy_fields][enable]"]', $form);
+      if ($profileCopyCheckbox.length && $profileCopyCheckbox.is(':checked')) {
+        var shippingInfo = this.extractShippingInfo($form);
+        if (shippingInfo.profile) {
+          billingInfo.profile = shippingInfo.profile;
+        }
+        else if (!$.isEmptyObject(shippingInfo.address)) {
+          billingInfo.address = shippingInfo.address;
+        }
+        else {
+          billingInfo.profileCopy = true;
+        }
+        return billingInfo;
+      }
+
+      // Extract the billing information from the selected profile.
+      $form.find(':input[name^="payment_information[add_payment_method][billing_information][address][0][address]"]').each(function() {
         // Extract the address field name.
         var name = jQuery(this).attr('name').split('[');
         name = name[name.length - 1];
         billingInfo.address[name.substring(0, name.length - 1)] = $(this).val();
       });
 
-      var $addressSelector = $('select[name="payment_information[billing_information][select_address]"]', $form);
-      if (!billingInfo.address.hasOwnProperty('address_line1') && ($addressSelector.length && $addressSelector.val() !== '_new')) {
-        billingInfo.billingProfile = $addressSelector.val();
+      // Fallback to the entered address, if the address fields are present.
+      var $addressSelector = $('select[name="payment_information[add_payment_method][billing_information][select_address]"]', $form);
+      if ($.isEmptyObject(billingInfo.address) && ($addressSelector.length && $addressSelector.val() !== '_new')) {
+        billingInfo.profile = $addressSelector.val();
       }
+
       return billingInfo;
+    },
+    extractShippingInfo: function ($form) {
+      var shippingInfo = {
+        profile: null,
+        address: {}
+      };
+
+      $form.find(':input[name^="shipping_information[shipping_profile][address][0][address]"]').each(function() {
+        // Extract the address field name.
+        var name = jQuery(this).attr('name').split('[');
+        name = name[name.length - 1];
+        shippingInfo.address[name.substring(0, name.length - 1)] = $(this).val();
+      });
+
+      var $addressSelector = $('select[name="shipping_information[shipping_profile][select_address]"', $form);
+      if ($.isEmptyObject(shippingInfo.address) && ($addressSelector.length && $addressSelector.val() !== '_new')) {
+        shippingInfo.profile = $addressSelector.val();
+      }
+
+      return shippingInfo;
     }
   };
 

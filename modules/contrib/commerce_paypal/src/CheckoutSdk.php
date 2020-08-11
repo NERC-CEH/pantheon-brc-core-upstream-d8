@@ -10,7 +10,6 @@ use Drupal\commerce_paypal\Event\PayPalEvents;
 use Drupal\commerce_price\Calculator;
 use Drupal\commerce_product\Entity\ProductVariationInterface;
 use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Component\Serialization\Json;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use GuzzleHttp\ClientInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -103,11 +102,8 @@ class CheckoutSdk implements CheckoutSdkInterface {
    * {@inheritdoc}
    */
   public function getClientToken() {
-    $response = $this->getAccessToken();
-    $body = Json::decode($response->getBody()->getContents());
     return $this->client->post('/v1/identity/generate-token', [
       'headers' => [
-        'Authorization' => $body['access_token'],
         'Content-Type' => 'application/json',
       ],
     ]);
@@ -254,7 +250,7 @@ class CheckoutSdk implements CheckoutSdkInterface {
 
       $purchased_entity = $order_item->getPurchasedEntity();
       if ($purchased_entity instanceof ProductVariationInterface) {
-        $line_item['sku'] = mb_substr($purchased_entity->getSku(), 127);
+        $item['sku'] = mb_substr($purchased_entity->getSku(), 0, 127);
       }
       $items[] = $item;
     }

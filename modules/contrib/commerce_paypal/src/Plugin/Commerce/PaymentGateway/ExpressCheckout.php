@@ -38,6 +38,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  *   credit_card_types = {
  *     "amex", "discover", "mastercard", "visa",
  *   },
+ *   requires_billing_information = FALSE,
  * )
  */
 class ExpressCheckout extends OffsitePaymentGatewayBase implements ExpressCheckoutInterface {
@@ -536,7 +537,7 @@ class ExpressCheckout extends OffsitePaymentGatewayBase implements ExpressChecko
       'PAYMENTREQUEST_0_PAYMENTACTION' => $payment_action,
       'PAYMENTREQUEST_0_AMT' => $amount->getNumber(),
       'PAYMENTREQUEST_0_CURRENCYCODE' => $amount->getCurrencyCode(),
-      'PAYMENTREQUEST_0_INVNUM' => $order->uuid(),
+      'PAYMENTREQUEST_0_INVNUM' => $order->id() . '-' . $this->time->getCurrentTime(),
       // Set the return and cancel URLs.
       'RETURNURL' => $extra['return_url'],
       'CANCELURL' => $extra['cancel_url'],

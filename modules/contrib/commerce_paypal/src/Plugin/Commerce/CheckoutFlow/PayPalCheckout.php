@@ -45,8 +45,6 @@ class PayPalCheckout extends CheckoutFlowWithPanesBase {
     // Create a blacklist of panes we disallow adding to steps.
     $black_list = [
       'contact_information',
-      'completion_register',
-      'login',
       'payment_information',
       'payment_process',
     ];

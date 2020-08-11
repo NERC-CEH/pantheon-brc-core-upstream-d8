@@ -5,6 +5,7 @@ namespace Drupal\commerce_paypal;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_payment\Entity\PaymentGatewayInterface;
 use Drupal\commerce_paypal\Plugin\Commerce\PaymentGateway\CheckoutInterface;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Url;
 
 /**
@@ -47,9 +48,10 @@ class SmartPaymentButtonsBuilder implements SmartPaymentButtonsBuilderInterface 
       $options['query']['disable-card'] = implode(',', $config['disable_card']);
     }
     $element['#attached']['library'][] = 'commerce_paypal/paypal_checkout';
-    $element['#attached']['drupalSettings']['paypalCheckout'] = [
+    $element_id = Html::getUniqueId('paypal-buttons-container');
+    $element['#attached']['drupalSettings']['paypalCheckout'][$order->id()] = [
       'src' => Url::fromUri('https://www.paypal.com/sdk/js', $options)->toString(),
-      'elementSelector' => '.paypal-buttons-container',
+      'elementId' => $element_id,
       'onCreateUrl' => $create_url->toString(),
       'onApproveUrl' => $return_url->toString(),
       'flow' => $commit ? 'mark' : 'shortcut',
@@ -61,9 +63,10 @@ class SmartPaymentButtonsBuilder implements SmartPaymentButtonsBuilderInterface 
       '#weight' => 100,
       '#attributes' => [
         'class' => ['paypal-buttons-container'],
-        'id' => 'paypal-buttons-container',
+        'id' => $element_id,
       ],
     ];
+
     return $element;
   }
 

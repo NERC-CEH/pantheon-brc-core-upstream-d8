@@ -6,7 +6,6 @@ use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_payment\Entity\PaymentGatewayInterface;
 use Drupal\commerce_paypal\Plugin\Commerce\PaymentGateway\CheckoutInterface;
 use Drupal\Component\Serialization\Json;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use GuzzleHttp\Exception\ClientException;
 use Psr\Log\LoggerInterface;
@@ -85,9 +84,6 @@ class CustomCardFieldsBuilder implements CustomCardFieldsBuilderInterface {
       'card_fields_form' => [
         '#theme' => 'commerce_paypal_checkout_custom_card_fields',
         '#weight' => 0,
-        '#commerce_element_submit' => [
-          [get_class($this), 'storeRemoteId'],
-        ],
         '#intent' => $config['intent'],
       ],
       'paypal_remote_id' => [
@@ -95,26 +91,6 @@ class CustomCardFieldsBuilder implements CustomCardFieldsBuilderInterface {
       ],
     ];
     return $element;
-  }
-
-  /**
-   * Stores the PayPal remote order ID.
-   *
-   * @param array $element
-   *   The form element.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   */
-  public static function storeRemoteId(array &$element, FormStateInterface $form_state) {
-    $paypal_remote_id = $form_state->getValue(['payment_information', 'paypal_remote_id']);
-    if (!empty($paypal_remote_id)) {
-      $order = $form_state->getFormObject()->getOrder();
-      $order->setData('commerce_paypal_checkout', [
-        'remote_id' => $paypal_remote_id,
-        'flow' => 'custom_card_fields',
-        'intent' => $element['#intent'],
-      ]);
-    }
   }
 
 }

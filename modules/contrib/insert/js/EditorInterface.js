@@ -88,28 +88,28 @@
 
       /**
        * @param {*} editor
-       * @param {HTMLElement} element
-       * @return {string|null}
+       * @param {string} syncId
+       * @param {string} value
        */
-      getUUID: function(editor, element) {
+      setCaption: function(editor, syncId, value) {
         throw new Error('Method not overridden.');
       },
 
       /**
        * @param {*} editor
-       * @param {HTMLElement} element
-       * @param {string} value
+       * @param {string} uuid
+       * @return {string|undefined}
        */
-      setAltAttribute: function(editor, element, value) {
+      getAlign: function(editor, uuid) {
         throw new Error('Method not overridden.');
       },
 
       /**
        * @param {*} editor
-       * @param {HTMLElement} element
+       * @param {string} uuid
        * @param {string} value
        */
-      setTitleAttribute: function(editor, element, value) {
+      setAlign: function(editor, uuid, value) {
         throw new Error('Method not overridden.');
       }
 

@@ -11,7 +11,7 @@ use Drupal\commerce_payment\Entity\PaymentGatewayInterface;
 interface SmartPaymentButtonsBuilderInterface {
 
   /**
-   * Build the Smart payment buttons.
+   * Builds the Smart payment buttons.
    *
    * @param \Drupal\commerce_order\Entity\OrderInterface $order
    *   The order.

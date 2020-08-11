@@ -5,6 +5,7 @@
  * Post update functions for Commerce PayPal.
  */
 
+use Drupal\commerce_payment\Entity\PaymentGatewayInterface;
 use Drupal\commerce_order\Entity\OrderInterface;
 
 /**
@@ -104,11 +105,12 @@ function commerce_paypal_post_update_2(&$sandbox = NULL) {
 }
 
 /**
- * Uninstall the PayPal Checkout payment method type.
+ * Empty post update function.
  */
 function commerce_paypal_post_update_3() {
-  $entity_type = \Drupal::entityTypeManager()->getDefinition('commerce_payment_method');
-  \Drupal::service('entity.bundle_plugin_installer')->uninstallBundles($entity_type, ['commerce_paypal']);
+  // This used to contain logic to uninstall the "paypal_checkout" payment
+  // method type which is no longer relevant and could cause issues when
+  // upgrading from previous beta versions.
 }
 
 /**
@@ -119,5 +121,25 @@ function commerce_paypal_post_update_4() {
   if (isset($original_storage_definitions['flow'])) {
     \Drupal::service('field_definition.listener')->onFieldDefinitionDelete($original_storage_definitions['flow']);
     \Drupal::service('field_storage_definition.listener')->onFieldStorageDefinitionDelete($original_storage_definitions['flow']);
+  }
+}
+
+/**
+ * Set the "payment_method_types" to "paypal_checkout".
+ */
+function commerce_paypal_post_update_5(&$sandbox) {
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $payment_gateway_storage = $entity_type_manager->getStorage('commerce_payment_gateway');
+  /** @var \Drupal\commerce_payment\Entity\PaymentGatewayInterface[] $gateways */
+  $payment_gateways = array_filter($payment_gateway_storage->loadMultiple(), function (PaymentGatewayInterface $gateway) {
+    return $gateway->getPluginId() === 'paypal_checkout';
+  });
+
+  /** @var \Drupal\commerce_payment\Entity\PaymentGatewayInterface $payment_gateway */
+  foreach ($payment_gateways as $payment_gateway) {
+    $configuration = $payment_gateway->getPluginConfiguration();
+    $configuration['payment_method_types'] = ['paypal_checkout'];
+    $payment_gateway->setPluginConfiguration($configuration);
+    $payment_gateway->save();
   }
 }

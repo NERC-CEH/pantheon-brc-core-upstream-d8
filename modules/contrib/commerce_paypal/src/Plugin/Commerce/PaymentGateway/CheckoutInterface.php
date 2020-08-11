@@ -2,9 +2,9 @@
 
 namespace Drupal\commerce_paypal\Plugin\Commerce\PaymentGateway;
 
-use Drupal\commerce_payment\Entity\PaymentInterface;
 use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\OffsitePaymentGatewayInterface;
 use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\SupportsAuthorizationsInterface;
+use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\SupportsCreatingPaymentMethodsInterface;
 use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\SupportsRefundsInterface;
 
 /**
@@ -28,7 +28,7 @@ use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\SupportsRefundsInterf
  *     in onReturn() and the customer is redirected to the next checkout step
  *     (usually "payment" which is skipped because the order is already paid).
  */
-interface CheckoutInterface extends OffsitePaymentGatewayInterface, SupportsAuthorizationsInterface, SupportsRefundsInterface {
+interface CheckoutInterface extends OffsitePaymentGatewayInterface, SupportsAuthorizationsInterface, SupportsRefundsInterface, SupportsCreatingPaymentMethodsInterface {
 
   /**
    * Returns the payment solution (e.g "smart_payment_buttons").
@@ -37,16 +37,5 @@ interface CheckoutInterface extends OffsitePaymentGatewayInterface, SupportsAuth
    *   The payment solution.
    */
   public function getPaymentSolution();
-
-  /**
-   * Creates a payment.
-   *
-   * @param \Drupal\commerce_payment\Entity\PaymentInterface $payment
-   *   The payment.
-   *
-   * @throws \Drupal\commerce_payment\Exception\PaymentGatewayException
-   *   Thrown when the transaction fails for any reason.
-   */
-  public function createPayment(PaymentInterface $payment);
 
 }

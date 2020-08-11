@@ -3,6 +3,9 @@
     float: right;
     width: 40%;
   }
+  .path-cart .cart-form {
+    clear: right;
+  }
 }
 #paypal-background-overlay {
   position: fixed;

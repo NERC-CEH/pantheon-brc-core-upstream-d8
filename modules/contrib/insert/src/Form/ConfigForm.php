@@ -50,27 +50,84 @@ class ConfigForm extends ConfigFormBase {
         ? $config->get('text_formats') : [],
     ];
 
+    $form['absolute'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Use absolute paths'),
+      '#description' => $this->t('Includes the full URL prefix "@base_url" in all links and image tags.', ['@base_url' => $GLOBALS['base_url']]),
+      '#default_value' => $config->get('absolute') ? '1' : '0',
+    ];
+
+    $form['file_field_images_enabled'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Allow inserting &lt;img&gt; tags for images uploaded to generic file fields'),
+      '#description' => $this->t('By activating this option, image styles may be selected in the Insert settings on (generic) file field widgets. Then, such may be used to insert images uploaded to file fields, while other files still may be inserted using compatible Insert styles only.'),
+      '#default_value' => $config->get('file_field_images_enabled') ? '1' : '0',
+    ];
+
+    $form['widgets'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Supported widgets'),
+      '#description' => $this->t('Lists of field widget ids that Insert should be available to. Separate widget ids with a space or comma.'),
+    ];
+
+    $form['widgets']['widgets__' . INSERT_TYPE_FILE] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('File widgets'),
+      '#default_value' => join(', ', $config->get('widgets.file')),
+      '#element_validate' => [[get_called_class(), 'string_to_array']],
+    ];
+
+    $form['widgets']['widgets__' . INSERT_TYPE_IMAGE] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Image widgets'),
+      '#default_value' => join(', ', $config->get('widgets.image')),
+      '#element_validate' => [[get_called_class(), 'string_to_array']],
+    ];
+
     $form['css_classes'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Additional CSS classes'),
-      '#description' => $this->t('CSS classes to be added to items inserted using the Insert module.'),
+      '#description' => $this->t('CSS classes to be added to items inserted using the Insert module. Separate classes with a space or comma.'),
     ];
 
-    $form['css_classes']['file'] = [
+    $form['css_classes'][INSERT_TYPE_FILE] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Classes to be added to file links (File Insert widget)'),
-      '#default_value' => $config->get('css_classes.file')
-        ? $config->get('css_classes.file') : '',
-      '#element_validate' => [[get_called_class(), 'validate_css_classes']],
+      '#title' => $this->t('Classes to be added to generic file links'),
+      '#default_value' => join(' ', $config->get('css_classes.file')),
+      '#element_validate' => [[get_called_class(), 'string_to_array']],
     ];
 
-    $form['css_classes']['image'] = [
+    $form['css_classes'][INSERT_TYPE_IMAGE] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Classes to be added to images and image links (Image Insert widget)'),
-      '#default_value' => $config->get('css_classes.image')
-        ? $config->get('css_classes.image') : '',
-      '#element_validate' => [[get_called_class(), 'validate_css_classes']],
+      '#title' => $this->t('Classes to be added to images and image links'),
+      '#default_value' => join(' ', $config->get('css_classes.image')),
+      '#element_validate' => [[get_called_class(), 'string_to_array']],
     ];
+
+    $form['file_extensions'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('File type detection'),
+      '#description' => $this->t('In order to have Insert detect particular file types (i.e. to allow embedding media files), the module needs be aware of which file extensions map to such particular file types. Be sure to enable these file extensions for upload in the file field settings as well. Separate extensions with a space or comma and do not include the leading dot.'),
+    ];
+
+    $form['file_extensions']['audio'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Audio file extensions'),
+      '#default_value' => join(', ', $config->get('file_extensions.audio')),
+      '#element_validate' => [[get_called_class(), 'string_to_array']],
+    ];
+
+    $form['file_extensions']['video'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Video file extensions'),
+      '#default_value' => join(', ', $config->get('file_extensions.video')),
+      '#element_validate' => [[get_called_class(), 'string_to_array']],
+    ];
+
+    $form += \Drupal::moduleHandler()->invokeAll(
+      'insert_config_form',
+      [$form]
+    );
 
     return parent::buildForm($form, $form_state);
   }
@@ -86,22 +143,45 @@ class ConfigForm extends ConfigFormBase {
         return !!$value;
       })
     ));
-    $config->set('css_classes.file', $form_state->getValue('file'));
-    $config->set('css_classes.image', $form_state->getValue('image'));
+    $config->set('absolute', !!$form_state->getValue('absolute'));
+    $config->set('file_field_images_enabled', !!$form_state->getValue('file_field_images_enabled'));
+
+    $config->set('widgets.' . INSERT_TYPE_FILE, $this->sanitize_array($form_state->getValue('widgets__' . INSERT_TYPE_FILE)));
+    $config->set('widgets.' . INSERT_TYPE_IMAGE, $this->sanitize_array($form_state->getValue('widgets__' . INSERT_TYPE_IMAGE)));
+
+    $config->set('css_classes.' . INSERT_TYPE_FILE, $this->sanitize_array($form_state->getValue(INSERT_TYPE_FILE)));
+    $config->set('css_classes.' . INSERT_TYPE_IMAGE, $this->sanitize_array($form_state->getValue(INSERT_TYPE_IMAGE)));
+
+    $config->set('file_extensions.audio', $form_state->getValue('audio'));
+    $config->set('file_extensions.video', $form_state->getValue('video'));
 
     $config->save();
+
+    \Drupal::moduleHandler()->invokeAll(
+      'insert_config_submit_form',
+      [$form_state]
+    );
 
     parent::submitForm($form, $form_state);
   }
 
   /**
+   * @param array $source
+   * @return array
+   */
+  protected function sanitize_array(array $source) {
+    return array_filter($source, function($value) {
+      return $value !== '';
+    });
+  }
+
+  /**
    * @param array $element
    * @param FormStateInterface $form_state
-   * @param array $form
    */
-  public static function validate_css_classes($element, &$form_state) {
-    // Sanitize white-space.
-    $segments = preg_split('/\s+/', trim($element['#value']));
-    $form_state->setValueForElement($element, join(' ', $segments));
+  public static function string_to_array(array $element, &$form_state) {
+    $value = str_replace(',', ' ', trim($element['#value']));
+    $form_state->setValueForElement($element, preg_split('/\s+/', $value));
   }
+
 }

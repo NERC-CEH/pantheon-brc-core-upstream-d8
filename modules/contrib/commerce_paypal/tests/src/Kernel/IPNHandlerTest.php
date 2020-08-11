@@ -4,8 +4,9 @@ namespace Drupal\Tests\commerce_paypal\Kernel;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\DependencyInjection\ServiceModifierInterface;
-use Drupal\Tests\commerce\Kernel\CommerceKernelTestBase;
+use Drupal\Tests\commerce_order\Kernel\OrderKernelTestBase;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * Tests the IPN handler.
@@ -13,7 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
  * @group commerce_paypal
  * @coversDefaultClass \Drupal\commerce_paypal\IPNHandler
  */
-class IPNHandlerTest extends CommerceKernelTestBase implements ServiceModifierInterface {
+class IPNHandlerTest extends OrderKernelTestBase implements ServiceModifierInterface {
 
   /**
    * {@inheritdoc}
@@ -39,21 +40,19 @@ class IPNHandlerTest extends CommerceKernelTestBase implements ServiceModifierIn
 
   /**
    * Tests when IPN body is empty.
-   *
-   * @expectedException \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
-   * @expectedExceptionMessage IPN URL accessed with no POST data submitted.
    */
   public function testEmptyBody() {
+    $this->expectException(BadRequestHttpException::class);
+    $this->expectExceptionMessage('IPN URL accessed with no POST data submitted.');
     $this->handler->process(new Request());
   }
 
   /**
    * Tests when IPN request marked invalid..
-   *
-   * @expectedException \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
-   * @expectedExceptionMessage Invalid IPN received and ignored.
    */
   public function testInvalidIpn() {
+    $this->expectException(BadRequestHttpException::class);
+    $this->expectExceptionMessage('Invalid IPN received and ignored.');
     $this->handler->process($this->createSampleIpnRequest());
   }
 

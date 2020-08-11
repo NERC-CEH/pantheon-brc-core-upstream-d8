@@ -7,63 +7,52 @@ insert.config:
       label: 'Automatic text format support'
       sequence:
         type: string
+    absolute:
+      type: boolean
+      label: 'Use absolute paths'
+    file_field_images_enabled:
+      type: boolean
+      label: 'Allow inserting <img> tags for images uploaded to generic file fields'
+    widgets:
+      type: mapping
+      label: 'Lists of field widget ids that Insert should be available to'
+      mapping:
+        file:
+          type: sequence
+          label: 'List of file field widgets ids that Insert should be available to'
+          sequence:
+            type: string
+        image:
+          type: sequence
+          label: 'List of image field widgets ids that Insert should be available to'
+          sequence:
+            type: string
     css_classes:
       type: mapping
       label: 'Additional CSS classes to be added to items inserted using the Insert module'
       # The mapping keys map to field type names.
       mapping:
         file:
-          type: string
-          label: 'CSS classes to be added to file links (File Insert widget)'
+          type: sequence
+          label: 'CSS classes to be added to generic file links'
+          sequence:
+            type: string
         image:
-          type: string
-          label: 'CSS classes to be added to images and image links (Image Insert widget)'
-
-field.widget.settings.insert_file:
-  type: mapping
-  label: 'Insert File widget settings'
-  mapping:
-    insert_absolute:
-      type: boolean
-      label: 'Use absolute paths'
-    insert_styles:
-      type: sequence
-      label: 'Styles to be available for inserting an image'
-      sequence:
-        type: string
-    insert_default:
-      type: string
-      label: 'Default insert style'
-    # native file widget setting
-    progress_indicator:
-      type: string
-      label: 'Progress indicator'
-
-field.widget.settings.insert_image:
-  type: mapping
-  label: 'Insert Image widget settings'
-  mapping:
-    insert_absolute:
-      type: boolean
-      label: 'Use absolute paths'
-    insert_styles:
-      type: sequence
-      label: 'Styles to be available for inserting an image'
-      sequence:
-        type: string
-    insert_default:
-      type: string
-      label: 'Default insert style'
-    insert_width:
-      type: integer
-      label: 'Maximum image insert width'
-    insert_rotate:
-      type: boolean
-      label: 'Rotation controls'
-    # native image widget settings
-    progress_indicator:
-      type: string
-      label: 'Progress indicator'
-    preview_image_style:
-      type: string
-      label: 'Preview image style'
+          type: sequence
+          label: 'CSS classes to be added to images and image links'
+          sequence:
+            type: string
+    file_extensions:
+      type: mapping
+      label: 'File extensions used for file type detection'
+      mapping:
+        audio:
+          type: sequence
+          label: 'Audio file extensions'
+          sequence:
+            type: string
+        video:
+          type: sequence
+          label: 'Video file extensions'
+          sequence:
+            type: string

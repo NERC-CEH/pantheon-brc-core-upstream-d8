@@ -4,8 +4,10 @@ namespace Drupal\commerce_paypal\Plugin\Commerce\PaymentGateway;
 
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_payment\Entity\PaymentInterface;
+use Drupal\commerce_payment\Entity\PaymentMethodInterface;
 use Drupal\commerce_payment\Exception\HardDeclineException;
 use Drupal\commerce_payment\Exception\PaymentGatewayException;
+use Drupal\commerce_payment\PaymentMethodStorageInterface;
 use Drupal\commerce_payment\PaymentMethodTypeManager;
 use Drupal\commerce_payment\PaymentTypeManager;
 use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\OffsitePaymentGatewayBase;
@@ -38,11 +40,13 @@ use Symfony\Component\HttpFoundation\Response;
  *     "live" = @Translation("Live"),
  *   },
  *   forms = {
+ *     "add-payment-method" = "Drupal\commerce_paypal\PluginForm\Checkout\PaymentMethodAddForm",
  *     "offsite-payment" = "Drupal\commerce_paypal\PluginForm\Checkout\PaymentOffsiteForm",
  *   },
  *   credit_card_types = {
  *     "amex", "discover", "mastercard", "visa",
  *   },
+ *   payment_method_types = {"paypal_checkout"},
  *   payment_type = "paypal_checkout",
  *   requires_billing_information = FALSE,
  * )
@@ -234,6 +238,8 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
         'card' => $this->t('Credit or Debit Cards'),
         'credit' => $this->t('PayPal Credit'),
         'sepa' => $this->t('SEPA-Lastschrift'),
+        'sofort' => $this->t('Sofort'),
+        'mybank' => $this->t('MyBank'),
       ],
       '#default_value' => $this->configuration['disable_funding'],
       '#states' => $spb_states,
@@ -454,34 +460,33 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
   /**
    * {@inheritdoc}
    */
-  public function createPayment(PaymentInterface $payment) {
-    $sdk = $this->checkoutSdkFactory->get($this->configuration);
-    $order = $payment->getOrder();
-    $checkout_data = $order->getData('commerce_paypal_checkout');
-    if (empty($checkout_data)) {
+  public function createPayment(PaymentInterface $payment, $capture = TRUE) {
+    $payment_method = $payment->getPaymentMethod();
+    if (!$payment_method || empty($payment_method->getRemoteId())) {
       throw new PaymentGatewayException('Cannot create the payment without the PayPal order ID.');
     }
-    $remote_id = $checkout_data['remote_id'];
-    $flow = $checkout_data['flow'];
-    // When not in the "mark" flow, where the payment happens right after
-    // approving the purchase on PayPal, we need to update the order in PayPal
-    // to make sure it is up to date.
-    if ($flow != 'mark') {
-      try {
-        $sdk->updateOrder($remote_id, $order);
-        $request = $sdk->getOrder($remote_id);
-        $paypal_order = Json::decode($request->getBody()->getContents());
-      }
-      catch (BadResponseException $exception) {
-        throw new PaymentGatewayException($exception->getMessage());
-      }
-      // When in the "shortcut" flow, the PayPal order status is expected to be
-      // "approved".
-      if ($flow == 'shortcut' && !in_array($paypal_order['status'], ['APPROVED', 'SAVED'])) {
-        throw new PaymentGatewayException(sprintf('Wrong remote order status. Expected: "approved"|"saved", Actual: %s.', $paypal_order['status']));
-      }
+    $sdk = $this->checkoutSdkFactory->get($this->configuration);
+    $order = $payment->getOrder();
+    $checkout_data = $order->getData('commerce_paypal_checkout', [
+      'flow' => '',
+    ]);
+    $remote_id = $payment_method->getRemoteId();
+
+    try {
+      // Ensure the PayPal order is up to date and in sync with Drupal.
+      $sdk->updateOrder($remote_id, $order);
+      $request = $sdk->getOrder($remote_id);
+      $paypal_order = Json::decode($request->getBody());
     }
-    $intent = isset($checkout_data['intent']) ? $checkout_data['intent'] : $this->configuration['intent'];
+    catch (BadResponseException $exception) {
+      throw new PaymentGatewayException($exception->getMessage());
+    }
+    // When in the "shortcut" flow, the PayPal order status is expected to be
+    // "approved".
+    if ($checkout_data['flow'] === 'shortcut' && !in_array($paypal_order['status'], ['APPROVED', 'SAVED'])) {
+      throw new PaymentGatewayException(sprintf('Wrong remote order status. Expected: "approved"|"saved", Actual: %s.', $paypal_order['status']));
+    }
+    $intent = $checkout_data['intent'] ?? $this->configuration['intent'];
     try {
       if ($intent == 'capture') {
         $response = $sdk->captureOrder($remote_id);
@@ -514,6 +519,19 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
     if (!$state) {
       $this->logger->debug('PayPal remote payment debug: <pre>@remote_payment</pre>', ['@remote_payment' => print_r($remote_payment, TRUE)]);
       throw new PaymentGatewayException(sprintf('The PayPal payment is in a state we cannot handle. Remote state: %s.', $remote_state));
+    }
+
+    // Special handling of the "pending" state, if the order is "pending review"
+    // we allow the order to go "through" to give a chance to the merchant
+    // to accept the payment, in case manual review is needed.
+    if ($state === 'pending' && $remote_state === 'pending') {
+      $reason = $remote_payment['status_details']['reason'];
+      if ($reason === 'PENDING_REVIEW') {
+        $state = 'authorization';
+      }
+      else {
+        throw new PaymentGatewayException(sprintf('The PayPal payment is pending. Reason: %s.', $reason));
+      }
     }
 
     $payment_amount = Price::fromArray([
@@ -559,7 +577,7 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
       $response = Json::decode($response->getBody()->getContents());
     }
     catch (BadResponseException $exception) {
-      $this->logger->error($exception->getMessage());
+      $this->logger->error($exception->getResponse()->getBody()->getContents());
       throw new PaymentGatewayException('An error occurred while capturing the authorized payment.');
     }
     $remote_state = strtolower($response['status']);
@@ -585,7 +603,7 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
       $response = $sdk->voidPayment($payment->getRemoteId());
     }
     catch (BadResponseException $exception) {
-      $this->logger->error($exception->getMessage());
+      $this->logger->error($exception->getResponse()->getBody()->getContents());
       throw new PaymentGatewayException('An error occurred while voiding the payment.');
     }
     if ($response->getStatusCode() == Response::HTTP_NO_CONTENT) {
@@ -623,7 +641,7 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
       $response = Json::decode($response->getBody()->getContents());
     }
     catch (BadResponseException $exception) {
-      $this->logger->error($exception->getMessage());
+      $this->logger->error($exception->getResponse()->getBody()->getContents());
       throw new PaymentGatewayException('An error occurred while refunding the payment.');
     }
 
@@ -639,14 +657,10 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
    * {@inheritdoc}
    */
   public function onReturn(OrderInterface $order, Request $request) {
-    $body = Json::decode($request->getContent());
-    if (!isset($body['id']) || !isset($body['flow'])) {
-      throw new PaymentGatewayException('Missing PayPal order ID or unknown flow.');
-    }
     try {
       $sdk = $this->checkoutSdkFactory->get($this->configuration);
-      $request = $sdk->getOrder($body['id']);
-      $paypal_order = Json::decode($request->getBody()->getContents());
+      $request = $sdk->getOrder($order->getData('paypal_order_id'));
+      $paypal_order = Json::decode($request->getBody());
     }
     catch (BadResponseException $exception) {
       throw new PaymentGatewayException('Could not load the order from PayPal.');
@@ -661,7 +675,7 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
     if (!in_array($paypal_order['status'], ['APPROVED', 'SAVED'])) {
       throw new PaymentGatewayException(sprintf('Unexpected PayPal order status %s.', $paypal_order['status']));
     }
-    $flow = $body['flow'];
+    $flow = $order->getData('paypal_checkout_flow');
     $order->setData('commerce_paypal_checkout', [
       'remote_id' => $paypal_order['id'],
       'flow' => $flow,
@@ -678,23 +692,83 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
     if (!empty($this->configuration['update_shipping_profile']) && $order->hasField('shipments')) {
       $this->updateProfile($order, 'shipping', $paypal_order);
     }
-    if ($flow == 'shortcut') {
+
+    $payment_method = NULL;
+    // If a payment method is already referenced by the order, no need to create
+    // a new one.
+    if (!$order->get('payment_method')->isEmpty()) {
+      /** @var \Drupal\commerce_payment\Entity\PaymentMethodInterface $payment_method */
+      $payment_method = $order->get('payment_method')->entity;
+    }
+    // If the order doesn't reference a payment method yet, or if the payment
+    // method doesn't reference the right gateway, create a new one.
+    if (!$payment_method || $payment_method->getPaymentGatewayId() !== $this->parentEntity->id()) {
+      // Create a payment method.
+      $payment_method_storage = $this->entityTypeManager->getStorage('commerce_payment_method');
+      assert($payment_method_storage instanceof PaymentMethodStorageInterface);
+      $payment_method = $payment_method_storage->createForCustomer(
+        'paypal_checkout',
+        $this->parentEntity->id(),
+        $order->getCustomerId(),
+        $order->getBillingProfile()
+      );
+    }
+    $payment_method->setRemoteId($paypal_order['id']);
+    $payment_method->setReusable(FALSE);
+    $payment_method->save();
+    $order->set('payment_method', $payment_method);
+
+    if ($flow === 'shortcut' && $order->hasField('checkout_flow')) {
       // Force the checkout flow to PayPal checkout which is the flow the module
       // defines for the "shortcut" flow.
       $order->set('checkout_flow', 'paypal_checkout');
       $order->set('checkout_step', NULL);
     }
-    elseif ($flow == 'mark') {
+    elseif ($flow === 'mark') {
       $payment_storage = $this->entityTypeManager->getStorage('commerce_payment');
       /** @var \Drupal\commerce_payment\Entity\PaymentInterface $payment */
       $payment = $payment_storage->create([
         'state' => 'new',
         'amount' => $order->getBalance(),
-        'payment_gateway' => $this->entityId,
+        'payment_gateway' => $this->parentEntity->id(),
+        'payment_method' => $payment_method->id(),
         'order_id' => $order->id(),
       ]);
       $this->createPayment($payment);
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function createPaymentMethod(PaymentMethodInterface $payment_method, array $payment_details) {
+    if (empty($payment_details['paypal_remote_id'])) {
+      throw new PaymentGatewayException('Cannot create the payment method without the PayPal order ID.');
+    }
+    try {
+      $sdk = $this->checkoutSdkFactory->get($this->configuration);
+      $request = $sdk->getOrder($payment_details['paypal_remote_id']);
+      $paypal_order = Json::decode($request->getBody());
+    }
+    catch (BadResponseException $exception) {
+      throw new PaymentGatewayException($exception->getResponse()->getBody()->getContents());
+    }
+    // Check if we have information about the card used.
+    if (isset($paypal_order['payment_source']['card'])) {
+      $payment_source = $paypal_order['payment_source']['card'];
+      $payment_method->set('card_type', strtolower($payment_source['brand']));
+      $payment_method->set('card_number', $payment_source['last_digits']);
+    }
+    $payment_method->setRemoteId($paypal_order['id']);
+    $payment_method->setReusable(FALSE);
+    $payment_method->save();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function deletePaymentMethod(PaymentMethodInterface $payment_method) {
+    $payment_method->delete();
   }
 
   /**
@@ -754,6 +828,10 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
         /** @var \Drupal\commerce_shipping\PackerManagerInterface $packer_manager */
         $packer_manager = \Drupal::service('commerce_shipping.packer_manager');
         list($shipments) = $packer_manager->packToShipments($order, $this->buildCustomerProfile($order), $shipments);
+      }
+      // Can't proceed without shipments.
+      if (!$shipments) {
+        return;
       }
       /** @var \Drupal\commerce_shipping\Entity\ShipmentInterface $first_shipment */
       $first_shipment = $shipments[0];
