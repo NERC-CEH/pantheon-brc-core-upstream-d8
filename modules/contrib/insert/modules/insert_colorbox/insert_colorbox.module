@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @file
+ */
+
 use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\image\Entity\ImageStyle;
@@ -23,7 +27,8 @@ function insert_colorbox_insert_config_form(array $form) {
     '#type' => 'select',
     '#title' => t('Image style'),
     '#options' => array_merge([
-      '0' => t('use “Link image to” widget setting')],
+      '0' => t('use “Link image to” widget setting'),
+    ],
       $stylesList
     ),
     '#default_value' => $config->get('style'),
@@ -87,7 +92,7 @@ function _insert_colorbox_styles() {
 
   $stylesList['image'] = [
     'label' => t('Original image'),
-    'weight' => -10
+    'weight' => -10,
   ];
 
   return $stylesList;
@@ -97,12 +102,15 @@ function _insert_colorbox_styles() {
  * Implements hook_insert_variables().
  */
 function insert_colorbox_insert_variables($insertType, array &$element, $styleName, array &$vars) {
+  if (strpos($styleName, 'colorbox__') !== 0) {
+    return;
+  }
+
   $insertSettings = $element['#insert']['settings'];
 
   // The following lines are adapted from colorbox module's
   // template_preprocess_colorbox_formatter():
-
-  static $gallery_token = null;
+  static $gallery_token = NULL;
 
   $config = \Drupal::config('insert_colorbox.config');
 
@@ -137,7 +145,7 @@ function insert_colorbox_insert_variables($insertType, array &$element, $styleNa
 
   $vars['url_link'] = $vars['url_original'];
 
-  $styleName = null;
+  $styleName = NULL;
 
   if ($config->get('style') === '0') {
     $styleName = $insertSettings['link_image'];
@@ -146,13 +154,13 @@ function insert_colorbox_insert_variables($insertType, array &$element, $styleNa
     $styleName = $config->get('style');
   }
 
-  if ($styleName !== null) {
+  if ($styleName !== NULL) {
     $url = InsertUtility::buildDerivativeUrl(
       $vars['file'],
       $styleName,
       \Drupal::config('insert.config')->get('absolute')
     );
-    if ($url !== null) {
+    if ($url !== NULL) {
       $vars['url_link'] = $url;
     }
   }
@@ -196,7 +204,7 @@ function insert_colorbox_insert_render($styleName, array $vars) {
       'insert_colorbox_image__' . $templateFieldName . '__' . $templateStyleName,
       'insert_colorbox_image__' . $templateFieldName,
       'insert_colorbox_image__' . $templateStyleName,
-      'insert_colorbox_image'
+      'insert_colorbox_image',
     ],
     $vars
   );
@@ -207,7 +215,7 @@ function insert_colorbox_insert_render($styleName, array $vars) {
  */
 function insert_colorbox_editor_js_settings_alter(array &$settings) {
   InsertUtility::addEditorExtraAllowedContent($settings, [
-    'a[data-colorbox-gallery]'
+    'a[data-colorbox-gallery]',
   ]);
 }
 
@@ -217,11 +225,11 @@ function insert_colorbox_editor_js_settings_alter(array &$settings) {
 function insert_colorbox_insert_allowed_html() {
   return [
     'tags' => [
-      'a' => null,
+      'a' => NULL,
     ],
     'attributes' => [
       'a' => [
-        'data-colorbox-gallery' => null,
+        'data-colorbox-gallery' => NULL,
       ],
     ],
   ];

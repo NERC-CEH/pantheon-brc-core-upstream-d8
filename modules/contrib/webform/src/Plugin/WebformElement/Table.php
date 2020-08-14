@@ -6,7 +6,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\webform\Plugin\WebformElementBase;
 use Drupal\webform\WebformInterface;
-use Drupal\Component\Utility\Unicode;
 use Drupal\webform\WebformSubmissionInterface;
 
 /**
@@ -25,7 +24,7 @@ class Table extends WebformElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getDefaultProperties() {
+  protected function defineDefaultProperties() {
     return [
       // Table settings.
       'header' => [],
@@ -36,9 +35,11 @@ class Table extends WebformElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getTranslatableProperties() {
-    return array_merge(parent::getTranslatableProperties(), ['header']);
+  protected function defineTranslatableProperties() {
+    return array_merge(parent::defineTranslatableProperties(), ['header']);
   }
+
+  /****************************************************************************/
 
   /**
    * {@inheritdoc}
@@ -158,7 +159,7 @@ class Table extends WebformElementBase {
     // Add divider between (optional) header.
     if (!empty($element['#header'])) {
       $lines = explode(PHP_EOL, trim($html));
-      $lines[0] .= PHP_EOL . str_repeat('-', Unicode::strlen($lines[0]));
+      $lines[0] .= PHP_EOL . str_repeat('-', mb_strlen($lines[0]));
       $html = implode(PHP_EOL, $lines);
     }
 

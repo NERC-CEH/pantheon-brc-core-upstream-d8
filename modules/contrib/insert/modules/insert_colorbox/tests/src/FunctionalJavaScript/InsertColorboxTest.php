@@ -4,11 +4,14 @@ namespace Drupal\Tests\insert_colorbox\FunctionalJavascript;
 
 /**
  * Tests Insert module's insert_colorbox module sub-module.
- * 
+ *
  * @group insert
  */
 class InsertColorboxTest extends InsertColorboxTestBase {
 
+  /**
+   *
+   */
   public function testWithoutGallery() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -40,6 +43,9 @@ class InsertColorboxTest extends InsertColorboxTestBase {
     $this->assertEquals(0, preg_match('!data-colorbox-gallery="[^"]+"!', $body->getValue()), 'Verified data-colorbox-gallery attribute being empty: ' . $body->getValue());
   }
 
+  /**
+   *
+   */
   public function testGallery() {
     $page = $this->gotoInsertConfig();
     $page->findField($this->t('Per page gallery'))->click();
@@ -75,6 +81,9 @@ class InsertColorboxTest extends InsertColorboxTestBase {
     $this->assertTrue(strpos($body->getValue(), 'data-colorbox-gallery="gallery-all-'), 'Verified data-colorbox-gallery attribute being set: ' . $body->getValue());
   }
 
+  /**
+   *
+   */
   public function testLinkWidgetSetting() {
     $page = $this->gotoInsertConfig();
     $page->findField($this->t('Image style'))->selectOption('0');

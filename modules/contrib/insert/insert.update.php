@@ -1,6 +1,10 @@
 <?php
 
 /**
+ * @file
+ */
+
+/**
  * Write default values of additional variables to module configuration.
  */
 function insert_update_8101(array &$sandbox) {
@@ -11,16 +15,15 @@ function insert_update_8101(array &$sandbox) {
   // configuration after applying the new code while not having run the update.
   // So, the new variables might have been registered already, but without their
   // default value.
-
-  if ($config->get('absolute') === null) {
+  if ($config->get('absolute') === NULL) {
     $config->set('absolute', FALSE);
   }
 
-  if ($config->get('file_field_images_enabled') === null) {
+  if ($config->get('file_field_images_enabled') === NULL) {
     $config->set('file_field_images_enabled', FALSE);
   }
 
-  if ($config->get('widgets') === null) {
+  if ($config->get('widgets') === NULL) {
     $config->set('widgets', ['file' => [], 'image' => []]);
   }
 
@@ -42,12 +45,12 @@ function insert_update_8101(array &$sandbox) {
       'css_classes',
       [
         'file' => explode(' ', $cssClasses['file']),
-        'image' => explode(' ', $cssClasses['image'])
+        'image' => explode(' ', $cssClasses['image']),
       ]
     );
   }
 
-  if ($config->get('file_extensions') === null) {
+  if ($config->get('file_extensions') === NULL) {
     $config->set('file_extensions', ['audio' => ['mp3'], 'video' => ['mp4']]);
   }
 

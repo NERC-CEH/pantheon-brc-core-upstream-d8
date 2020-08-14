@@ -2599,18 +2599,18 @@
     },
     {
         "name": "drupal/chosen",
-        "version": "2.9.0",
-        "version_normalized": "2.9.0.0",
+        "version": "3.0.0",
+        "version_normalized": "3.0.0.0",
         "source": {
             "type": "git",
             "url": "https://git.drupalcode.org/project/chosen.git",
-            "reference": "8.x-2.9"
+            "reference": "3.0.0"
         },
         "dist": {
             "type": "zip",
-            "url": "https://ftp.drupal.org/files/projects/chosen-8.x-2.9.zip",
-            "reference": "8.x-2.9",
-            "shasum": "28f3ce08a96bb9fd0190ad9579b3b4a9d9be79c9"
+            "url": "https://ftp.drupal.org/files/projects/chosen-3.0.0.zip",
+            "reference": "3.0.0",
+            "shasum": "d53f7f6039b2c0207d0a7bb4e8039cab71f8ee8e"
         },
         "require": {
             "drupal/chosen_lib": "*",
@@ -2619,12 +2619,9 @@
         },
         "type": "drupal-module",
         "extra": {
-            "branch-alias": {
-                "dev-2.x": "2.x-dev"
-            },
             "drupal": {
-                "version": "8.x-2.9",
-                "datestamp": "1576963005",
+                "version": "3.0.0",
+                "datestamp": "1597305849",
                 "security-coverage": {
                     "status": "covered",
                     "message": "Covered by Drupal's security advisory policy"
@@ -2687,8 +2684,8 @@
     },
     {
         "name": "drupal/chosen_lib",
-        "version": "2.9.0",
-        "version_normalized": "2.9.0.0",
+        "version": "3.0.0",
+        "version_normalized": "3.0.0.0",
         "require": {
             "drupal/chosen": "self.version",
             "drupal/core": "^8 || ^9",
@@ -2696,12 +2693,9 @@
         },
         "type": "metapackage",
         "extra": {
-            "branch-alias": {
-                "dev-2.x": "2.x-dev"
-            },
             "drupal": {
-                "version": "8.x-2.9",
-                "datestamp": "1576963005",
+                "version": "3.0.0",
+                "datestamp": "1597305849",
                 "security-coverage": {
                     "status": "covered",
                     "message": "Covered by Drupal's security advisory policy"
@@ -4968,6 +4962,62 @@
         }
     },
     {
+        "name": "drupal/exclude_node_title",
+        "version": "1.1.0",
+        "version_normalized": "1.1.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://git.drupalcode.org/project/exclude_node_title.git",
+            "reference": "8.x-1.1"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://ftp.drupal.org/files/projects/exclude_node_title-8.x-1.1.zip",
+            "reference": "8.x-1.1",
+            "shasum": "4a0a747821944fd398bb2ca5cb1718fe16ff9511"
+        },
+        "require": {
+            "drupal/core": "^8 || ^9"
+        },
+        "type": "drupal-module",
+        "extra": {
+            "drupal": {
+                "version": "8.x-1.1",
+                "datestamp": "1595347356",
+                "security-coverage": {
+                    "status": "covered",
+                    "message": "Covered by Drupal's security advisory policy"
+                }
+            }
+        },
+        "installation-source": "dist",
+        "notification-url": "https://packages.drupal.org/8/downloads",
+        "license": [
+            "GPL-2.0-or-later"
+        ],
+        "authors": [
+            {
+                "name": "Neslee Canil Pinto",
+                "homepage": "https://www.drupal.org/u/neslee-canil-pinto",
+                "role": "Maintainer"
+            },
+            {
+                "name": "fizk",
+                "homepage": "https://www.drupal.org/user/473174"
+            },
+            {
+                "name": "gabrielu",
+                "homepage": "https://www.drupal.org/user/279352"
+            }
+        ],
+        "description": "Provides the option of excluding node title(s) from display by individual node, node bundle, and view mode.",
+        "homepage": "https://www.drupal.org/project/exclude_node_title",
+        "support": {
+            "source": "https://git.drupalcode.org/project/exclude_node_title",
+            "issues": "https://www.drupal.org/project/issues/exclude_node_title"
+        }
+    },
+    {
         "name": "drupal/feeds",
         "version": "3.0.0-alpha9",
         "version_normalized": "3.0.0.0-alpha9",
@@ -5470,21 +5520,21 @@
     },
     {
         "name": "drupal/insert",
-        "version": "2.0.0-beta1",
-        "version_normalized": "2.0.0.0-beta1",
+        "version": "2.0.0-beta2",
+        "version_normalized": "2.0.0.0-beta2",
         "source": {
             "type": "git",
             "url": "https://git.drupalcode.org/project/insert.git",
-            "reference": "8.x-2.0-beta1"
+            "reference": "8.x-2.0-beta2"
         },
         "dist": {
             "type": "zip",
-            "url": "https://ftp.drupal.org/files/projects/insert-8.x-2.0-beta1.zip",
-            "reference": "8.x-2.0-beta1",
-            "shasum": "250a5d0bf79dd9fd603ec2086872caa5313d8168"
+            "url": "https://ftp.drupal.org/files/projects/insert-8.x-2.0-beta2.zip",
+            "reference": "8.x-2.0-beta2",
+            "shasum": "a8231c17020a7fab94444b0122741f9ccd60b5dc"
         },
         "require": {
-            "drupal/core": "^8.5"
+            "drupal/core": "^8 || ^9"
         },
         "require-dev": {
             "drupal/colorbox": "*"
@@ -5492,8 +5542,8 @@
         "type": "drupal-module",
         "extra": {
             "drupal": {
-                "version": "8.x-2.0-beta1",
-                "datestamp": "1555319585",
+                "version": "8.x-2.0-beta2",
+                "datestamp": "1597166250",
                 "security-coverage": {
                     "status": "not-covered",
                     "message": "Beta releases are not covered by Drupal security advisories."
@@ -5506,6 +5556,10 @@
             "GPL-2.0-or-later"
         ],
         "authors": [
+            {
+                "name": "Neslee Canil Pinto",
+                "homepage": "https://www.drupal.org/user/3580850"
+            },
             {
                 "name": "Snater",
                 "homepage": "https://www.drupal.org/user/3513717"
@@ -8482,6 +8536,193 @@
         "support": {
             "source": "https://git.drupalcode.org/project/we_megamenu",
             "issues": "https://www.drupal.org/project/issues/we_megamenu"
+        }
+    },
+    {
+        "name": "drupal/webform",
+        "version": "5.19.0",
+        "version_normalized": "5.19.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://git.drupalcode.org/project/webform.git",
+            "reference": "8.x-5.19"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://ftp.drupal.org/files/projects/webform-8.x-5.19.zip",
+            "reference": "8.x-5.19",
+            "shasum": "90a2084c2647bca791cc8b18a7e2a3b49f3da7ea"
+        },
+        "require": {
+            "drupal/core": "^8.8"
+        },
+        "require-dev": {
+            "drupal/address": "~1.0",
+            "drupal/bootstrap": "~3.0",
+            "drupal/captcha": "~1.0",
+            "drupal/chosen": "~2.0",
+            "drupal/clientside_validation": "~3.0",
+            "drupal/clientside_validation_jquery": "*",
+            "drupal/devel": "~3.0",
+            "drupal/entity_print": "~2.0",
+            "drupal/gnode": "*",
+            "drupal/group": "~1.0",
+            "drupal/lingotek": "~3.0",
+            "drupal/mailsystem": "~4.0",
+            "drupal/paragraphs": "~1.0",
+            "drupal/select2": "~1.0",
+            "drupal/smtp": "~1.0",
+            "drupal/styleguide": "~1.0",
+            "drupal/telephone_validation": "~2.0",
+            "drupal/token": "~1.0",
+            "drupal/webform_access": "*",
+            "drupal/webform_attachment": "*",
+            "drupal/webform_clientside_validation": "*",
+            "drupal/webform_devel": "*",
+            "drupal/webform_entity_print": "*",
+            "drupal/webform_group": "*",
+            "drupal/webform_node": "*",
+            "drupal/webform_options_limit": "*",
+            "drupal/webform_scheduled_email": "*",
+            "drupal/webform_share": "*",
+            "drupal/webform_ui": "*"
+        },
+        "type": "drupal-module",
+        "extra": {
+            "drupal": {
+                "version": "8.x-5.19",
+                "datestamp": "1596102131",
+                "security-coverage": {
+                    "status": "covered",
+                    "message": "Covered by Drupal's security advisory policy"
+                }
+            },
+            "drush": {
+                "services": {
+                    "drush.services.yml": "^9"
+                }
+            }
+        },
+        "installation-source": "dist",
+        "notification-url": "https://packages.drupal.org/8/downloads",
+        "license": [
+            "GPL-2.0-or-later"
+        ],
+        "authors": [
+            {
+                "name": "Jacob Rockowitz (jrockowitz)",
+                "homepage": "https://www.drupal.org/u/jrockowitz",
+                "role": "Maintainer"
+            },
+            {
+                "name": "Alexander Trotsenko (bucefal91)",
+                "homepage": "https://www.drupal.org/u/bucefal91",
+                "role": "Co-maintainer"
+            },
+            {
+                "name": "Contributors",
+                "homepage": "https://www.drupal.org/node/7404/committers",
+                "role": "Contributor"
+            },
+            {
+                "name": "fenstrat",
+                "homepage": "https://www.drupal.org/user/362649"
+            },
+            {
+                "name": "jrockowitz",
+                "homepage": "https://www.drupal.org/user/371407"
+            },
+            {
+                "name": "podarok",
+                "homepage": "https://www.drupal.org/user/116002"
+            },
+            {
+                "name": "quicksketch",
+                "homepage": "https://www.drupal.org/user/35821"
+            },
+            {
+                "name": "sanchiz",
+                "homepage": "https://www.drupal.org/user/1671246"
+            },
+            {
+                "name": "tedbow",
+                "homepage": "https://www.drupal.org/user/240860"
+            },
+            {
+                "name": "torotil",
+                "homepage": "https://www.drupal.org/user/865256"
+            }
+        ],
+        "description": "Enables the creation of webforms and questionnaires.",
+        "homepage": "https://drupal.org/project/webform",
+        "support": {
+            "source": "https://git.drupalcode.org/project/webform",
+            "issues": "https://www.drupal.org/project/issues/webform?version=8.x",
+            "docs": "https://www.drupal.org/docs/8/modules/webform",
+            "forum": "https://drupal.stackexchange.com/questions/tagged/webform"
+        }
+    },
+    {
+        "name": "drupal/webform_views",
+        "version": "5.0.0-alpha7",
+        "version_normalized": "5.0.0.0-alpha7",
+        "source": {
+            "type": "git",
+            "url": "https://git.drupalcode.org/project/webform_views.git",
+            "reference": "8.x-5.0-alpha7"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://ftp.drupal.org/files/projects/webform_views-8.x-5.0-alpha7.zip",
+            "reference": "8.x-5.0-alpha7",
+            "shasum": "6c9bb51735a106729dcfa08372e987ebf95d38f2"
+        },
+        "require": {
+            "drupal/core": "^8",
+            "drupal/webform": "*"
+        },
+        "type": "drupal-module",
+        "extra": {
+            "drupal": {
+                "version": "8.x-5.0-alpha7",
+                "datestamp": "1557288185",
+                "security-coverage": {
+                    "status": "not-covered",
+                    "message": "Alpha releases are not covered by Drupal security advisories."
+                }
+            }
+        },
+        "installation-source": "dist",
+        "notification-url": "https://packages.drupal.org/8/downloads",
+        "license": [
+            "GPL-2.0-or-later"
+        ],
+        "authors": [
+            {
+                "name": "acbramley",
+                "homepage": "https://www.drupal.org/user/1036766"
+            },
+            {
+                "name": "bucefal91",
+                "homepage": "https://www.drupal.org/user/504128"
+            },
+            {
+                "name": "jrockowitz",
+                "homepage": "https://www.drupal.org/user/371407"
+            },
+            {
+                "name": "matio89",
+                "homepage": "https://www.drupal.org/user/2320090"
+            },
+            {
+                "name": "ws.agency",
+                "homepage": "https://www.drupal.org/user/2851415"
+            }
+        ],
+        "description": "Webform integration with views.",
+        "homepage": "https://www.drupal.org/project/webform_views",
+        "support": {
+            "source": "https://git.drupalcode.org/project/webform_views"
         }
     },
     {

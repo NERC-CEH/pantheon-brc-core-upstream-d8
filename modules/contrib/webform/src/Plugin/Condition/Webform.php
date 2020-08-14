@@ -16,7 +16,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @Condition(
  *   id = "webform",
  *   label = @Translation("Webforms"),
- *   context = {
+ *   context_definitions = {
  *     "webform" = @ContextDefinition("entity:webform", label = @Translation("Webform"), required = FALSE),
  *     "webform_submission" = @ContextDefinition("entity:webform_submission", label = @Translation("Webform submission"), required = FALSE),
  *     "node" = @ContextDefinition("entity:node", label = @Translation("Node"), required = FALSE),
@@ -131,7 +131,9 @@ class Webform extends ConditionPluginBase implements ContainerFactoryPluginInter
    * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
-    $this->configuration['webforms'] = array_filter($form_state->getValue('webforms'));
+    $values = $form_state->getValue('webforms') ?: [];
+    $values = array_filter($values);
+    $this->configuration['webforms'] = array_combine($values, $values);
     parent::submitConfigurationForm($form, $form_state);
   }
 

@@ -23,13 +23,22 @@ class WebformCodeMirror extends WebformElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getDefaultProperties() {
-    return [
+  protected function defineDefaultProperties() {
+    $properties = [
       // Codemirror settings.
       'placeholder' => '',
       'mode' => 'text',
-    ] + parent::getDefaultProperties();
+      'wrap' => TRUE,
+    ] + parent::defineDefaultProperties();
+    unset(
+      $properties['format_items'],
+      $properties['format_items_html'],
+      $properties['format_items_text']
+    );
+    return $properties;
   }
+
+  /****************************************************************************/
 
   /**
    * {@inheritdoc}
@@ -129,6 +138,11 @@ class WebformCodeMirror extends WebformElementBase {
         'twig' => 'Twig',
       ],
       '#required' => TRUE,
+    ];
+    $form['codemirror']['wrap'] = [
+      '#title' => $this->t('Wrap long lines of text'),
+      '#type' => 'checkbox',
+      '#return_value' => TRUE,
     ];
     return $form;
   }

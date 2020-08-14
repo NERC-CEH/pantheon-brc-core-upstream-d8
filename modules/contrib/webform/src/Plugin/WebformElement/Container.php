@@ -19,7 +19,7 @@ class Container extends ContainerBase {
   /**
    * {@inheritdoc}
    */
-  public function getDefaultProperties() {
+  protected function defineDefaultProperties() {
     return [
       // Attributes.
       'attributes' => [],
@@ -34,6 +34,7 @@ class Container extends ContainerBase {
       'format' => $this->getItemDefaultFormat(),
       'format_html' => '',
       'format_text' => '',
+      'format_attributes' => [],
     ];
   }
 

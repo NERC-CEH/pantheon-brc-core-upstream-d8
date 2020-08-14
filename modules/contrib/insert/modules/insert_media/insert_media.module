@@ -1,6 +1,9 @@
 <?php
 
-use Drupal\Core\Entity\EntityViewModeInterface;
+/**
+ * @file
+ */
+
 use Drupal\Core\Field\WidgetInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\insert\Utility\InsertUtility;
@@ -34,7 +37,7 @@ function insert_media_field_widget_third_party_settings_form(WidgetInterface $pl
 }
 
 /**
- * @param WidgetInterface $plugin
+ * @param \Drupal\Core\Field\WidgetInterface $plugin
  * @return array
  */
 function _insert_media_settings($plugin) {
@@ -98,8 +101,8 @@ function _insert_media_settings_form(array $settings) {
   $element['default'] = [
     '#title' => t('Default view mode'),
     '#type' => 'select',
-    '#options' => array_map(function($viewMode) {
-      /** @var EntityViewModeInterface $viewMode */
+    '#options' => array_map(function ($viewMode) {
+      /** @var \Drupal\Core\Entity\EntityViewModeInterface $viewMode */
       return $viewMode->label();
     }, $viewModes),
     '#default_value' => $settings['default'],
@@ -189,7 +192,7 @@ function insert_media_insert_process(&$insertType, array &$element) {
 /**
  * Returns all media view modes.
  *
- * @return EntityViewModeInterface[]
+ * @return \Drupal\Core\Entity\EntityViewModeInterface[]
  */
 function _insert_media_get_view_modes() {
   $viewModes = \Drupal::entityTypeManager()
@@ -210,7 +213,7 @@ function _insert_media_get_view_modes() {
  * Implements hook_field_widget_form_alter().
  */
 function insert_media_field_widget_form_alter(array &$element, FormStateInterface $form_state, array $context) {
-  /** @var WidgetInterface $plugin */
+  /** @var \Drupal\Core\Field\WidgetInterface $plugin */
   $plugin = $context['widget'];
   $pluginId = $plugin->getPluginId();
 
@@ -225,7 +228,7 @@ function insert_media_field_widget_form_alter(array &$element, FormStateInterfac
  * Implements hook_field_widget_settings_summary_alter().
  */
 function insert_media_field_widget_settings_summary_alter(array &$summary, array $context) {
-  /** @var WidgetInterface $plugin */
+  /** @var \Drupal\Core\Field\WidgetInterface $plugin */
   $plugin = $context['widget'];
   $pluginId = $plugin->getPluginId();
 
@@ -235,8 +238,8 @@ function insert_media_field_widget_settings_summary_alter(array &$summary, array
     $activeViewModes = array_intersect_key($viewModes, array_filter($settings['view_modes']));
 
     $summary[] = t('Insert Media') . ': ' . (count($activeViewModes)
-        ? implode(', ', array_map(function($viewMode) {
-          /** @var EntityViewModeInterface $viewMode */
+        ? implode(', ', array_map(function ($viewMode) {
+          /** @var \Drupal\Core\Entity\EntityViewModeInterface $viewMode */
           return $viewMode->label();
         }, $activeViewModes))
         : t('disabled')
@@ -257,4 +260,3 @@ function insert_media_module_implements_alter(array &$implementations, $hook) {
     $implementations['insert_media'] = $group;
   }
 }
-

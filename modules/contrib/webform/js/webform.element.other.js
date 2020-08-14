@@ -41,7 +41,7 @@
       $input.prop('required', true).attr('aria-required', 'true');
       // Restore the input's value.
       var value = $input.data('webform-value');
-      if (value !== undefined) {
+      if (typeof value !== 'undefined') {
         $input.val(value);
         var input = $input.get(0);
         // Move cursor to the beginning of the other text input.
@@ -76,14 +76,19 @@
         var $element = $(this);
 
         var $select = $element.find('select');
-        var $otherOption = $element.find('option[value="_other_"]');
         var $input = $element.find('.js-webform-select-other-input');
 
         $select.on('change', function () {
-          toggleOther($otherOption.is(':selected'), $input);
+          var isOtherSelected = $select
+            .find('option[value="_other_"]')
+            .is(':selected');
+          toggleOther(isOtherSelected, $input);
         });
 
-        toggleOther($otherOption.is(':selected'), $input, false);
+        var isOtherSelected = $select
+          .find('option[value="_other_"]')
+          .is(':selected');
+        toggleOther(isOtherSelected, $input, false);
       });
     }
   };

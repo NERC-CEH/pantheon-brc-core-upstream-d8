@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * This file documents hooks provided by the Insert module.
@@ -9,11 +10,11 @@
 
 /**
  * Returns an array of widget plugin ids, keyed by insert type.
+ *
  * @see insert_insert_widgets()
  *
  * @example
  * return ['text' => ['string_textfield', 'some_other_plugin_id']]
- *
  *
  * @return string[]
  */
@@ -24,6 +25,7 @@ function hook_insert_widgets() {
 /**
  * Returns a list of styles to be added to the list of styles available to
  * Insert.
+ *
  * @see insert_insert_styles()
  *
  * @example
@@ -31,6 +33,7 @@ function hook_insert_widgets() {
  *   ? ['insert_text__plain' => ['label' => t('Plain')]] : [];
  *
  * @param string $insertType
+ *
  * @return array
  *   Schema: [<string> style_name => ['label' => <string>, 'weight' => <int>]]
  *   or for image styles: [<string> style_name => <ImageStyle>]
@@ -45,6 +48,7 @@ function hook_insert_styles($insertType) {
  * contains multiple sub-values under the specified key, so, instead of $element
  * itself, that sub-array will be processed.
  * Variables to be passed on to hook_insert_variables may be added to $element.
+ *
  * @see insert_insert_process()
  *
  * @example
@@ -55,6 +59,7 @@ function hook_insert_styles($insertType) {
  *
  * @param string $insertType
  * @param array $element
+ *
  * @return array
  *   [] or [FALSE] or ['<value elements key>']
  */
@@ -66,6 +71,7 @@ function hook_insert_process(&$insertType, array &$element) {
  * Allows adding/altering variables to be passed to a style's template.
  * Returning FALSE skips the style from appearing in the Insert style select
  * box.
+ *
  * @see insert_insert_variables()
  *
  * @example
@@ -77,6 +83,7 @@ function hook_insert_process(&$insertType, array &$element) {
  * @param array $element
  * @param string $styleName
  * @param array $vars
+ *
  * @return array
  *   [] or [FALSE]
  */
@@ -87,6 +94,7 @@ function hook_insert_variables($insertType, array &$element, $styleName, &$vars)
 /**
  * May return a rendered template to be preferred over native Insert module
  * templates.
+ *
  * @see insert_insert_render()
  *
  * @example
@@ -100,6 +108,7 @@ function hook_insert_variables($insertType, array &$element, $styleName, &$vars)
  *
  * @param string $styleName
  * @param array $vars
+ *
  * @return array
  */
 function hook_insert_render($styleName, array $vars) {

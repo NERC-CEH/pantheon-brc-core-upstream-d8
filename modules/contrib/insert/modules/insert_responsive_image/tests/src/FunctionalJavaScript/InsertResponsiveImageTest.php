@@ -9,6 +9,9 @@ namespace Drupal\Tests\insert_responsive_image\FunctionalJavascript;
  */
 class InsertResponsiveImageTest extends InsertResponsiveImageTestBase {
 
+  /**
+   *
+   */
   public function testInsertingPictureTag() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -19,7 +22,6 @@ class InsertResponsiveImageTest extends InsertResponsiveImageTestBase {
       ],
       'default' => 'responsive_image__wide',
     ]);
-
 
     $this->drupalGet('node/add/article');
 

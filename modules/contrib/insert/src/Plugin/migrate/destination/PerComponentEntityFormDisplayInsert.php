@@ -7,6 +7,7 @@ use Drupal\migrate\Row;
 
 /**
  * This class imports Insert module field settings of an entity form display.
+ *
  * @see \Drupal\migrate\Plugin\migrate\destination\PerComponentEntityFormDisplay
  *
  * @MigrateDestination(

@@ -2,9 +2,12 @@
 
 namespace Drupal\webform;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\AlterableInterface;
+use Drupal\Core\Database\ReplicaKillSwitch;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -14,11 +17,13 @@ use Drupal\Core\Serialization\Yaml;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StreamWrapper\StreamWrapperInterface;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
+use Drupal\webform\Plugin\WebformElement\WebformManagedFileBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -34,6 +39,13 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
   protected $elementDataSchema = [];
 
   /**
+   * The time service.
+   *
+   * @var \Drupal\Component\Datetime\TimeInterface
+   */
+  protected $time;
+
+  /**
    * The current user.
    *
    * @var \Drupal\Core\Session\AccountProxyInterface
@@ -41,7 +53,21 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
   protected $currentUser;
 
   /**
-   * Webform access rules manager service.
+   * The replica kill switch.
+   *
+   * @var \Drupal\Core\Database\ReplicaKillSwitch
+   */
+  protected $replicaKillSwitch;
+
+  /**
+   * The file system service.
+   *
+   * @var \Drupal\Core\File\FileSystemInterface
+   */
+  protected $fileSystem;
+
+  /**
+   * The webform access rules manager service.
    *
    * @var \Drupal\webform\WebformAccessRulesManagerInterface
    */
@@ -49,12 +75,18 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
 
   /**
    * WebformSubmissionStorage constructor.
+   *
+   * @todo Webform 8.x-6.x: Move $time before $access_rules_manager.
+   * @todo Webform 8.x-6.x: Move $memory_cache right after $language_manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, Connection $database, EntityManagerInterface $entity_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, AccountProxyInterface $current_user, WebformAccessRulesManagerInterface $access_rules_manager) {
-    parent::__construct($entity_type, $database, $entity_manager, $cache, $language_manager);
+  public function __construct(EntityTypeInterface $entity_type, Connection $database, EntityManagerInterface $entity_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, AccountProxyInterface $current_user, WebformAccessRulesManagerInterface $access_rules_manager, TimeInterface $time = NULL, MemoryCacheInterface $memory_cache = NULL, FileSystemInterface $file_system = NULL, ReplicaKillSwitch $replica_kill_switch = NULL) {
+    parent::__construct($entity_type, $database, $entity_manager, $cache, $language_manager, $memory_cache);
 
     $this->currentUser = $current_user;
     $this->accessRulesManager = $access_rules_manager;
+    $this->time = $time ?: \Drupal::time();
+    $this->fileSystem = $file_system ?: \Drupal::service('file_system');
+    $this->replicaKillSwitch = $replica_kill_switch ?: \Drupal::service('database.replica_kill_switch');
   }
 
   /**
@@ -68,7 +100,11 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
       $container->get('cache.entity'),
       $container->get('language_manager'),
       $container->get('current_user'),
-      $container->get('webform.access_rules_manager')
+      $container->get('webform.access_rules_manager'),
+      $container->get('datetime.time'),
+      $container->get('entity.memory_cache'),
+      $container->get('file_system'),
+      $container->get('database.replica_kill_switch')
     );
   }
 
@@ -186,7 +222,7 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
     $entity = reset($entities);
 
     // Make sure the submission is associated with the webform.
-    if ($entity->getWebform()->id() != $webform->id()) {
+    if ($entity->getWebform()->id() !== $webform->id()) {
       return NULL;
     }
 
@@ -197,10 +233,15 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
    * {@inheritdoc}
    */
   protected function buildPropertyQuery(QueryInterface $entity_query, array $values) {
-    // Add account query wheneven filter by uid.
+    // Add account query when ever filtered by uid.
     if (isset($values['uid'])) {
-      $account = User::load($values['uid']);
-      $this->addQueryConditions($entity_query, NULL, NULL, $account);
+      $uids = (array) $values['uid'];
+      $accounts = User::loadMultiple($uids);
+      $or_condition_group = $entity_query->orConditionGroup();
+      foreach ($accounts as $account) {
+        $this->_addQueryConditions($or_condition_group, NULL, NULL, $account);
+      }
+      $entity_query->condition($or_condition_group);
       unset($values['uid']);
     }
 
@@ -212,6 +253,7 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
    */
   public function deleteAll(WebformInterface $webform = NULL, EntityInterface $source_entity = NULL, $limit = NULL, $max_sid = NULL) {
     $query = $this->getQuery();
+    $query->accessCheck(FALSE);
     $this->addQueryConditions($query, $webform, $source_entity, NULL);
     if ($max_sid) {
       $query->condition('sid', $max_sid, '<=');
@@ -237,12 +279,10 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
     ];
 
     $query = $this->getQuery();
+    $query->accessCheck(FALSE);
     $this->addQueryConditions($query, $webform, $source_entity, $account, $options);
-
-    // Issue: Query count method is not working for SQL Lite.
-    // return $query->count()->execute();
-    // Work-around: Manually count the number of entity ids.
-    return count($query->execute());
+    $query->count();
+    return $query->execute();
   }
 
   /**
@@ -250,6 +290,7 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
    */
   public function getMaxSubmissionId(WebformInterface $webform = NULL, EntityInterface $source_entity = NULL, AccountInterface $account = NULL) {
     $query = $this->getQuery();
+    $query->accessCheck(FALSE);
     $this->addQueryConditions($query, $webform, $source_entity, $account);
     $query->sort('sid', 'DESC');
     $query->range(0, 1);
@@ -267,6 +308,7 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
       ->fields('sd', ['sid'])
       ->condition('sd.webform_id', $webform->id())
       ->condition('sd.name', $element_key)
+      ->range(0, 1)
       ->execute();
     return $result->fetchAssoc() ? TRUE : FALSE;
   }
@@ -329,7 +371,9 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
         $option_text = $entity->label();
         $options[$optgroup][$option_value] = $option_text;
       }
-      asort($options[$optgroup]);
+      if (isset($options[$optgroup])) {
+        asort($options[$optgroup]);
+      }
     }
     return (count($options) === 1) ? reset($options) : $options;
   }
@@ -342,11 +386,37 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
    * {@inheritdoc}
    */
   public function addQueryConditions(AlterableInterface $query, WebformInterface $webform = NULL, EntityInterface $source_entity = NULL, AccountInterface $account = NULL, array $options = []) {
+    $this->_addQueryConditions($query, $webform, $source_entity, $account, $options);
+  }
+
+  /**
+   * Add condition to submission query.
+   *
+   * @param \Drupal\Core\Database\Query\AlterableInterface|\Drupal\Core\Entity\Query\ConditionInterface $query
+   *   A SQL query or entity conditions.
+   * @param \Drupal\webform\WebformInterface $webform
+   *   (optional) A webform.
+   * @param \Drupal\Core\Entity\EntityInterface|null $source_entity
+   *   (optional) A webform submission source entity.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   (optional) The current user account.
+   * @param array $options
+   *   (optional) Additional options and query conditions.
+   *   Options/conditions include:
+   *   - in_draft (boolean): NULL will return all saved submissions and drafts.
+   *     Defaults to NULL
+   *   - check_source_entity (boolean): Check that a source entity is defined.
+   *   - interval (int): Limit total within an seconds interval.
+   *
+   * @todo Webform 8.x-6.x: Remove and move code to ::addQueryConditions.
+   */
+  private function _addQueryConditions($query, WebformInterface $webform = NULL, EntityInterface $source_entity = NULL, AccountInterface $account = NULL, array $options = []) {
     // Set default options/conditions.
     $options += [
       'check_source_entity' => FALSE,
       'in_draft' => NULL,
       'interval' => NULL,
+      'access_check' => TRUE,
     ];
 
     if ($webform) {
@@ -365,7 +435,7 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
     if ($account) {
       $query->condition('uid', $account->id());
       // Add anonymous submission ids stored in $_SESSION.
-      if ($account->isAnonymous() && $account->id() == $this->currentUser->id()) {
+      if ($account->isAnonymous() && (int) $account->id() === (int) $this->currentUser->id()) {
         $sids = $this->getAnonymousSubmissionIds($account);
         if (empty($sids)) {
           // Look for NULL sid to force returning no results.
@@ -378,11 +448,15 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
     }
 
     if ($options['in_draft'] !== NULL) {
-      $query->condition('in_draft', $options['in_draft']);
+      // Cast boolean to integer to support SQLite.
+      $query->condition('in_draft', (int) $options['in_draft']);
     }
 
     if ($options['interval']) {
       $query->condition('completed', \Drupal::time()->getRequestTime() - $options['interval'], '>');
+    }
+    if ($options['access_check'] === FALSE) {
+      $query->accessCheck(FALSE);
     }
   }
 
@@ -438,6 +512,29 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function getSourceEntityAsOptions(WebformInterface $webform, $entity_type) {
+    $entity_ids = Database::getConnection()->select('webform_submission', 's')
+      ->fields('s', ['entity_id'])
+      ->condition('s.webform_id', $webform->id())
+      ->condition('s.entity_type', $entity_type)
+      ->execute()
+      ->fetchCol();
+    // Limit the number of source entities loaded to 100.
+    if (empty($entity_ids) || count($entity_ids) > 100) {
+      return [];
+    }
+    $entities = $this->entityTypeManager->getStorage($entity_type)->loadMultiple($entity_ids);
+    $options = [];
+    foreach ($entities as $entity_id => $entity) {
+      $options[$entity_id] = $entity->label();
+    }
+    asort($options);
+    return $options;
+  }
+
+  /**
    * Get a webform submission's terminus (aka first or last).
    *
    * @param \Drupal\webform\WebformInterface $webform
@@ -458,7 +555,7 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
     $options += ['in_draft' => FALSE];
     $query = $this->getQuery();
     $this->addQueryConditions($query, $webform, $source_entity, $account, $options);
-    $query->sort('sid', ($terminus == 'first') ? 'ASC' : 'DESC');
+    $query->sort('sid', ($terminus === 'first') ? 'ASC' : 'DESC');
     $query->range(0, 1);
     return ($entity_ids = $query->execute()) ? $this->load(reset($entity_ids)) : NULL;
   }
@@ -486,7 +583,7 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
     $query = $this->getQuery();
     $this->addQueryConditions($query, $webform, $source_entity, $account, $options);
 
-    if ($direction == 'previous') {
+    if ($direction === 'previous') {
       $query->condition('sid', $webform_submission->id(), '<');
       $query->sort('sid', 'DESC');
     }
@@ -515,22 +612,8 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
    * {@inheritdoc}
    */
   public function getCustomColumns(WebformInterface $webform = NULL, EntityInterface $source_entity = NULL, AccountInterface $account = NULL, $include_elements = TRUE) {
-    // Get custom columns from the webform's state.
-    if ($source_entity) {
-      $source_key = $source_entity->getEntityTypeId() . '.' . $source_entity->id();
-      $column_names = $webform->getState("results.custom.columns.$source_key", []);
-      // If the source entity does not have custom columns, then see if we
-      // can use the main webform as the default custom columns.
-      if (empty($column_names) && $webform->getState("results.custom.default", FALSE)) {
-        $column_names = $webform->getState('results.custom.columns', []);
-      }
-    }
-    else {
-      $column_names = $webform->getState('results.custom.columns', []);
-    }
-
-    // Get columns.
-    $column_names = $column_names ?: $this->getDefaultColumnNames($webform, $source_entity, $account, $include_elements);
+    $column_names = $this->getCustomSetting('columns', [], $webform, $source_entity)
+      ?: $this->getDefaultColumnNames($webform, $source_entity, $account, $include_elements);
     $columns = $this->getColumns($webform, $source_entity, $account, $include_elements);
     return $this->filterColumns($column_names, $columns);
   }
@@ -551,6 +634,7 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
    */
   public function getDefaultColumns(WebformInterface $webform = NULL, EntityInterface $source_entity = NULL, AccountInterface $account = NULL, $include_elements = TRUE) {
     $columns = $this->getColumns($webform, $source_entity, $account, $include_elements);
+
     // Unset columns.
     unset(
       // Admin columns.
@@ -561,6 +645,14 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
       $columns['completed'],
       $columns['changed']
     );
+
+    // Hide certain unnecessary columns, that have default set to FALSE.
+    foreach ($columns as $column_name => $column) {
+      if (isset($column['default']) && $column['default'] === FALSE) {
+        unset($columns[$column_name]);
+      }
+    }
+
     return $columns;
   }
 
@@ -801,16 +893,29 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
       return $default;
     }
 
+    $results_customize = $webform->getSetting('results_customize', TRUE);
+
     $key = "results.custom.$name";
     if (!$source_entity) {
-      return $webform->getState($key, $default);
+      if ($results_customize && $webform->hasUserData($key)) {
+        return $webform->getUserData($key);
+      }
+      elseif ($webform->hasState($key)) {
+        return $webform->getState($key);
+      }
+      else {
+        return $default;
+      }
     }
 
-    $source_key = $source_entity->getEntityTypeId() . '.' . $source_entity->id();
-    if ($webform->hasState("$key.$source_key")) {
-      return $webform->getState("$key.$source_key", $default);
+    $source_entity_key = $key . '.' . $source_entity->getEntityTypeId() . '.' . $source_entity->id();
+    if ($results_customize && $webform->hasUserData($source_entity_key)) {
+      return $webform->getUserData($source_entity_key);
     }
-    if ($webform->getState("results.custom.default", FALSE)) {
+    elseif ($webform->hasState($source_entity_key)) {
+      return $webform->getState($source_entity_key);
+    }
+    elseif ($webform->getState('results.custom.default', FALSE)) {
       return $webform->getState($key, $default);
     }
     else {
@@ -847,7 +952,7 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
       $this->invokeWebformElements('postLoad', $entity);
       $this->invokeWebformHandlers('postLoad', $entity);
 
-      // If this is an anonymous draft..
+      // If this is an anonymous draft.
       // We must add $SESSION to the submission's cache context.
       // @see \Drupal\webform\WebformSubmissionStorage::loadDraft
       // @todo Add support for 'view own submission' permission.
@@ -906,89 +1011,96 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
     /** @var \Drupal\webform\WebformSubmissionInterface $entity */
     parent::doPostSave($entity, $update);
 
-    // Log transaction.
     $webform = $entity->getWebform();
-    if (!$entity->getWebform()->getSetting('results_disabled')) {
+
+    if ($webform->hasSubmissionLog()) {
+      // Log webform submission events to the 'webform_submission' log.
       $context = [
-        '@id' => $entity->id(),
-        '@form' => $webform->label(),
-        'link' => $entity->toLink($this->t('Edit'), 'edit-form')->toString(),
+        '@title' => $entity->label(),
+        'link' => ($entity->id()) ? $entity->toLink($this->t('Edit'), 'edit-form')->toString() : NULL,
+        'webform_submission' => $entity,
       ];
       switch ($entity->getState()) {
-        case WebformSubmissionInterface::STATE_DRAFT:
-          \Drupal::logger('webform')->notice('@form: Submission #@id draft saved.', $context);
-          break;
-
-        case WebformSubmissionInterface::STATE_UPDATED:
-          \Drupal::logger('webform')->notice('@form: Submission #@id updated.', $context);
-          break;
-
-        case WebformSubmissionInterface::STATE_COMPLETED:
+        case WebformSubmissionInterface::STATE_DRAFT_UPDATED:
+        case WebformSubmissionInterface::STATE_DRAFT_CREATED:
           if ($update) {
-            \Drupal::logger('webform')->notice('@form: Submission #@id completed.', $context);
+            $message = '@title draft updated.';
+            $context['operation'] = 'draft updated';
           }
           else {
-            \Drupal::logger('webform')->notice('@form: Submission #@id created.', $context);
-          }
-          break;
-      }
-    }
-
-    // Log submission events.
-    if ($entity->getWebform()->hasSubmissionLog()) {
-      $t_args = ['@title' => $entity->label()];
-      switch ($entity->getState()) {
-        case WebformSubmissionInterface::STATE_DRAFT:
-          if ($update) {
-            $operation = 'draft updated';
-            $message = $this->t('@title draft updated.', $t_args);
-          }
-          else {
-            $operation = 'draft created';
-            $message = $this->t('@title draft created.', $t_args);
+            $message = '@title draft created.';
+            $context['operation'] = 'draft created';
           }
           break;
 
         case WebformSubmissionInterface::STATE_COMPLETED:
           if ($update) {
-            $operation = 'submission completed';
-            $message = $this->t('@title completed using saved draft.', $t_args);
+            $message = '@title completed using saved draft.';
+            $context['operation'] = 'submission completed';
           }
           else {
-            $operation = 'submission created';
-            $message = $this->t('@title created.', $t_args);
+            $message = '@title created.';
+            $context['operation'] = 'submission created';
           }
           break;
 
         case WebformSubmissionInterface::STATE_CONVERTED:
-          $operation = 'submission converted';
-          $message = $this->t('@title converted from anonymous to @user.', $t_args + ['@user' => $entity->getOwner()->label()]);
+          $message = '@title converted from anonymous to @user.';
+          $context['operation'] = 'submission converted';
+          $context['@user'] = $entity->getOwner()->label();
           break;
 
         case WebformSubmissionInterface::STATE_UPDATED:
-          $operation = 'submission updated';
-          $message = $this->t('@title updated.', $t_args);
+          $message = '@title updated.';
+          $context['operation'] = 'submission updated';
           break;
 
         case WebformSubmissionInterface::STATE_UNSAVED:
-          $operation = 'submission submitted';
-          $message = $this->t('@title submitted.', $t_args);
+          $message = '@title submitted.';
+          $context['operation'] = 'submission submitted';
           break;
 
         case WebformSubmissionInterface::STATE_LOCKED:
-          $operation = 'submission locked';
-          $message = $this->t('@title locked.', $t_args);
+          $message = '@title locked.';
+          $context['operation'] = 'submission locked';
           break;
 
         default:
           throw new \Exception('Unexpected webform submission state');
       }
+      \Drupal::logger('webform_submission')->notice($message, $context);
+    }
+    elseif (!$webform->getSetting('results_disabled')) {
+      // Log general events to the 'webform'.
+      switch ($entity->getState()) {
+        case WebformSubmissionInterface::STATE_DRAFT_CREATED:
+          $message = '@title draft created.';
+          break;
 
-      $this->log($entity, [
-        'handler_id' => '',
-        'operation' => $operation,
-        'message' => $message,
-      ]);
+        case WebformSubmissionInterface::STATE_DRAFT_UPDATED:
+          $message = '@title draft updated.';
+          break;
+
+        case WebformSubmissionInterface::STATE_UPDATED:
+          $message = '@title updated.';
+          break;
+
+        case WebformSubmissionInterface::STATE_COMPLETED:
+          $message = ($update) ? '@title completed.' : '@title created.';
+          break;
+
+        default:
+          $message = NULL;
+          break;
+      }
+      if ($message) {
+        $context = [
+          '@id' => $entity->id(),
+          '@title' => $entity->label(),
+          'link' => ($entity->id()) ? $entity->toLink($this->t('Edit'), 'edit-form')->toString() : NULL,
+        ];
+        \Drupal::logger('webform')->notice($message, $context);
+      }
     }
 
     $this->invokeWebformElements('postSave', $entity, $update);
@@ -1006,7 +1118,7 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
       $return = $this->doSave($entity->id(), $entity);
 
       // Ignore replica server temporarily.
-      db_ignore_replica();
+      $this->replicaKillSwitch->trigger();
       return $return;
     }
     catch (\Exception $e) {
@@ -1037,6 +1149,8 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
     foreach ($entities as $entity) {
       $this->invokeWebformElements('postDelete', $entity);
       $this->invokeWebformHandlers('postDelete', $entity);
+
+      WebformManagedFileBase::deleteFiles($entity);
     }
 
     // Remove empty webform submission specific file directory
@@ -1045,26 +1159,27 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
     // @see \Drupal\webform\Plugin\WebformElement\WebformSignature
     foreach ($entities as $entity) {
       $webform = $entity->getWebform();
-      $stream_wrappers = array_keys(\Drupal::service('stream_wrapper_manager')
-        ->getNames(StreamWrapperInterface::WRITE_VISIBLE));
-      foreach ($stream_wrappers as $stream_wrapper) {
-        $file_directory = $stream_wrapper . '://webform/' . $webform->id() . '/' . $entity->id();
-        // Clear empty webform submission directory.
-        if (empty(file_scan_directory($file_directory, '/.*/'))) {
-          file_unmanaged_delete_recursive($file_directory);
+      if ($webform) {
+        $stream_wrappers = array_keys(\Drupal::service('stream_wrapper_manager')
+          ->getNames(StreamWrapperInterface::WRITE_VISIBLE));
+        foreach ($stream_wrappers as $stream_wrapper) {
+          $file_directory = $stream_wrapper . '://webform/' . $webform->id() . '/' . $entity->id();
+          // Clear empty webform submission directory.
+          if (file_exists($file_directory)
+            && empty($this->fileSystem->scanDirectory($file_directory, '/.*/'))) {
+            $this->fileSystem->deleteRecursive($file_directory);
+          }
         }
       }
     }
 
-    // Delete submission log after all pre and post delete hooks are called.
-    $this->deleteLog($entities);
-
     // Log deleted.
     foreach ($entities as $entity) {
+      $webform = $entity->getWebform();
       \Drupal::logger('webform')
         ->notice('Deleted @form: Submission #@id.', [
           '@id' => $entity->id(),
-          '@form' => $entity->getWebform()->label(),
+          '@form' => ($webform) ? $webform->label() : '[' . t('Webform') . ']',
         ]);
     }
 
@@ -1080,7 +1195,9 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
    */
   public function invokeWebformHandlers($method, WebformSubmissionInterface $webform_submission, &$context1 = NULL, &$context2 = NULL) {
     $webform = $webform_submission->getWebform();
-    $webform->invokeHandlers($method, $webform_submission, $context1, $context2);
+    if ($webform) {
+      return $webform->invokeHandlers($method, $webform_submission, $context1, $context2);
+    }
   }
 
   /**
@@ -1088,7 +1205,9 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
    */
   public function invokeWebformElements($method, WebformSubmissionInterface $webform_submission, &$context1 = NULL, &$context2 = NULL) {
     $webform = $webform_submission->getWebform();
-    $webform->invokeElements($method, $webform_submission, $context1, $context2);
+    if ($webform) {
+      $webform->invokeElements($method, $webform_submission, $context1, $context2);
+    }
   }
 
   /****************************************************************************/
@@ -1102,7 +1221,8 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
     $days_to_seconds = 60 * 60 * 24;
 
     $query = $this->entityManager->getStorage('webform')->getQuery();
-    $query->condition('settings.purge', [self::PURGE_DRAFT, self::PURGE_COMPLETED, self::PURGE_ALL], 'IN');
+    $query->accessCheck(FALSE);
+    $query->condition('settings.purge', [WebformSubmissionStorageInterface::PURGE_DRAFT, WebformSubmissionStorageInterface::PURGE_COMPLETED, WebformSubmissionStorageInterface::PURGE_ALL], 'IN');
     $query->condition('settings.purge_days', 0, '>');
     $webforms_to_purge = array_values($query->execute());
 
@@ -1112,15 +1232,19 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
       $webforms_to_purge = $this->entityManager->getStorage('webform')->loadMultiple($webforms_to_purge);
       foreach ($webforms_to_purge as $webform) {
         $query = $this->getQuery();
-        $query->condition('created', REQUEST_TIME - ($webform->getSetting('purge_days') * $days_to_seconds), '<');
+        // Since results of this query are never displayed to the user and we
+        // actually need to query the entire dataset of webform submissions, we
+        // are disabling access check.
+        $query->accessCheck(FALSE);
+        $query->condition('created', $this->time->getRequestTime() - ($webform->getSetting('purge_days') * $days_to_seconds), '<');
         $query->condition('webform_id', $webform->id());
         switch ($webform->getSetting('purge')) {
-          case self::PURGE_DRAFT:
-            $query->condition('in_draft', TRUE);
+          case WebformSubmissionStorageInterface::PURGE_DRAFT:
+            $query->condition('in_draft', 1);
             break;
 
-          case self::PURGE_COMPLETED:
-            $query->condition('in_draft', FALSE);
+          case WebformSubmissionStorageInterface::PURGE_COMPLETED:
+            $query->condition('in_draft', 0);
             break;
         }
         $query->range(0, $count - count($webform_submissions_to_purge));
@@ -1128,7 +1252,7 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
         if (!empty($result)) {
           $webform_submissions_to_purge = array_merge($webform_submissions_to_purge, $result);
         }
-        if (count($webform_submissions_to_purge) == $count) {
+        if (count($webform_submissions_to_purge) === $count) {
           // We've collected enough webform submissions for purging in this run.
           break;
         }
@@ -1155,10 +1279,19 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
     $sid = $webform_submission->id();
 
     $elements = $webform_submission->getWebform()->getElementsInitializedFlattenedAndHasValue();
+    $computed_elements = $webform_submission->getWebform()->getElementsComputed();
 
     $rows = [];
     foreach ($data as $name => $item) {
       $element = (isset($elements[$name])) ? $elements[$name] : ['#webform_multiple' => FALSE, '#webform_composite' => FALSE];
+
+      // Check if this is a computed element which is not
+      // stored in the database.
+      $is_computed_element = (isset($computed_elements[$name])) ? TRUE : FALSE;
+      if ($is_computed_element && empty($element['#store'])) {
+        continue;
+      }
+
       if ($element['#webform_composite']) {
         if (is_array($item)) {
           $composite_items = (empty($element['#webform_multiple'])) ? [$item] : $item;
@@ -1242,7 +1375,9 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
         $sid = $record['sid'];
         $name = $record['name'];
 
-        $elements = $webform_submissions[$sid]->getWebform()->getElementsInitializedFlattenedAndHasValue();
+        /** @var \Drupal\webform\WebformInterface $webform */
+        $webform = $webform_submissions[$sid]->getWebform();
+        $elements = ($webform) ? $webform->getElementsInitializedFlattenedAndHasValue() : [];
         $element = (isset($elements[$name])) ? $elements[$name] : ['#webform_multiple' => FALSE, '#webform_composite' => FALSE];
 
         if ($element['#webform_composite']) {
@@ -1263,8 +1398,9 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
 
       // Set webform submission data via setData().
       foreach ($submissions_data as $sid => $submission_data) {
-        $webform_submissions[$sid]->setData($submission_data);
-        $webform_submissions[$sid]->setOriginalData($submission_data);
+        $webform_submission = $webform_submissions[$sid];
+        $webform_submission->setData($submission_data);
+        $webform_submission->setOriginalData($webform_submission->getData());
       }
     }
   }
@@ -1292,42 +1428,24 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
   /**
    * {@inheritdoc}
    */
-  public function log(WebformSubmissionInterface $webform_submission, array $values = []) {
+  public function log(WebformSubmissionInterface $webform_submission, array $context = []) {
     // Submission ID is required for logging.
-    // @todo Enable logging for submissions not saved to the database.
     if (empty($webform_submission->id())) {
       return;
     }
 
-    $values += [
+    $message = $context['message'];
+    unset($context['message']);
+
+    $context += [
       'uid' => $this->currentUser->id(),
-      'webform_id' => $webform_submission->getWebform()->id(),
-      'sid' => $webform_submission->id() ?: NULL,
+      'webform_submission' => $webform_submission,
       'handler_id' => NULL,
       'data' => [],
-      'timestamp' => time(),
+      'link' => $webform_submission->toLink($this->t('Edit'), 'edit-form')->toString(),
     ];
-    $values['data'] = serialize($values['data']);
-    $this->database
-      ->insert('webform_submission_log')
-      ->fields($values)
-      ->execute();
-  }
 
-  /**
-   * Delete webform submission events from the 'webform_submission_log' table.
-   *
-   * @param array $webform_submissions
-   *   An array of webform submissions.
-   */
-  protected function deleteLog(array $webform_submissions) {
-    $sids = [];
-    foreach ($webform_submissions as $webform_submission) {
-      $sids[$webform_submission->id()] = $webform_submission->id();
-    }
-    $this->database->delete('webform_submission_log')
-      ->condition('sid', $sids, 'IN')
-      ->execute();
+    \Drupal::logger('webform_submission')->notice($message, $context);
   }
 
   /****************************************************************************/
@@ -1344,6 +1462,11 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
     ];
 
     $query = $this->getQuery();
+    // Because draft is somewhat different from a complete webform submission,
+    // we allow to bypass access check. Moreover, draft here is enforced to be
+    // authored by the $account user. Thus we hardly open any security breach
+    // here.
+    $query->accessCheck(FALSE);
     $this->addQueryConditions($query, $webform, $source_entity, $account, $options);
 
     // Only load the most recent draft.
@@ -1366,6 +1489,7 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
 
     // Move all anonymous submissions to UID of this account.
     $query = $this->getQuery();
+    $query->accessCheck(FALSE);
     $query->condition('uid', 0);
     $query->condition('sid', $_SESSION['webform_submissions'], 'IN');
     $query->sort('sid');
@@ -1387,6 +1511,36 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
     // Now that the user has logged in because when the log out $_SESSION is
     // completely reset.
     unset($_SESSION['webform_submissions']);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getAnonymousSubmissionIds(AccountInterface $account) {
+    // Make sure the account and current user are identical.
+    if ((int) $account->id() !== (int) $this->currentUser->id()) {
+      return NULL;
+    }
+
+    if (empty($_SESSION['webform_submissions'])) {
+      return NULL;
+    }
+
+    // Cleanup sids because drafts could have been purged or the webform
+    // submission could have been deleted.
+    $_SESSION['webform_submissions'] = $this->getQuery()
+      // Disable access check because user having 'sid' in his $_SESSION already
+      // implies he has access to it.
+      ->accessCheck(FALSE)
+      ->condition('sid', $_SESSION['webform_submissions'], 'IN')
+      ->sort('sid')
+      ->execute();
+    if (empty($_SESSION['webform_submissions'])) {
+      unset($_SESSION['webform_submissions']);
+      return NULL;
+    }
+
+    return $_SESSION['webform_submissions'];
   }
 
   /**
@@ -1412,7 +1566,7 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
    */
   protected function setAnonymousSubmission(WebformSubmissionInterface $webform_submission) {
     // Make sure the account and current user are identical.
-    if ($webform_submission->getOwnerId() != $this->currentUser->id()) {
+    if ((int)$webform_submission->getOwnerId() !== (int) $this->currentUser->id()) {
       return;
     }
 
@@ -1422,21 +1576,21 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
     }
 
     // Check if anonymous users are allowed to save submission using $_SESSION.
-    if ($this->checkAnonymousSubmissionAccess($webform_submission)) {
+    if ($this->hasAnonymousSubmissionTracking($webform_submission)) {
       $_SESSION['webform_submissions'][$webform_submission->id()] = $webform_submission->id();
     }
   }
 
   /**
-   * Check if anonymous users are allowed to save submission using $_SESSION.
+   * Check if anonymous users submission are tracked using $_SESSION.
    *
    * @param \Drupal\webform\WebformSubmissionInterface $webform_submission
    *   A webform submission.
    *
    * @return bool
-   *   TRUE if anonymous users are allowed to save submission using $_SESSION.
+   *   TRUE if anonymous users submission are tracked using $_SESSION.
    */
-  protected function checkAnonymousSubmissionAccess(WebformSubmissionInterface $webform_submission) {
+  protected function hasAnonymousSubmissionTracking(WebformSubmissionInterface $webform_submission) {
     $webform = $webform_submission->getWebform();
     if ($this->currentUser->hasPermission('view own webform submission')) {
       return TRUE;
@@ -1444,52 +1598,21 @@ class WebformSubmissionStorage extends SqlContentEntityStorage implements Webfor
     elseif ($this->accessRulesManager->checkWebformSubmissionAccess('view_own', $this->currentUser, $webform_submission)->isAllowed()) {
       return TRUE;
     }
-    elseif ($webform->getSetting('form_convert_anonymous')) {
+    elseif ($webform->getSetting('limit_user') || ($webform->getSetting('entity_limit_user') && $webform_submission->getSourceEntity())) {
       return TRUE;
     }
-    elseif ($webform->getSetting('limit_user') || ($webform->getSetting('entity_limit_user') && $webform_submission->getSourceEntity())) {
+    elseif ($webform->getSetting('form_convert_anonymous')) {
       return TRUE;
     }
     elseif ($webform->getSetting('draft') === WebformInterface::DRAFT_ALL) {
       return TRUE;
     }
+    elseif ($webform->hasAnonymousSubmissionTrackingHandler()) {
+      return TRUE;
+    }
     else {
       return FALSE;
     }
-  }
-
-  /**
-   * Get anonymous user's submission ids.
-   *
-   * @param \Drupal\Core\Session\AccountInterface|null $account
-   *   A user account.
-   *
-   * @return array|
-   *   A array of submission ids or NULL if the user us not anonymous or has
-   *   not saved submissions.
-   */
-  protected function getAnonymousSubmissionIds(AccountInterface $account) {
-    // Make sure the account and current user are identical.
-    if ($account->id() != $this->currentUser->id()) {
-      return NULL;
-    }
-
-    if (empty($_SESSION['webform_submissions'])) {
-      return NULL;
-    }
-
-    // Cleanup sids because drafts could have been purged or the webform
-    // submission could have been deleted.
-    $_SESSION['webform_submissions'] = $this->getQuery()
-      ->condition('sid', $_SESSION['webform_submissions'], 'IN')
-      ->sort('sid')
-      ->execute();
-    if (empty($_SESSION['webform_submissions'])) {
-      unset($_SESSION['webform_submissions']);
-      return NULL;
-    }
-
-    return $_SESSION['webform_submissions'];
   }
 
 }

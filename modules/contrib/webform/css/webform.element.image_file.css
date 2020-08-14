@@ -1,6 +1,6 @@
 /**
  * @file
- * Image file styles.
+ * Image file element styles.
  *
  * @see /webform/test_element_media_file
  */
@@ -8,4 +8,8 @@
 img.webform-image-file {
   max-width: 100%;
   height: auto;
+}
+
+.webform-image-file-modal img {
+  display: block;
 }

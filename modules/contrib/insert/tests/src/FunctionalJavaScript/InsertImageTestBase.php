@@ -4,6 +4,9 @@ namespace Drupal\Tests\insert\FunctionalJavascript;
 
 use Drupal\Tests\image\Kernel\ImageFieldCreationTrait;
 
+/**
+ *
+ */
 abstract class InsertImageTestBase extends InsertFileTestBase {
 
   use ImageFieldCreationTrait {
@@ -14,7 +17,7 @@ abstract class InsertImageTestBase extends InsertFileTestBase {
    * @var array
    */
   public static $modules = [
-    'node', 'file', 'image', 'insert', 'editor', 'field_ui'
+    'node', 'file', 'image', 'insert', 'editor', 'field_ui',
   ];
 
   /**
@@ -24,4 +27,5 @@ abstract class InsertImageTestBase extends InsertFileTestBase {
   protected function createImageField($name, array $field_settings = []) {
     $this->drupalCreateImageField($name, $this->contentTypeName, [], $field_settings);
   }
+
 }

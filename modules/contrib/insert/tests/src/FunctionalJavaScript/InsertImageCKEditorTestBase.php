@@ -5,13 +5,16 @@ namespace Drupal\Tests\insert\FunctionalJavascript;
 use Drupal\editor\Entity\Editor;
 use Drupal\filter\Entity\FilterFormat;
 
+/**
+ *
+ */
 abstract class InsertImageCKEditorTestBase extends InsertImageTestBase {
 
   /**
    * @inheritdoc
    */
   public static $modules = [
-    'node', 'file', 'image', 'insert', 'editor', 'field_ui', 'ckeditor'
+    'node', 'file', 'image', 'insert', 'editor', 'field_ui', 'ckeditor',
   ];
 
   /**
@@ -44,4 +47,5 @@ abstract class InsertImageCKEditorTestBase extends InsertImageTestBase {
     ]);
     $editor->save();
   }
+
 }

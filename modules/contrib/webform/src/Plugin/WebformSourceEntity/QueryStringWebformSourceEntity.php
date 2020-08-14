@@ -2,6 +2,7 @@
 
 namespace Drupal\webform\Plugin\WebformSourceEntity;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -134,40 +135,58 @@ class QueryStringWebformSourceEntity extends PluginBase implements WebformSource
       return NULL;
     }
 
+    // Get translated source entity.
     if ($source_entity instanceof TranslatableInterface && $source_entity->hasTranslation($this->languageManager->getCurrentLanguage()->getId())) {
       $source_entity = $source_entity->getTranslation($this->languageManager->getCurrentLanguage()->getId());
     }
 
     // Check source entity access.
-    // Webform view access is reserved for accessing webform configuration
-    // so we are going to check the webform.submission.create.
-    if ($source_entity->getEntityTypeId() == 'webform') {
-      if (!$source_entity->access('submission_create')) {
-        return NULL;
-      }
-    }
-    else {
-      if (!$source_entity->access('view')) {
-        return NULL;
-      }
+    if (!$source_entity->access('view')) {
+      return NULL;
     }
 
     // Check that the webform is referenced by the source entity.
     if (!$webform->getSetting('form_prepopulate_source_entity')) {
       // Get source entity's webform field.
-      $webform_field_name = $this->webformEntityReferenceManager->getFieldName($source_entity);
-      if (!$webform_field_name) {
-        return NULL;
+      $webform_field_names = $this->webformEntityReferenceManager->getFieldNames($source_entity);
+      foreach ($webform_field_names as $webform_field_name) {
+        // Check that source entity's reference webform is the
+        // current webform.
+        foreach ($source_entity->$webform_field_name as $item) {
+          if ($item->target_id === $webform->id()) {
+            return $source_entity;
+          }
+        }
       }
 
-      // Check that source entity's reference webform is the current YAML
-      // webform.
-      if ($source_entity->$webform_field_name->target_id != $webform->id()) {
-        return NULL;
-      }
+      return NULL;
     }
 
     return $source_entity;
+  }
+
+  /**
+   * Get source entity route options query string parameters.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface|null $entity
+   *   An entity.
+   *
+   * @return array
+   *   An associative array contains a source entity's route options
+   *   query string parameters.
+   */
+  public static function getRouteOptionsQuery(EntityInterface $entity = NULL) {
+    if (!$entity) {
+      return [];
+    }
+    else {
+      return [
+        'query' => [
+          'source_entity_type' => $entity->getEntityTypeId(),
+          'source_entity_id' => $entity->id(),
+        ],
+      ];
+    }
   }
 
 }

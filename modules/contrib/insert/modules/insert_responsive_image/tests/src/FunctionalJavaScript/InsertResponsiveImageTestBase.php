@@ -5,6 +5,9 @@ namespace Drupal\Tests\insert_responsive_image\FunctionalJavascript;
 use Drupal\Core\Serialization\Yaml;
 use Drupal\Tests\insert\FunctionalJavascript\InsertImageTestBase;
 
+/**
+ *
+ */
 abstract class InsertResponsiveImageTestBase extends InsertImageTestBase {
 
   /**

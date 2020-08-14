@@ -7,6 +7,9 @@ use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
 use Drupal\Tests\file\Functional\FileFieldCreationTrait;
 use Drupal\Tests\TestFileCreationTrait;
 
+/**
+ *
+ */
 abstract class InsertFileTestBase extends WebDriverTestBase {
 
   use FileFieldCreationTrait {
@@ -34,6 +37,9 @@ abstract class InsertFileTestBase extends WebDriverTestBase {
    */
   protected $contentTypeName;
 
+  /**
+   *
+   */
   protected function setUp() {
     parent::setUp();
 
@@ -42,7 +48,7 @@ abstract class InsertFileTestBase extends WebDriverTestBase {
       'type' => $this->contentTypeName,
       'name' => 'Article',
     ]);
-    $this->adminUser = $this->createUser([], null, TRUE);
+    $this->adminUser = $this->createUser([], NULL, TRUE);
     $this->drupalLogin($this->adminUser);
   }
 
@@ -84,7 +90,7 @@ abstract class InsertFileTestBase extends WebDriverTestBase {
     $manage_display = 'admin/structure/types/manage/' . $this->contentTypeName . '/form-display';
     $this->drupalGet($manage_display);
 
-    $this->drupalPostForm(null, [], $field_name . "_settings_edit");
+    $this->drupalPostForm(NULL, [], $field_name . "_settings_edit");
 
     $this->getSession()->getPage()->find('css', 'summary')->click();
     $this->assertSession()->waitForField(
@@ -92,11 +98,11 @@ abstract class InsertFileTestBase extends WebDriverTestBase {
     );
 
     $this->drupalPostForm(
-      null,
+      NULL,
       $this->settingsToParams($field_name, $settings),
       $this->t('Update')
     );
-    $this->drupalPostForm(null, [], $this->t('Save'));
+    $this->drupalPostForm(NULL, [], $this->t('Save'));
   }
 
   /**
@@ -123,7 +129,7 @@ abstract class InsertFileTestBase extends WebDriverTestBase {
    */
   protected function flatten(array $array, $prefix = '') {
     $result = [];
-    foreach($array as $key => $value) {
+    foreach ($array as $key => $value) {
       if (is_array($value)) {
         $result = $result + $this->flatten($value, $prefix . "[$key]");
       }

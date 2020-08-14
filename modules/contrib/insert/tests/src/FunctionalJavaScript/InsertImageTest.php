@@ -4,11 +4,14 @@ namespace Drupal\Tests\insert\FunctionalJavascript;
 
 /**
  * Tests Insert module's image insert capability.
- * 
+ *
  * @group insert
  */
 class InsertImageTest extends InsertImageTestBase {
 
+  /**
+   *
+   */
   public function testInsertDisabled() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -29,6 +32,9 @@ class InsertImageTest extends InsertImageTestBase {
     $this->assertEquals(0, count($page->findAll('css', '.insert')), 'Insert container node does not exists');
   }
 
+  /**
+   *
+   */
   public function testSingleStyle() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -61,6 +67,9 @@ class InsertImageTest extends InsertImageTestBase {
     $this->assertEquals(1, count($page->findAll('css', '.insert input.insert-button')), 'Insert button exists');
   }
 
+  /**
+   *
+   */
   public function testAutomaticStyle() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -90,6 +99,9 @@ class InsertImageTest extends InsertImageTestBase {
     $this->assertEquals(1, preg_match('!^<img src=".+/files/[^/]+/[^/]+"[^>]+>!', $body->getValue()), 'Inserted using AUTOMATIC style: ' . $body->getValue());
   }
 
+  /**
+   *
+   */
   public function testAutomaticAlteredStyle() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -120,6 +132,9 @@ class InsertImageTest extends InsertImageTestBase {
     $this->assertEquals(1, preg_match('!^<img src=".+/files/styles/thumbnail/public/[^/]+/[^/]+"[^>]+>!', $body->getValue()), 'Inserted using AUTOMATIC style: ' . $body->getValue());
   }
 
+  /**
+   *
+   */
   public function testOriginalImageRotation() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -156,7 +171,7 @@ class InsertImageTest extends InsertImageTestBase {
 
     $page->findLink('↺')->click();
 
-    $body->waitFor(20, function($element) {
+    $body->waitFor(20, function ($element) {
       /** @var \Behat\Mink\Element\NodeElement $element */
       return strpos($element->getValue(), 'width="20"') !== FALSE;
     });
@@ -169,7 +184,7 @@ class InsertImageTest extends InsertImageTestBase {
 
     $page->findLink('↺')->click();
 
-    $body->waitFor(20, function($element) {
+    $body->waitFor(20, function ($element) {
       /** @var \Behat\Mink\Element\NodeElement $element */
       return strpos($element->getValue(), 'width="40"') !== FALSE;
     });
@@ -181,6 +196,9 @@ class InsertImageTest extends InsertImageTestBase {
     );
   }
 
+  /**
+   *
+   */
   public function testStyledImageRotation() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -217,7 +235,7 @@ class InsertImageTest extends InsertImageTestBase {
 
     $page->findLink('↺')->click();
 
-    $body->waitFor(20, function($element) {
+    $body->waitFor(20, function ($element) {
       /** @var \Behat\Mink\Element\NodeElement $element */
       return strpos($element->getValue(), 'width="20"') !== FALSE;
     });
@@ -230,7 +248,7 @@ class InsertImageTest extends InsertImageTestBase {
 
     $page->findLink('↺')->click();
 
-    $body->waitFor(20, function($element) {
+    $body->waitFor(20, function ($element) {
       /** @var \Behat\Mink\Element\NodeElement $element */
       return strpos($element->getValue(), 'width="40"') !== FALSE;
     });
@@ -242,6 +260,9 @@ class InsertImageTest extends InsertImageTestBase {
     );
   }
 
+  /**
+   *
+   */
   public function testRotationWithAbsoluteUrl() {
     $page = $this->gotoInsertConfig();
     $page->checkField('absolute');
@@ -311,7 +332,7 @@ class InsertImageTest extends InsertImageTestBase {
 
     $wrappers[0]->findLink('↺')->click();
 
-    $body->waitFor(20, function($element) {
+    $body->waitFor(20, function ($element) {
       /** @var \Behat\Mink\Element\NodeElement $element */
       return strpos($element->getValue(), 'width="20"') !== FALSE;
     });
@@ -344,7 +365,7 @@ class InsertImageTest extends InsertImageTestBase {
 
     $wrappers[1]->findLink('↺')->click();
 
-    $body->waitFor(20, function($element) {
+    $body->waitFor(20, function ($element) {
       /** @var \Behat\Mink\Element\NodeElement $element */
       return strpos($element->getValue(), 'width="20"') !== FALSE;
     });
@@ -361,6 +382,9 @@ class InsertImageTest extends InsertImageTestBase {
     );
   }
 
+  /**
+   *
+   */
   public function testImageUrlOutput() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -413,6 +437,9 @@ class InsertImageTest extends InsertImageTestBase {
     $this->assertTrue(strpos($matches[0][1], 'thumbnail') !== FALSE, 'Second image refers to style URL.');
   }
 
+  /**
+   *
+   */
   public function testUpdatingAltAttribute() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -446,6 +473,9 @@ class InsertImageTest extends InsertImageTestBase {
     $this->assertTrue(strpos($body->getValue(), 'alt="altered"') !== FALSE, 'Verified altered string set on alt attribute: ' . $body->getValue());
   }
 
+  /**
+   *
+   */
   public function testUpdatingTitleAttribute() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -481,6 +511,9 @@ class InsertImageTest extends InsertImageTestBase {
     $this->assertTrue(strpos($body->getValue(), 'title="altered"'), 'Verified altered string set on title attribute: ' . $body->getValue());
   }
 
+  /**
+   *
+   */
   public function testUpdatingAltAttributeRevisitingForm() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -521,6 +554,9 @@ class InsertImageTest extends InsertImageTestBase {
     $this->assertTrue(strpos($body->getValue(), 'alt="altered"') !== FALSE, 'Verified altered string set on alt attribute: ' . $body->getValue());
   }
 
+  /**
+   *
+   */
   public function testLinkImageSetting() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -552,6 +588,9 @@ class InsertImageTest extends InsertImageTestBase {
     $this->assertEquals(1, preg_match('!^<a href=".+/large/[^>]+><img src=".+/thumbnail/[^>]+></a>$!', $body->getValue()), 'Inserted linked image: ' . $body->getValue());
   }
 
+  /**
+   *
+   */
   public function testCaption() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -596,6 +635,9 @@ class InsertImageTest extends InsertImageTestBase {
     $this->assertEquals(1, preg_match('!data-caption="some title"[^>]*>$!', $body->getValue()), 'Verified caption being inserted on images already placed: ' . $body->getValue());
   }
 
+  /**
+   *
+   */
   public function testAlign() {
     $fieldName = strtolower($this->randomMachineName());
 

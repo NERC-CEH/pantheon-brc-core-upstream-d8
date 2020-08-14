@@ -30,7 +30,7 @@ class WebformEntityHandlersForm extends EntityForm {
   protected $entity;
 
   /**
-   * Webform handler manager.
+   * The webform handler manager.
    *
    * @var \Drupal\webform\Plugin\WebformHandlerManagerInterface
    */
@@ -129,6 +129,7 @@ class WebformEntityHandlersForm extends EntityForm {
       ];
 
       $operations = [];
+      // Edit.
       $operations['edit'] = [
         'title' => $this->t('Edit'),
         'url' => Url::fromRoute('entity.webform.handler.edit_form', [
@@ -137,6 +138,7 @@ class WebformEntityHandlersForm extends EntityForm {
         ]),
         'attributes' => WebformDialogHelper::getOffCanvasDialogAttributes(),
       ];
+      // Duplicate.
       if ($handler->cardinality() === WebformHandlerInterface::CARDINALITY_UNLIMITED) {
         $operations['duplicate'] = [
           'title' => $this->t('Duplicate'),
@@ -147,7 +149,17 @@ class WebformEntityHandlersForm extends EntityForm {
           'attributes' => WebformDialogHelper::getOffCanvasDialogAttributes(),
         ];
       }
-
+      // Test individual handler.
+      if ($this->entity->access('test')) {
+        $operations['test'] = [
+          'title' => $this->t('Test'),
+          'url' => Url::fromRoute(
+            'entity.webform.test_form',
+            ['webform' => $this->entity->id()],
+            ['query' => ['_webform_handler' => $handler_id]]
+          ),
+        ];
+      }
       // Add AJAX functionality to enable/disable operations.
       $operations['status'] = [
         'title' => $handler->isEnabled() ? $this->t('Disable') : $this->t('Enable'),
@@ -157,7 +169,7 @@ class WebformEntityHandlersForm extends EntityForm {
         ]),
         'attributes' => WebformDialogHelper::getModalDialogAttributes(WebformDialogHelper::DIALOG_NARROW, ['use-ajax']),
       ];
-
+      // Delete.
       $operations['delete'] = [
         'title' => $this->t('Delete'),
         'url' => Url::fromRoute('entity.webform.handler.delete_form', [
@@ -166,6 +178,7 @@ class WebformEntityHandlersForm extends EntityForm {
         ]),
         'attributes' => WebformDialogHelper::getModalDialogAttributes(WebformDialogHelper::DIALOG_NARROW),
       ];
+
       $row['operations'] = [
         '#type' => 'operations',
         '#links' => $operations,
@@ -262,7 +275,7 @@ class WebformEntityHandlersForm extends EntityForm {
    *   The webform being acted upon.
    * @param string $webform_handler
    *   THe webform handler id.
-   * @param string $op
+   * @param string $operation
    *   The operation to perform, e.g., 'enable' or 'disable'.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The current request.
@@ -271,17 +284,17 @@ class WebformEntityHandlersForm extends EntityForm {
    *   Either returns an AJAX response that refreshes the webform's handlers
    *   page, or redirects back to the webform's handlers page.
    */
-  public static function ajaxOperation(WebformInterface $webform, $webform_handler, $op, Request $request) {
+  public static function ajaxOperation(WebformInterface $webform, $webform_handler, $operation, Request $request) {
     // Perform the handler disable/enable operation.
     $handler = $webform->getHandler($webform_handler);
-    $handler->$op();
+    $handler->$operation();
     // Save the webform.
     $webform->save();
 
     // Display message.
     $t_args = [
       '@label' => $handler->label(),
-      '@op' => ($op === 'enable') ? t('enabled') : t('disabled'),
+      '@op' => ($operation === 'enable') ? t('enabled') : t('disabled'),
     ];
     \Drupal::messenger()->addStatus(t('This @label handler was @op.', $t_args));
 

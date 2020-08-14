@@ -1,6 +1,9 @@
 <?php
 
-use Drupal\file\Entity\File;
+/**
+ * @file
+ */
+
 use Drupal\image\Entity\ImageStyle;
 use Drupal\insert\Utility\InsertUtility;
 use Drupal\responsive_image\Entity\ResponsiveImageStyle;
@@ -36,25 +39,25 @@ function insert_responsive_image_insert_variables($insertType, array &$element, 
     return;
   }
 
-  /** @var File $file */
+  /** @var \Drupal\file\Entity\File $file */
   $file = $element['#insert'][$insertType]['file'];
   $styleName = $insertStyleNameSegments[1];
   $responsiveStyle = ResponsiveImageStyle::load($styleName);
 
-  if ($responsiveStyle === null) {
+  if ($responsiveStyle === NULL) {
     return;
   }
 
   $responsiveImageVars = [
-    'item' => null,
-    'item_attributes' => null,
+    'item' => NULL,
+    'item_attributes' => NULL,
     'responsive_image_style_id' => $styleName,
     'uri' => $file->getFileUri(),
   ];
 
   $style = ImageStyle::load($responsiveStyle->getFallbackImageStyle());
 
-  $vars['url'] = $style === null
+  $vars['url'] = $style === NULL
     ? file_create_url($file->getFileUri())
     : $style->buildUrl($file->getFileUri());
 
@@ -85,8 +88,8 @@ function insert_responsive_image_insert_allowed_html() {
   return [
     'attributes' => [
       'img' => [
-        'srcset' => null,
-        'sizes' => null,
+        'srcset' => NULL,
+        'sizes' => NULL,
       ],
     ],
   ];

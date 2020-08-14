@@ -9,6 +9,9 @@ namespace Drupal\Tests\insert\FunctionalJavascript;
  */
 class InsertFileTest extends InsertFileTestBase {
 
+  /**
+   *
+   */
   public function testInsertDisabled() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -30,6 +33,9 @@ class InsertFileTest extends InsertFileTestBase {
     $this->assertEquals(0, count($page->findAll('css', '.insert')), 'Insert container node does not exists');
   }
 
+  /**
+   *
+   */
   public function testInsertDisabledAfterEnabling() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -64,6 +70,9 @@ class InsertFileTest extends InsertFileTestBase {
     $this->assertEquals(0, count($page->findAll('css', '.insert')), 'Insert container node does not exists');
   }
 
+  /**
+   *
+   */
   public function testSingleStyle() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -96,6 +105,9 @@ class InsertFileTest extends InsertFileTestBase {
     $this->assertEquals(1, count($page->findAll('css', '.insert input.insert-button')), 'Insert button exists');
   }
 
+  /**
+   *
+   */
   public function testAutomaticStyle() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -126,6 +138,9 @@ class InsertFileTest extends InsertFileTestBase {
     $this->assertEquals(1, preg_match('!^<a[^>]+>[^<]+</a>!', $body->getValue()), 'Correctly inserted using AUTOMATIC style: ' . $body->getValue());
   }
 
+  /**
+   *
+   */
   public function testInsertStyleSelectDefault() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -163,6 +178,9 @@ class InsertFileTest extends InsertFileTestBase {
     $this->assertEquals(1, preg_match('!<a href="[^"]+/text-0.txt" data-insert-type="file" data-insert-attach="[^"]+">text-0.txt</a>!', $body->getValue()), 'Verified inserted HTML: "' . $body->getValue() . '"');
   }
 
+  /**
+   *
+   */
   public function testMultipleInsertOperations() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -209,6 +227,9 @@ class InsertFileTest extends InsertFileTestBase {
     $this->assertEquals(1, preg_match('!^<a [^>]+>[^<]+</a>insert before$!', $body->getValue()), 'Verified HTML inserted before existing content: "' . $body->getValue() . '"');
   }
 
+  /**
+   *
+   */
   public function testInsertStyleSelectOption() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -242,6 +263,9 @@ class InsertFileTest extends InsertFileTestBase {
     $this->assertEquals(1, preg_match('!<span class="file [^"]+" contenteditable="false" data-insert-type="file"><a href="[^"]+/text-0.txt" type="text/plain; length=1024" data-insert-attach="[^"]+">text-0.txt</a>!', $body->getValue()), 'Verified inserted HTML: "' . $body->getValue() . '"');
   }
 
+  /**
+   *
+   */
   public function testFocus() {
     $longText_field_name = strtolower($this->randomMachineName());
     $this->createTextField($longText_field_name, $this->contentTypeName);
@@ -288,6 +312,9 @@ class InsertFileTest extends InsertFileTestBase {
     $this->assertEquals(1, preg_match('!^<a [^>]+>text-0.txt</a>$!', $long_text_value), 'Still, second text area has HTML inserted once: ' . $body->getValue());
   }
 
+  /**
+   *
+   */
   public function testAbsoluteUrlSetting() {
     $fieldName = strtolower($this->randomMachineName());
     $this->createFileField($fieldName);
@@ -334,6 +361,9 @@ class InsertFileTest extends InsertFileTestBase {
     $this->assertEquals(1, preg_match('!^<a href="http://!', $body->getValue()), 'Inserted absolute URL: ' . $body->getValue());
   }
 
+  /**
+   *
+   */
   public function testDescriptionField() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -368,6 +398,9 @@ class InsertFileTest extends InsertFileTestBase {
     $this->assertEquals(1, preg_match('!<a[^>]+ title="test-description"[^>]*>test-description</a>!', $body->getValue()), 'Verified using description: "' . $body->getValue() . '"');
   }
 
+  /**
+   *
+   */
   public function testAdditionalCssClassesSetting() {
     $page = $this->gotoInsertConfig();
     $page->findField('edit-file')->setValue('test-class-1 test-class-2');
@@ -403,6 +436,9 @@ class InsertFileTest extends InsertFileTestBase {
     $this->assertEquals(1, preg_match('!class="test-class-1 test-class-2"!', $body->getValue()), 'Verified configured classes: "' . $body->getValue() . '"');
   }
 
+  /**
+   *
+   */
   public function testInsertImagePerFileField() {
     $page = $this->gotoInsertConfig();
     $page->checkField('file_field_images_enabled');

@@ -64,6 +64,15 @@ class WebformEntityElementsValidationTest extends KernelTestBase {
         ],
       ],
 
+      // Check names.
+      [
+        'getElementsRaw' => "Not Valid:
+  '#type': textfield",
+        'messages' => [
+          'The element key <em class="placeholder">Not Valid</em> on line 1 must contain only lowercase letters, numbers, and underscores.',
+        ],
+      ],
+
       // Check duplicate names.
       [
         'getElementsRaw' => "name:
@@ -85,6 +94,18 @@ duplicate:
     '#type': textfield",
         'messages' => [
           'Elements contain a duplicate element key <em class="placeholder">name</em> found on lines 1 and 4.',
+        ],
+      ],
+
+      // Check reserved names.
+      [
+        'getElementsRaw' => "name:
+  '#type': textfield
+duplicate:
+  add:
+    '#type': textfield",
+        'messages' => [
+          'The element key <em class="placeholder">add</em> on line 4 is a reserved key.',
         ],
       ],
 
@@ -131,6 +152,43 @@ duplicate:
           'The <em class="placeholder">root</em> (webform_wizard_page) is a root element that can not be used as child to another element',
         ],
       ],
+
+      // Check validate table hierarchy.
+      [
+        'getElementsRaw' => 'empty: empty',
+        'getElementsOriginalRaw' => 'empty: empty',
+        'getElementsInitializedAndFlattened' => [
+          'table' => [
+            '#type' => 'webform_table',
+            '#webform_key' => 'table',
+          ],
+          'table_row' => [
+            '#type' => 'webform_table_row',
+            '#webform_key' => 'table_row',
+            '#webform_parent_key' => 'table',
+          ],
+          'table_row_invalid' => [
+            '#type' => 'webform_table_row',
+            '#webform_key' => 'table_row',
+            '#webform_parent_key' => NULL,
+          ],
+        ],
+        'messages' => [
+          'The <em class="placeholder">table_row_invalid</em> (webform_table_row) must be with in a <em class="placeholder">Table</em> (webform_table) element.',
+        ],
+      ],
+
+      // Check validate pages.
+      [
+        'getElementsRaw' => "page:
+  '#type': webform_wizard_page
+card:
+  '#type': webform_card",
+        'messages' => [
+          'Pages and cards cannot be used in the same webform. Please remove or convert the pages/cards to the same element type.',
+        ],
+      ],
+
 /*
       // Check validate rendering.
       [

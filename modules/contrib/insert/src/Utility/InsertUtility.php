@@ -7,6 +7,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\file\FileInterface;
 use Drupal\image\Entity\ImageStyle;
 
+/**
+ *
+ */
 class InsertUtility {
 
   /**
@@ -14,7 +17,7 @@ class InsertUtility {
    * @param string|array (optional) $insertTypes
    * @return bool
    */
-  public static function isSourceWidget($pluginId, $insertTypes = null) {
+  public static function isSourceWidget($pluginId, $insertTypes = NULL) {
     return in_array($pluginId, static::getSourceWidgets($insertTypes));
   }
 
@@ -22,7 +25,7 @@ class InsertUtility {
    * @param string|array (optional) $insertTypes
    * @return string[]
    */
-  protected static function getSourceWidgets($insertTypes = null) {
+  protected static function getSourceWidgets($insertTypes = NULL) {
     if (is_string($insertTypes)) {
       $insertTypes = [$insertTypes];
     }
@@ -33,7 +36,7 @@ class InsertUtility {
     foreach ($sources as $insertType => $widgetIds) {
       if (
         count($widgetIds) > 0
-        && ($insertTypes === null || in_array($insertType, $insertTypes))
+        && ($insertTypes === NULL || in_array($insertType, $insertTypes))
       ) {
         $widgets = array_merge($widgets, $widgetIds);
       }
@@ -52,7 +55,7 @@ class InsertUtility {
       [$insertType]
     );
 
-    uasort($styles, function($a, $b) {
+    uasort($styles, function ($a, $b) {
       $weightA = !($a instanceof ImageStyle) && isset($a['weight'])
         ? $a['weight'] : 0;
       $weightB = !($b instanceof ImageStyle) && isset($b['weight'])
@@ -89,7 +92,7 @@ class InsertUtility {
    * detect that all items were enabled when having set the value the last time.
    *
    * @param array $element
-   * @param FormStateInterface $form_state
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
    */
   public static function validateList(array $element, FormStateInterface &$form_state) {
     if (array_key_exists('#options', $element)
@@ -100,7 +103,7 @@ class InsertUtility {
   }
 
   /**
-   * @param FileInterface $file
+   * @param \Drupal\file\FileInterface $file
    * @return bool
    */
   public static function isImage($file) {
@@ -111,16 +114,16 @@ class InsertUtility {
   }
 
   /**
-   * @param FileInterface $file
+   * @param \Drupal\file\FileInterface $file
    * @param string $styleName
    * @param bool (optional) $absolute
    * @return null|string
    */
   public static function buildDerivativeUrl(FileInterface $file, $styleName, $absolute = FALSE) {
-    /** @var ImageStyle $style */
+    /** @var \Drupal\image\Entity\ImageStyle $style */
     $style = ImageStyle::load($styleName);
 
-    if ($style !== null) {
+    if ($style !== NULL) {
       $url = $style->buildUrl($file->getFileUri());
       if (!$absolute) {
         $parsedUrl = parse_url($url);
@@ -132,7 +135,7 @@ class InsertUtility {
       return $url;
     }
 
-    return null;
+    return NULL;
   }
 
   /**
@@ -161,7 +164,7 @@ class InsertUtility {
    */
   protected static function combineEditorExtraAllowedContent(&$extraAllowedContent, array $additionalAllowedContent) {
     $additionalAllowedContent = join('; ', $additionalAllowedContent);
-    if ($extraAllowedContent === null) {
+    if ($extraAllowedContent === NULL) {
       $extraAllowedContent = $additionalAllowedContent;
       return;
     }
@@ -180,15 +183,17 @@ class InsertUtility {
    * A cleaner, though rather less usable, method would be an individual Filter
    * extending FilterHtml overwriting FilterHtml::getHtmlRestrictions with
    * adding necessary tags and attributes to $restrictions['allowed'].
+   *
    * @see \Drupal\filter\Plugin\Filter\FilterHtml::prepareAttributeValues
    *
    * @param string $value
    * @param array $tags
    * @param array $attributes
+   *
    * @return string
    */
   public static function addAllowedHtml($value, array $tags, array $attributes) {
-    // see \Drupal\filter\Plugin\Filter\FilterHtml::prepareAttributeValues
+    // See \Drupal\filter\Plugin\Filter\FilterHtml::prepareAttributeValues.
     $html = str_replace('>', ' />', $value);
     $star_protector = '__zqh6vxfbk3cg__';
     $html = str_replace('*', $star_protector, $html);
@@ -211,10 +216,12 @@ class InsertUtility {
       /** @var \DOMNode $node */
       if ($node->hasAttributes()) {
         foreach ($node->attributes as $name => $attribute) {
-          // see \Drupal\filter\Plugin\Filter\FilterHtml::prepareAttributeValues
+          // See \Drupal\filter\Plugin\Filter\FilterHtml::prepareAttributeValues.
           $name = str_replace($star_protector, '*', $name);
           $allowed_attribute_values = preg_split('/\s+/', str_replace($star_protector, '*', $attribute->value), -1, PREG_SPLIT_NO_EMPTY);
-          $allowed_attribute_values = array_filter($allowed_attribute_values, function ($value) { return $value !== '*'; });
+          $allowed_attribute_values = array_filter($allowed_attribute_values, function ($value) {
+            return $value !== '*';
+          });
 
           // $allowed_attribute_values needs to be empty to allow all values.
           if (array_key_exists($name, $attributes[$tag])) {
@@ -236,7 +243,7 @@ class InsertUtility {
           // The attribute is set already and allows all values.
           continue;
         }
-        elseif ($found_attribute === null) {
+        elseif ($found_attribute === NULL) {
           // The attribute is not yet set, just add it.
           $value = preg_replace('/<' . $tag . '/', '<' . $tag . ' ' . $name, $value);
         }

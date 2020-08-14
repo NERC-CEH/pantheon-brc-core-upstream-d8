@@ -5,8 +5,6 @@
  * Generate examples of all elements.
  */
 
-use Drupal\Component\Utility\Unicode;
-
 /**
  * Generate examples of all elements.
  *
@@ -25,8 +23,7 @@ function webform_test_test_example_elements() {
     'basic_elements' => [],
     'advanced_elements' => [],
   ];
-  foreach ($definitions as $definition) {
-    $element_type = $definition['id'];
+  foreach ($definitions as $element_type => $definition) {
     if (!empty($definition['composite'])) {
       continue;
     }
@@ -38,7 +35,7 @@ function webform_test_test_example_elements() {
     }
 
     $category_name = (string) $webform_element->getPluginDefinition()['category'] ?: 'Other elements';
-    $category_id = preg_replace('/[^a-zA-Z0-9]+/', '_', Unicode::strtolower($category_name));
+    $category_id = preg_replace('/[^a-zA-Z0-9]+/', '_', mb_strtolower($category_name));
     if (empty($data[$category_id])) {
       $data[$category_id] = [
         '#type' => 'details',
@@ -57,7 +54,7 @@ function webform_test_test_example_elements() {
           $multiple_element = $element;
           $multiple_element['#title'] = $element['#title'] . ' ' . $property;
           $multiple_element["#$property"] = TRUE;
-          if ($property == 'multiple' && $webform_element->hasProperty('select2')) {
+          if ($property === 'multiple' && $webform_element->hasProperty('select2')) {
             $multiple_element['#select2'] = TRUE;
           }
           $data[$category_id][$element_type . '_' . $property] = $multiple_element;

@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @file
+ */
+
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'insert.update.php';
 
 use Drupal\Component\Utility\NestedArray;
@@ -20,7 +24,7 @@ const INSERT_DEFAULT_SETTINGS = [
   'styles' => [],
   'default' => 'insert__auto',
   'auto_image_style' => 'image',
-  'link_image' => null,
+  'link_image' => NULL,
   'caption' => FALSE,
   'width' => '',
   'align' => FALSE,
@@ -63,18 +67,18 @@ function insert_field_widget_third_party_settings_form(WidgetInterface $plugin) 
  */
 function _insert_get_insert_type($pluginId) {
   $widgets = \Drupal::moduleHandler()->invokeAll('insert_widgets');
-  $insertType = null;
+  $insertType = NULL;
 
   foreach ($widgets as $widgetInsertType => $pluginIds) {
     if (in_array($pluginId, $pluginIds)) {
-      if ($insertType !== null) {
+      if ($insertType !== NULL) {
         throw new Exception('Multiple insert types configured for plugin id ' . $pluginId);
       }
       $insertType = $widgetInsertType;
     }
   }
 
-  if ($insertType === null) {
+  if ($insertType === NULL) {
     throw new Exception('No insert type configured for plugin id ' . $pluginId);
   }
 
@@ -118,11 +122,13 @@ function _insert_add_process(array &$elements) {
 
 /**
  * Form API callback: Processes a file field element.
+ *
  * @see \Drupal\file\Plugin\Field\FieldWidget\FileWidget::process()
  *
  * @param array $element
  * @param \Drupal\Core\Form\FormStateInterface $form_state
  * @param array $form
+ *
  * @return array
  */
 function _insert_field_process(array $element, FormStateInterface $form_state, array $form) {
@@ -132,7 +138,7 @@ function _insert_field_process(array $element, FormStateInterface $form_state, a
 
   $element['insert'] = [
     '#type' => $element['#insert']['settings']['align']
-      ? 'fieldset' : 'container',
+    ? 'fieldset' : 'container',
     '#attributes' => [
       'class' => [
         'insert',
@@ -157,7 +163,7 @@ function _insert_field_process(array $element, FormStateInterface $form_state, a
 
   $defaultStyleName = !empty($settings['default'])
     ? $settings['default']
-    : null;
+    : NULL;
 
   $insertStyles = _insert_retrieve_styles(
     $settings['styles'],
@@ -215,15 +221,15 @@ function _insert_field_process(array $element, FormStateInterface $form_state, a
     $config = \Drupal::config('insert.config');
 
     $insertElement['#attached']['drupalSettings']['insert'] = [
-      'fileDirectoryPath' => file_default_scheme(),
+      'fileDirectoryPath' => \Drupal::config('system.file')->get('default_scheme'),
       // These CSS classes will be retained from being dumped by CKEditor when
       // applying CKEditor styles using CKEditor's style drop-down.
       'classes' => [
         $insertType => [
-          'insertClass' => $config->get('css_classes.' . $insertType) !== null
-            ? join(' ', $config->get('css_classes.' . $insertType)) : '',
+          'insertClass' => $config->get('css_classes.' . $insertType) !== NULL
+          ? join(' ', $config->get('css_classes.' . $insertType)) : '',
           'styleClass' => join(' ', _insert_get_style_classes($insertStyles)),
-        ]
+        ],
       ],
       'widgets' => [$insertType => $settings],
     ];
@@ -241,7 +247,7 @@ function _insert_field_process(array $element, FormStateInterface $form_state, a
       '#insert' => $element['#insert'],
     ];
 
-    if ($defaultStyleName !== null) {
+    if ($defaultStyleName !== NULL) {
       $insertElement['insert']['button']['#default_value'] = $defaultStyleName;
     }
 
@@ -276,11 +282,11 @@ function _insert_retrieve_styles(array $styleSetting, $defaultStyleName, $insert
     $selectedStyles = !empty($styleSetting['<all>'])
       ? array_combine($allStyles, $allStyles)
       // Else, filter out styles disabled per widget setting.
-      : array_filter((array)$styleSetting);
+      : array_filter((array) $styleSetting);
   }
 
   // Ensure default style is available.
-  if ($defaultStyleName !== null && !array_key_exists($defaultStyleName, $selectedStyles)) {
+  if ($defaultStyleName !== NULL && !array_key_exists($defaultStyleName, $selectedStyles)) {
     $selectedStyles[$defaultStyleName] = $allStyles[$defaultStyleName];
   }
 
@@ -302,6 +308,7 @@ function _insert_retrieve_styles(array $styleSetting, $defaultStyleName, $insert
  *
  * @param string|null $styleName
  * @param string $insertType
+ *
  * @return string
  */
 function _insert_evaluate_default_style($styleName, $insertType) {
@@ -312,7 +319,7 @@ function _insert_evaluate_default_style($styleName, $insertType) {
   }
 
   if ($insertType === INSERT_TYPE_IMAGE) {
-    // Image widgets may use all styles
+    // Image widgets may use all styles.
     return $styleName;
   }
 
@@ -337,11 +344,11 @@ function _insert_get_style_label($style) {
   return is_array($style) ? $style['label'] : $style->label();
 }
 
-
 /**
  * Returns any CSS classes deriving from the style definitions.
  *
  * @param array $styles
+ *
  * @return array
  */
 function _insert_get_style_classes(array $styles) {
@@ -359,6 +366,7 @@ function _insert_get_style_classes(array $styles) {
  *
  * @param string $styleName
  * @param array $vars
+ *
  * @return string
  */
 function _insert_render($styleName, array $vars) {
@@ -395,7 +403,7 @@ function _insert_render($styleName, array $vars) {
           'insert_image__' . $templateFieldName . '__' . $templateStyleName,
           'insert_image__' . $templateFieldName,
           'insert_image__' . $templateStyleName,
-          'insert_image'
+          'insert_image',
         ],
         $vars
       );
@@ -442,7 +450,7 @@ function insert_insert_process(&$insertType, array &$element) {
     return FALSE;
   }
 
-  /** @var File $file */
+  /** @var \Drupal\file\Entity\File $file */
   $file = File::load($item['fids'][0]);
 
   $config = \Drupal::config('insert.config');
@@ -482,16 +490,16 @@ function insert_insert_variables($insertType, array &$element, $styleName, array
     return [];
   }
 
-  /** @var File $file */
+  /** @var \Drupal\file\Entity\File $file */
   $file = $element['#insert'][$insertType]['file'];
 
-  if ($file === null) {
+  if ($file === NULL) {
     return [FALSE];
   }
 
   $config = \Drupal::config('insert.config');
   $imageInfo = pathinfo($file->getFileUri());
-  $extension = $imageInfo['extension'];
+  $extension = isset($imageInfo['extension']) ? $imageInfo['extension'] : NULL;
 
   if (
     $styleName === 'audio' && !in_array($extension, $config->get('file_extensions.audio'))
@@ -503,7 +511,7 @@ function insert_insert_variables($insertType, array &$element, $styleName, array
   $settings = $element['#insert']['settings'];
 
   if ($styleName === 'insert__auto') {
-    $vars['insert__auto'] = null;
+    $vars['insert__auto'] = NULL;
 
     if (in_array($extension, $config->get('file_extensions.video'))) {
       $vars['insert__auto'] = 'video';
@@ -537,13 +545,13 @@ function insert_insert_variables($insertType, array &$element, $styleName, array
     $parsedUrl = parse_url($vars['url']);
     $vars['url'] = $parsedUrl['path'];
     if (!empty($parsedUrl['query'])) {
-      $vars['url']  .= '?' . $parsedUrl['query'];
+      $vars['url'] .= '?' . $parsedUrl['query'];
     }
   }
 
   if ($insertType === INSERT_TYPE_IMAGE) {
     $vars['url_original'] = $vars['url'];
-    $vars['url_link'] = null;
+    $vars['url_link'] = NULL;
     $vars['uuid'] = 'insert-' . $styleName . '-' . $vars['uuid'];
 
     $styleUrl = InsertUtility::buildDerivativeUrl(
@@ -552,7 +560,7 @@ function insert_insert_variables($insertType, array &$element, $styleName, array
       $config->get('absolute')
     );
 
-    if ($styleUrl !== null) {
+    if ($styleUrl !== NULL) {
       $vars['url'] = $styleUrl;
 
       if ($settings['link_image']) {
@@ -569,7 +577,7 @@ function insert_insert_variables($insertType, array &$element, $styleName, array
 }
 
 /**
- * @param WidgetInterface $plugin
+ * @param \Drupal\Core\Field\WidgetInterface $plugin
  * @return array
  */
 function _insert_settings($plugin) {
@@ -611,8 +619,8 @@ function _insert_settings_form(array $settings, $insertType) {
   $element['styles'] = [
     '#type' => 'table',
     '#default_value' => !empty($settings['styles']['<all>'])
-      ? array_keys($stylesList)
-      : $settings['styles'],
+    ? array_keys($stylesList)
+    : $settings['styles'],
     '#element_validate' => [[InsertUtility::class, 'validateList']],
     '#weight' => 22,
     '#tableselect' => TRUE,
@@ -652,7 +660,7 @@ function _insert_settings_form(array $settings, $insertType) {
     $element['link_image'] = [
       '#title' => t('Link image to'),
       '#type' => 'select',
-      '#options' => array_merge([null => t('do not link')], $stylesList),
+      '#options' => array_merge([NULL => t('do not link')], $stylesList),
       '#default_value' => $settings['link_image'],
       '#description' => t('Select the style of the image the image shall link to.'),
       '#weight' => 25,
@@ -700,7 +708,7 @@ function _insert_settings_form(array $settings, $insertType) {
  * Implements hook_field_widget_settings_summary_alter().
  */
 function insert_field_widget_settings_summary_alter(array &$summary, array $context) {
-  /** @var WidgetInterface $plugin */
+  /** @var \Drupal\Core\Field\WidgetInterface $plugin */
   $plugin = $context['widget'];
   $pluginId = $plugin->getPluginId();
 
@@ -714,10 +722,10 @@ function insert_field_widget_settings_summary_alter(array &$summary, array $cont
     $activeStyles = array_intersect_key($styles, array_filter($settings['styles']));
 
     $summary[] = t('Insert') . ': ' . (count($activeStyles)
-        ? implode(', ', array_map(function($style) {
+        ? implode(', ', array_map(function ($style) {
             /** @var array|ImageStyle $style */
             return is_array($style) ? $style['label'] : $style->label();
-          }, $activeStyles))
+        }, $activeStyles))
         : t('disabled')
       );
   }
@@ -727,13 +735,13 @@ function insert_field_widget_settings_summary_alter(array &$summary, array $cont
  * Implements hook_field_widget_form_alter().
  */
 function insert_field_widget_form_alter(array &$element, FormStateInterface $form_state, array $context) {
-  /** @var WidgetInterface $plugin */
+  /** @var \Drupal\Core\Field\WidgetInterface $plugin */
   $plugin = $context['widget'];
   $pluginId = $plugin->getPluginId();
 
   if (InsertUtility::isSourceWidget($pluginId)) {
     $element['#insert'] = [
-      'id' => null,
+      'id' => NULL,
       'settings' => _insert_settings($plugin),
       'type' => _insert_get_insert_type($pluginId),
     ];
@@ -752,7 +760,7 @@ function insert_insert_styles($insertType) {
 
   $stylesList['insert__auto'] = [
     'label' => t('AUTOMATIC'),
-    'weight' => -40
+    'weight' => -40,
   ];
 
   if ($insertType !== INSERT_TYPE_FILE) {
@@ -763,25 +771,25 @@ function insert_insert_styles($insertType) {
 
     $stylesList['image'] = [
       'label' => t('Original image'),
-      'weight' => -15
+      'weight' => -15,
     ];
   }
 
   $stylesList['link'] = [
     'label' => t('Link to file'),
-    'weight' => -20
+    'weight' => -20,
   ];
   $stylesList['icon_link'] = [
     'label' => t('Link to file (with icon)'),
-    'weight' => -19
+    'weight' => -19,
   ];
   $stylesList['audio'] = [
     'label' => t('Embed audio'),
-    'weight' => -10
+    'weight' => -10,
   ];
   $stylesList['video'] = [
     'label' => t('Embed video'),
-    'weight' => -9
+    'weight' => -9,
   ];
 
   return $stylesList;
@@ -828,48 +836,48 @@ function insert_editor_js_settings_alter(array &$settings) {
 
 /**
  * @param array $element
- * @param FormStateInterface $form_state
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
  */
 function _insert_allowed_html_validate(array $element, FormStateInterface &$form_state) {
   $tags = [
-    'img' => null,
-    'a' => null,
-    'audio' => null,
-    'span' => null,
-    'video' => null,
+    'img' => NULL,
+    'a' => NULL,
+    'audio' => NULL,
+    'span' => NULL,
+    'video' => NULL,
   ];
 
   $attributes = [
     'img' => [
-      'class' => null,
-      'src' => null,
-      'width' => null,
-      'height' => null,
-      'alt' => null,
-      'title' => null,
+      'class' => NULL,
+      'src' => NULL,
+      'width' => NULL,
+      'height' => NULL,
+      'alt' => NULL,
+      'title' => NULL,
     ],
     'a' => [
-      'class' => null,
-      'title' => null,
-      'type' => null,
+      'class' => NULL,
+      'title' => NULL,
+      'type' => NULL,
     ],
     'audio' => [
       // Although added through insert_editor_js_settings_alter, CKEditor does
       // not accept contenteditable on <audio> and <video> if not explicitly
       // white-listed:
-      'contenteditable' => null,
-      'controls' => null,
-      'src' => null,
-      'type' => null,
+      'contenteditable' => NULL,
+      'controls' => NULL,
+      'src' => NULL,
+      'type' => NULL,
     ],
     'span' => [
-      'class' => null,
+      'class' => NULL,
     ],
     'video' => [
-      'contenteditable' => null,
-      'controls' => null,
-      'src' => null,
-      'type' => null,
+      'contenteditable' => NULL,
+      'controls' => NULL,
+      'src' => NULL,
+      'type' => NULL,
     ],
   ];
 
@@ -943,7 +951,7 @@ function template_preprocess_insert_image(array &$vars) {
     $vars['height'] = $image->getHeight();
   }
   else {
-    $vars['width'] = $variables['height'] = null;
+    $vars['width'] = $variables['height'] = NULL;
   }
 
   if ($vars['style_name'] === 'image' && !isset($vars['insert__auto'])) {
@@ -951,12 +959,12 @@ function template_preprocess_insert_image(array &$vars) {
     return;
   }
 
-  /** @var ImageStyle $style */
+  /** @var \Drupal\image\Entity\ImageStyle $style */
   $style = ImageStyle::load(
     isset($vars['insert__auto']) ? $vars['insert__auto'] : $vars['style_name']
   );
 
-  if ($style === null) {
+  if ($style === NULL) {
     return;
   }
 
@@ -967,7 +975,7 @@ function template_preprocess_insert_image(array &$vars) {
  * Preprocess variables for the insert-link.html.twig file.
  */
 function template_preprocess_insert_link(array &$vars) {
-  /** @var File $vars['file'] */
+  /** @var \Drupal\file\Entity\File $vars['file'] */
   $vars['name'] = $vars['file']->getFilename();
 }
 
@@ -975,7 +983,7 @@ function template_preprocess_insert_link(array &$vars) {
  * Preprocess variables for the insert-icon-link.html.twig file.
  */
 function template_preprocess_insert_icon_link(array &$vars) {
-  /** @var File $file */
+  /** @var \Drupal\file\Entity\File $file */
   $file = $vars['file'];
 
   $vars['name'] = $file->getFilename();

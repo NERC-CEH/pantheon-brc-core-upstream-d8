@@ -3,40 +3,42 @@
 namespace Drupal\insert\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Field\FieldDefinitionInterface;
-use Drupal\Core\Image\ImageInterface;
 use Drupal\file\Entity\File;
 use Drupal\image\Entity\ImageStyle;
 use Drupal\node\Entity\Node;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ *
+ */
 class RotateController extends ControllerBase {
 
   /**
    * Rotates an image regenerating image derivatives for every image style and
    * saving the corresponding entity with the updated image dimensions.
    *
-   * @param Request $request
-   * @return JsonResponse
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
    */
   public function rotate(Request $request) {
-    $fid = $request->query->get('fid', null);
-    $degree = $request->query->get('degree', null);
-    $nid = $request->query->get('nid', null);
+    $fid = $request->query->get('fid', NULL);
+    $degree = $request->query->get('degree', NULL);
+    $nid = $request->query->get('nid', NULL);
     $absolute = \Drupal::config('insert.config')->get('absolute');
 
-    if ($fid === null || $degree === null || $nid === null) {
+    if ($fid === NULL || $degree === NULL || $nid === NULL) {
       return new JsonResponse([]);
     }
 
     $file = File::load($fid);
 
-    if ($file === null) {
+    if ($file === NULL) {
       return new JsonResponse([]);
     }
 
-    /** @var ImageInterface $image */
+    /** @var \Drupal\Core\Image\ImageInterface $image */
     $image = \Drupal::service('image.factory')->get($file->getFileUri());
 
     if (!$image->isValid()) {
@@ -58,14 +60,14 @@ class RotateController extends ControllerBase {
       $styleUrls[$style->getName()] = $this->convertUrl($url, $absolute);
     }
 
-    $revision = null;
+    $revision = NULL;
 
     // Update dimensions in node.
     $node = Node::load($nid);
-    if ($node !== null) {
+    if ($node !== NULL) {
 
-      /** @var FieldDefinitionInterface $definition */
-      foreach($node->getFieldDefinitions() as $field_name => $definition) {
+      /** @var \Drupal\Core\Field\FieldDefinitionInterface $definition */
+      foreach ($node->getFieldDefinitions() as $field_name => $definition) {
         if ($definition->getType() === 'image') {
           $value = $node->get($field_name)->getValue();
           $found = FALSE;

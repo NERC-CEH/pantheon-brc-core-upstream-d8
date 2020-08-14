@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\insert\FunctionalJavascript;
 
-use Drupal\Core\Entity\Display\EntityDisplayInterface;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 
@@ -32,6 +31,7 @@ trait TextFieldCreationTrait {
    *   Formatter settings to be added to the formatter defaults.
    * @param string (optional) $description
    *   A description for the field. Defaults to ''.
+   *
    * @return \Drupal\Core\Entity\EntityInterface
    */
   protected function createTextField($name, $type_name, $type = 'text_long', array $storage_settings = [], array $field_settings = [], array $widget_settings = [], array $formatter_settings = [], $description = '') {
@@ -41,7 +41,7 @@ trait TextFieldCreationTrait {
       'type' => $type,
       'settings' => $storage_settings,
       'cardinality' => !empty($storage_settings['cardinality'])
-        ? $storage_settings['cardinality'] : 1,
+      ? $storage_settings['cardinality'] : 1,
     ])->save();
 
     $field_config = FieldConfig::create([
@@ -55,7 +55,7 @@ trait TextFieldCreationTrait {
     ]);
     $field_config->save();
 
-    /** @var EntityDisplayInterface $entity */
+    /** @var \Drupal\Core\Entity\Display\EntityDisplayInterface $entity */
     $entity = \Drupal::entityTypeManager()
       ->getStorage('entity_form_display')
       ->load('node.' . $type_name . '.default');
@@ -67,7 +67,7 @@ trait TextFieldCreationTrait {
       ])
       ->save();
 
-    /** @var EntityDisplayInterface $entity */
+    /** @var \Drupal\Core\Entity\Display\EntityDisplayInterface $entity */
     $entity = \Drupal::entityTypeManager()
       ->getStorage('entity_view_display')
       ->load('node.' . $type_name . '.default');

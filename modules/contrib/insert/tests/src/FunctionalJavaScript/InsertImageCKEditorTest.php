@@ -9,6 +9,9 @@ namespace Drupal\Tests\insert\FunctionalJavascript;
  */
 class InsertImageCKEditorTest extends InsertImageCKEditorTestBase {
 
+  /**
+   *
+   */
   public function testCaption() {
     $fieldName = strtolower($this->randomMachineName());
 
@@ -41,13 +44,13 @@ class InsertImageCKEditorTest extends InsertImageCKEditorTestBase {
     $instancesQuery = 'CKEDITOR.instances["edit-body-0-value"].widgets.instances';
 
     $hasCaption = $this->getSession()->evaluateScript($instancesQuery . '[0].data.hasCaption');
-    $this->assertTrue($hasCaption, 'Verified caption being inserted: ' . (string)$hasCaption);
+    $this->assertTrue($hasCaption, 'Verified caption being inserted: ' . (string) $hasCaption);
 
     // For some reason, $titleField->setValue('') empties the whole editor, so
     // resetting title field needs to be simulated using JavaScript.
     $this->getSession()->executeScript('jQuery(\'[name$="[title]"]\').val("").trigger("input")');
     $hasCaption = $this->getSession()->evaluateScript($instancesQuery . '[1].data.hasCaption');
-    $this->assertFalse($hasCaption, 'Verified caption being removed when erasing title field: ' . (string)$hasCaption);
+    $this->assertFalse($hasCaption, 'Verified caption being removed when erasing title field: ' . (string) $hasCaption);
 
     $this->drupalGet('node/add/article');
     $page = $this->getSession()->getPage();
@@ -61,13 +64,16 @@ class InsertImageCKEditorTest extends InsertImageCKEditorTestBase {
 
     $page->findButton('Insert')->click();
     $hasCaption = $this->getSession()->evaluateScript($instancesQuery . '[0].data.hasCaption');
-    $this->assertFalse($hasCaption, 'Verified no caption being inserted when title is empty: ' . (string)$hasCaption);
+    $this->assertFalse($hasCaption, 'Verified no caption being inserted when title is empty: ' . (string) $hasCaption);
 
     $this->getSession()->executeScript('jQuery(\'[name$="[title]"]\').val("some title").trigger("input")');
     $hasCaption = $this->getSession()->evaluateScript($instancesQuery . '[1].data.hasCaption');
-    $this->assertTrue($hasCaption, 'Verified caption being inserted on images already placed: ' . (string)$hasCaption);
+    $this->assertTrue($hasCaption, 'Verified caption being inserted on images already placed: ' . (string) $hasCaption);
   }
 
+  /**
+   *
+   */
   public function testAlign() {
     $fieldName = strtolower($this->randomMachineName());
 

@@ -162,7 +162,7 @@ class WebformArrayHelper {
     $array_keys = array_keys($array);
     $array_key = reset($array_keys);
     do {
-      if ($array_key == $key) {
+      if ($array_key === $key) {
         return $direction($array_keys);
       }
     } while ($array_key = next($array_keys));
@@ -183,7 +183,7 @@ class WebformArrayHelper {
   public static function addPrefix(array $array, $prefix = '#') {
     $prefixed_array = [];
     foreach ($array as $key => $value) {
-      if ($key[0] != $prefix) {
+      if ($key[0] !== $prefix) {
         $key = $prefix . $key;
       }
       $prefixed_array[$key] = $value;
@@ -205,7 +205,7 @@ class WebformArrayHelper {
   public static function removePrefix(array $array, $prefix = '#') {
     $unprefixed_array = [];
     foreach ($array as $key => $value) {
-      if ($key[0] == $prefix) {
+      if ($key[0] === $prefix) {
         $key = preg_replace('/^' . $prefix . '/', '', $key);
       }
       $unprefixed_array[$key] = $value;
@@ -376,6 +376,25 @@ class WebformArrayHelper {
       }
     }
     $array = $new;
+  }
+
+  /**
+   * Remove value from an array.
+   *
+   * @param array &$array
+   *   An array.
+   * @param mixed $value
+   *   A value.
+   *
+   * @see https://stackoverflow.com/questions/7225070/php-array-delete-by-value-not-key
+   */
+  public static function removeValue(array &$array, $value) {
+    if (($key = array_search($value, $array)) !== FALSE) {
+      unset($array[$key]);
+    }
+    if (static::isSequential($array)) {
+      array_values($array);
+    }
   }
 
 }

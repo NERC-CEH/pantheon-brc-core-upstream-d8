@@ -4,6 +4,7 @@ namespace Drupal\webform_ui;
 
 use Drupal\Core\Entity\BundleEntityFormBase;
 use Drupal\Core\Form\OptGroup;
+use Drupal\Core\Render\Markup;
 use Drupal\Core\Serialization\Yaml;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Form\FormStateInterface;
@@ -13,6 +14,8 @@ use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Url;
 use Drupal\webform\Element\WebformElementStates;
 use Drupal\webform\Form\WebformEntityAjaxFormTrait;
+use Drupal\webform\Plugin\WebformElement\WebformElement;
+use Drupal\webform\Plugin\WebformElement\WebformTable;
 use Drupal\webform\Utility\WebformDialogHelper;
 use Drupal\webform\Plugin\WebformElementManagerInterface;
 use Drupal\webform\WebformEntityElementsValidatorInterface;
@@ -26,6 +29,18 @@ class WebformUiEntityElementsForm extends BundleEntityFormBase {
   use WebformEntityAjaxFormTrait;
 
   /**
+   * Array of required states.
+   *
+   * @var array
+   */
+  protected $requiredStates = [
+    'required' => 'required',
+    '!required' => '!required',
+    'optional' => 'optional',
+    '!optional' => '!optional',
+  ];
+
+  /**
    * The renderer.
    *
    * @var \Drupal\Core\Render\RendererInterface
@@ -33,21 +48,21 @@ class WebformUiEntityElementsForm extends BundleEntityFormBase {
   protected $renderer;
 
   /**
-   * Element info manager.
+   * The element info manager.
    *
    * @var \Drupal\Core\Render\ElementInfoManagerInterface
    */
   protected $elementInfo;
 
   /**
-   * Webform element manager.
+   * The webform element manager.
    *
    * @var \Drupal\webform\Plugin\WebformElementManagerInterface
    */
   protected $elementManager;
 
   /**
-   * Webform element validator.
+   * The webform element validator.
    *
    * @var \Drupal\webform\WebformEntityElementsValidatorInterface
    */
@@ -199,7 +214,12 @@ class WebformUiEntityElementsForm extends BundleEntityFormBase {
       }
 
       // Set #required or remove the property.
-      if (isset($webform_ui_elements[$key]['required'])) {
+      $is_conditionally_required = isset($elements_flattened[$key]['#states']) && array_intersect_key($this->requiredStates, $elements_flattened[$key]['#states']);
+      if ($is_conditionally_required) {
+        // Always unset conditionally required elements.
+        unset($elements_flattened[$key]['#required']);
+      }
+      elseif (isset($webform_ui_elements[$key]['required'])) {
         if (empty($webform_ui_elements[$key]['required'])) {
           unset($elements_flattened[$key]['#required']);
         }
@@ -242,7 +262,7 @@ class WebformUiEntityElementsForm extends BundleEntityFormBase {
       'hierarchy' => TRUE,
       'rendering' => TRUE,
     ];
-    if ($messages = $this->elementsValidator->validate($webform, $validate_options)) {
+    if ($this->elementsValidator->validate($webform, $validate_options)) {
       $form_state->setErrorByName(NULL, $this->t('There has been error validating the elements.'));
     }
   }
@@ -334,7 +354,7 @@ class WebformUiEntityElementsForm extends BundleEntityFormBase {
 
       if (empty($element['#title'])) {
         if (!empty($element['#markup'])) {
-          $element['#title'] = ['#markup' => Unicode::truncate(strip_tags($element['#markup']), 100, TRUE, TRUE)];
+          $element['#title'] = Markup::create(Unicode::truncate(strip_tags($element['#markup']), 100, TRUE, TRUE));
         }
         else {
           $element['#title'] = '[' . $element_key . ']';
@@ -358,7 +378,7 @@ class WebformUiEntityElementsForm extends BundleEntityFormBase {
     if ($webform->hasContainer()) {
       $header['add'] = [
         'data' => '',
-        'class' => [RESPONSIVE_PRIORITY_MEDIUM, 'webform-ui-element-operations'],
+        'class' => ['webform-ui-element-operations'],
       ];
     }
     $header['key'] = [
@@ -452,9 +472,11 @@ class WebformUiEntityElementsForm extends BundleEntityFormBase {
 
     $is_container = $webform_element->isContainer($element);
     $is_root = $webform_element->isRoot();
+    $is_element_disabled = $webform_element->isDisabled();
+    $is_access_disabled = (isset($element['#access']) && $element['#access'] === FALSE);
 
     // If disabled, display warning.
-    if ($webform_element->isDisabled()) {
+    if ($is_element_disabled) {
       $webform_element->displayDisabledWarning($element);
     }
 
@@ -476,9 +498,13 @@ class WebformUiEntityElementsForm extends BundleEntityFormBase {
     else {
       $row_class[] = 'webform-ui-element-container';
     }
+    if ($is_element_disabled || $is_access_disabled) {
+      $row_class[] = 'webform-ui-element-disabled';
+    }
 
-    // Add element key.
+    // Add element key and type.
     $row['#attributes']['data-webform-key'] = $element['#webform_key'];
+    $row['#attributes']['data-webform-type'] = (isset($element['#type'])) ? $element['#type'] : '';
 
     $row['#attributes']['class'] = $row_class;
 
@@ -507,12 +533,23 @@ class WebformUiEntityElementsForm extends BundleEntityFormBase {
           'webform' => $webform->id(),
         ];
         $route_options = ['query' => ['parent' => $key]];
-        $row['add'] = [
-          '#type' => 'link',
-          '#title' => $this->t('Add element'),
-          '#url' => new Url('entity.webform_ui.element', $route_parameters, $route_options),
-          '#attributes' => WebformDialogHelper::getModalDialogAttributes(WebformDialogHelper::DIALOG_NORMAL, ['button', 'button-action', 'button--primary', 'button--small']),
-        ];
+        if ($webform_element instanceof WebformTable) {
+          $route_parameters['type'] = 'webform_table_row';
+          $row['add'] = [
+            '#type' => 'link',
+            '#title' => $this->t('Add <span>row</span>'),
+            '#url' => new Url('entity.webform_ui.element.add_form', $route_parameters, $route_options),
+            '#attributes' => WebformDialogHelper::getOffCanvasDialogAttributes(WebformDialogHelper::DIALOG_NORMAL, ['button', 'button-action', 'button--primary', 'button--small']),
+          ];
+        }
+        else {
+          $row['add'] = [
+            '#type' => 'link',
+            '#title' => $this->t('Add <span>element</span>'),
+            '#url' => new Url('entity.webform_ui.element', $route_parameters, $route_options),
+            '#attributes' => WebformDialogHelper::getModalDialogAttributes(WebformDialogHelper::DIALOG_NORMAL, ['button', 'button-action', 'button--primary', 'button--small']),
+          ];
+        }
       }
       else {
         $row['add'] = ['#markup' => ''];
@@ -522,9 +559,16 @@ class WebformUiEntityElementsForm extends BundleEntityFormBase {
       '#markup' => $element['#webform_key'],
     ];
 
-    $row['type'] = [
-      '#markup' => $webform_element->getPluginLabel(),
-    ];
+    $type = $webform_element->getPluginLabel();
+    if ($webform_element instanceof WebformElement) {
+      if (!empty($element['#type'])) {
+        $type = '[' . $element['#type'] . ']';
+      }
+      elseif (isset($element['#theme'])) {
+        $type = '[' . $element['#theme'] . ']';
+      }
+    }
+    $row['type'] = ['#markup' => $type];
 
     if ($webform->hasFlexboxLayout()) {
       $row['flex'] = [
@@ -532,10 +576,12 @@ class WebformUiEntityElementsForm extends BundleEntityFormBase {
       ];
     }
 
+    $is_conditionally_required = FALSE;
     if ($webform->hasConditions()) {
       $states = [];
       if (!empty($element['#states'])) {
         $states = array_intersect_key($element_state_options, $element['#states']);
+        $is_conditionally_required = array_intersect_key($this->requiredStates, $element['#states']);
       }
       $row['conditional'] = [
         '#type' => 'link',
@@ -561,6 +607,10 @@ class WebformUiEntityElementsForm extends BundleEntityFormBase {
         '#title_display' => 'invisible',
         '#default_value' => (empty($element['#required'])) ? FALSE : TRUE,
       ];
+      if ($is_conditionally_required) {
+        $row['required']['#default_value'] = TRUE;
+        $row['required']['#disabled'] = TRUE;
+      }
     }
     else {
       $row['required'] = ['#markup' => ''];
@@ -634,7 +684,7 @@ class WebformUiEntityElementsForm extends BundleEntityFormBase {
     // modal, then clicking the image button opens another modal,
     // which closes the original modal.
     // @todo Remove the below workaround once this issue is resolved.
-    if ($webform_element->getPluginId() == 'processed_text' && !WebformDialogHelper::useOffCanvas()) {
+    if ($webform_element->getPluginId() === 'processed_text' && !WebformDialogHelper::useOffCanvas()) {
       unset($row['operations']['#links']['edit']['attributes']);
     }
     if (!$is_container) {
@@ -698,16 +748,21 @@ class WebformUiEntityElementsForm extends BundleEntityFormBase {
     $row['required'] = ['#markup' => ''];
     $row['weight'] = ['#markup' => '', '#wrapper_attributes' => ['class' => ['webform-tabledrag-hide']]];
     $row['parent'] = ['#markup' => '', '#wrapper_attributes' => ['class' => ['webform-tabledrag-hide']]];
-    $row['operations'] = [
-      '#type' => 'operations',
-      '#prefix' => '<div class="webform-dropbutton">',
-      '#suffix' => '</div>',
-    ];
-    $row['operations']['#links']['customize'] = [
-      'title' => $this->t('Customize'),
-      'url' => new Url('entity.webform_ui.element.add_form', ['webform' => $webform->id(), 'type' => 'webform_actions']),
-      'attributes' => WebformDialogHelper::getOffCanvasDialogAttributes(),
-    ];
+    if ($this->elementManager->isExcluded('webform_actions')) {
+      $row['operations'] = ['#markup' => ''];
+    }
+    else {
+      $row['operations'] = [
+        '#type' => 'operations',
+        '#prefix' => '<div class="webform-dropbutton">',
+        '#suffix' => '</div>',
+      ];
+      $row['operations']['#links']['customize'] = [
+        'title' => $this->t('Customize'),
+        'url' => new Url('entity.webform_ui.element.add_form', ['webform' => $webform->id(), 'type' => 'webform_actions']),
+        'attributes' => WebformDialogHelper::getOffCanvasDialogAttributes(),
+      ];
+    }
     return $row;
   }
 

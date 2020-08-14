@@ -26,7 +26,7 @@ class WebformSubmissionViewController extends EntityViewController {
   protected $currentUser;
 
   /**
-   * Webform request handler.
+   * The webform request handler.
    *
    * @var \Drupal\webform\WebformRequestInterface
    */
@@ -68,6 +68,13 @@ class WebformSubmissionViewController extends EntityViewController {
   public function view(EntityInterface $webform_submission, $view_mode = 'default', $langcode = NULL) {
     $webform = $this->requestHandler->getCurrentWebform();
     $source_entity = $this->requestHandler->getCurrentSourceEntity('webform_submission');
+
+    // Set webform submission template.
+    $build = [
+      '#theme' => 'webform_submission',
+      '#view_mode' => $view_mode,
+      '#webform_submission' => $webform_submission,
+    ];
 
     // Navigation.
     $build['navigation'] = [

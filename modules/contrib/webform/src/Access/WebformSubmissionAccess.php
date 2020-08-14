@@ -12,7 +12,7 @@ use Drupal\webform\WebformSubmissionInterface;
 class WebformSubmissionAccess {
 
   /**
-   * Check whether a webform submissions' webform has wizard pages.
+   * Check whether a webform submissions' webform has wizard pages/cards.
    *
    * @param \Drupal\webform\WebformSubmissionInterface $webform_submission
    *   A webform submission.
@@ -21,7 +21,10 @@ class WebformSubmissionAccess {
    *   The access result.
    */
   public static function checkWizardPagesAccess(WebformSubmissionInterface $webform_submission) {
-    return AccessResult::allowedIf($webform_submission->getWebform()->hasWizardPages());
+    $elements_raw = $webform_submission->getWebform()->getElementsRaw();
+    $has_pages = (strpos($elements_raw, "'#type': webform_wizard_page") !== FALSE
+      || strpos($elements_raw, "'#type': webform_card") !== FALSE);
+    return AccessResult::allowedIf($has_pages);
   }
 
   /**
@@ -36,11 +39,12 @@ class WebformSubmissionAccess {
    *   The access result.
    */
   public static function checkResendAccess(WebformSubmissionInterface $webform_submission, AccountInterface $account) {
-    $webform = $webform_submission->getWebform();
-    if ($webform->access('submission_update_any', $account) && $webform->hasMessageHandler()) {
+    if ($webform_submission->getWebform()->hasMessageHandler()) {
       return AccessResult::allowed();
     }
-    return AccessResult::forbidden();
+    else {
+      return AccessResult::forbidden();
+    }
   }
 
 }

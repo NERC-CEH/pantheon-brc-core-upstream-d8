@@ -5,7 +5,8 @@
  * Archived Webform update hooks.
  */
 
-use Drupal\Component\Uuid\Php as Uuud;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\Component\Uuid\Php as Uuid;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Database\Database;
@@ -13,12 +14,15 @@ use Drupal\Core\Serialization\Yaml;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Url;
 use Drupal\views\Entity\View;
+use Drupal\webform\Element\WebformSignature as WebformSignatureElement;
 use Drupal\webform\Entity\Webform;
 use Drupal\webform\Entity\WebformOptions;
+use Drupal\webform\Entity\WebformSubmission;
 use Drupal\webform\Plugin\WebformHandler\EmailWebformHandler;
 use Drupal\webform\WebformInterface;
 use Drupal\webform\Plugin\WebformHandler\RemotePostWebformHandler;
 use Drupal\webform\Utility\WebformArrayHelper;
+use Drupal\webform\Utility\WebformFormHelper;
 use Drupal\webform\Utility\WebformOptionsHelper;
 use Drupal\webform\Utility\WebformReflectionHelper;
 use Drupal\webform\Utility\WebformYaml;
@@ -56,9 +60,9 @@ function webform_update_8001() {
   foreach ($schema as $item_name => $item) {
     foreach ($item as $table_name => $table_schema) {
       foreach ($table_schema as $schema_key => $schema_data) {
-        if ($schema_key == 'fields') {
+        if ($schema_key === 'fields') {
           foreach ($schema_data as $field_name => $field_data) {
-            if (preg_match('/_target_id$/', $field_name) && $field_data['description'] == 'The ID of the webform entity.' && $schema[$item_name][$table_name]['fields'][$field_name]['length'] === 255) {
+            if (preg_match('/_target_id$/', $field_name) && $field_data['description'] === 'The ID of the webform entity.' && $schema[$item_name][$table_name]['fields'][$field_name]['length'] === 255) {
               $schema[$item_name][$table_name]['fields'][$field_name]['length'] = 32;
               if ($database_schema->tableExists($table_name)) {
                 $database_schema->changeField($table_name, $field_name, $field_name, $schema[$item_name][$table_name]['fields'][$field_name]);
@@ -128,7 +132,7 @@ function webform_update_8006() {
   // Fix key_value.collection which was no updated during the migration.
   $module_handler = \Drupal::moduleHandler();
   $database_type = Database::getConnection('default')->databaseType();
-  if ($module_handler->moduleExists('webform') && !$module_handler->moduleExists('webform') && $database_type == 'mysql') {
+  if ($module_handler->moduleExists('webform') && !$module_handler->moduleExists('webform') && $database_type === 'mysql') {
     $database = \Drupal::database();
 
     $select = $database->select('key_value', 'kv');
@@ -506,10 +510,10 @@ function webform_update_8025() {
   foreach ($schema as $item_name => $item) {
     foreach ($item as $table_name => $table_schema) {
       foreach ($table_schema as $schema_key => $schema_data) {
-        if ($schema_key == 'fields') {
+        if ($schema_key === 'fields') {
           foreach ($schema_data as $field_name => $field_data) {
             $is_webform_field_status = (isset($webform_tables[$table_name]) && $field_name === $webform_tables[$table_name] . '_status');
-            $is_webform_field_integer = ($field_data['type'] == 'int');
+            $is_webform_field_integer = ($field_data['type'] === 'int');
             if ($is_webform_field_status && $is_webform_field_integer) {
               $temp_field_name = $field_name . '_temp';
 
@@ -626,7 +630,7 @@ function webform_update_8030() {
   foreach ($config_factory->listAll('webform.webform.') as $webform_config_name) {
     $webform_config = $config_factory->getEditable($webform_config_name);
     $data = $webform_config->getRawData();
-    $data['settings']['draft'] = ($data['settings']['draft'] == TRUE) ? WebformInterface::DRAFT_AUTHENTICATED : WebformInterface::DRAFT_NONE;
+    $data['settings']['draft'] = ($data['settings']['draft'] === TRUE) ? WebformInterface::DRAFT_AUTHENTICATED : WebformInterface::DRAFT_NONE;
     $webform_config->setData($data)->save();
   }
 }
@@ -754,7 +758,7 @@ function webform_update_8035() {
     $data = $webform_config->getRawData();
     $has_handler = FALSE;
     foreach ($data['handlers'] as &$handler) {
-      if ($handler['id'] == 'email') {
+      if ($handler['id'] === 'email') {
         if (isset($handler['settings']['states']) && is_array($handler['settings']['states'])) {
           $handler['settings']['states'] = array_values(array_filter($handler['settings']['states']));
         }
@@ -825,7 +829,7 @@ function webform_update_8039() {
   foreach ($config_factory->listAll('webform.webform.') as $webform_config_name) {
     $webform_config = $config_factory->getEditable($webform_config_name);
     $data = $webform_config->getRawData();
-    if (isset($data['dependencies']['enforced']['module']) && $data['dependencies']['enforced']['module'] == ['webform_templates']) {
+    if (isset($data['dependencies']['enforced']['module']) && $data['dependencies']['enforced']['module'] === ['webform_templates']) {
       if (!file_exists("$config_install_directory/$webform_config_name.yml")) {
         unset($data['dependencies']['enforced']['module']);
         if (empty($data['dependencies']['enforced'])) {
@@ -1035,7 +1039,7 @@ function _webform_update_8046_convert_data(array $data) {
   $actions_element = [];
   $settings = $data['settings'];
   foreach ($button_names as $button_name) {
-    $settings_prefix = ($button_name == 'submit') ? 'form_' . $button_name : $button_name . '_button';
+    $settings_prefix = ($button_name === 'submit') ? 'form_' . $button_name : $button_name . '_button';
     if (!empty($settings[$settings_prefix . '_label'])) {
       $actions_element['#' . $button_name . '__label'] = $settings[$settings_prefix . '_label'];
     }
@@ -1187,7 +1191,7 @@ function webform_update_8057() {
         $settings = [];
         foreach ($handler['settings'] as $settings_key => $setting_value) {
           $settings[$settings_key] = $setting_value;
-          if ($settings_key == 'excluded_elements') {
+          if ($settings_key === 'excluded_elements') {
             $settings['ignore_access'] = FALSE;
           }
         }
@@ -1329,7 +1333,7 @@ function webform_update_8065() {
         $settings = [];
         foreach ($handler['settings'] as $settings_key => $setting_value) {
           $settings[$settings_key] = $setting_value;
-          if ($settings_key == 'ignore_access') {
+          if ($settings_key === 'ignore_access') {
             $settings['exclude_empty'] = TRUE;
           }
         }
@@ -1997,7 +2001,7 @@ function webform_update_8107() {
 function webform_update_8108() {
   /** @var \Drupal\block\Entity\Block $block */
   foreach (\Drupal::entityTypeManager()->getStorage('block')->loadMultiple() as $block) {
-    if ($block->getPluginId() == 'webform_block') {
+    if ($block->getPluginId() === 'webform_block') {
       $webform_id = $block->getPlugin()->getConfiguration()['webform_id'];
       if (\Drupal::entityTypeManager()->getStorage('webform')->load($webform_id)) {
         $block->save();
@@ -2595,7 +2599,7 @@ function webform_update_8141() {
   $message = NULL;
   if (\Drupal::moduleHandler()->moduleExists('views') && !View::load('webform_submissions')) {
     $config_path = drupal_get_path('module', 'webform') . '/config/optional/views.view.webform_submissions.yml';
-    $data = ['uuid' => (new Uuud())->generate()] + Yaml::decode(file_get_contents($config_path));
+    $data = ['uuid' => (new Uuid())->generate()] + Yaml::decode(file_get_contents($config_path));
     \Drupal::configFactory()->getEditable('views.view.webform_submissions')->setData($data)->save(TRUE);
     $message = 'The new webform submissions view has been created.';
   }
@@ -2668,7 +2672,7 @@ function webform_update_8143() {
 /******************************************************************************/
 
 /**
- * Issue #2998239: Swift Mailer no longer working after custom email handler theme option was added
+ * Issue #2998239: Swift Mailer no longer working after custom email handler theme option was added.
  */
 function webform_update_8144() {
   $config_factory = \Drupal::configFactory();
@@ -2700,7 +2704,7 @@ function webform_update_8144() {
  */
 function webform_update_8145() {
   _webform_update_admin_settings();
-  _webform_update_webform_handler_settings();
+  _webform_update_webform_settings();
 }
 
 /**
@@ -2710,4 +2714,1048 @@ function webform_update_8146() {
   if ($config = \Drupal::configFactory()->getEditable('webform_devel.settings')) {
     $config->delete();
   }
+}
+
+/******************************************************************************/
+// Webform-8.x-5.0-rc23 - October 20, 2018.
+/******************************************************************************/
+
+/**
+ * Issue #3006468: Hide empty fields on on submission page.
+ */
+function webform_update_8147() {
+  _webform_update_webform_settings();
+}
+
+/**
+ * Issue #3007215: Option to retain webform title when source entity is provided.
+ */
+function webform_update_8148() {
+  _webform_update_webform_settings();
+}
+
+/**
+ * Issue #3007247: Custom composite fields appear as block elements.
+ */
+function webform_update_8149() {
+  $config_factory = \Drupal::configFactory();
+  foreach ($config_factory->listAll('webform.webform.') as $webform_config_name) {
+    $webform_config = $config_factory->getEditable($webform_config_name);
+    $elements = $webform_config->get('elements');
+    if (strpos($elements, "'add_more'") !== FALSE) {
+      $elements = str_replace("'#add_more'", "'#add_more_items'", $elements);
+      $elements = str_replace("'#multiple__add_more'", "'#multiple__add_more_items'", $elements);
+      $webform_config->set('elements', $elements);
+      $webform_config->save(TRUE);
+    }
+  }
+}
+
+/******************************************************************************/
+// Webform-8.x-5.0-rc24 - October 22, 2018.
+/******************************************************************************/
+
+/**
+ * Issue #2980032: SUBMISSION BEHAVIORS: Allow edit the previous submission.
+ */
+function webform_update_8150() {
+  _webform_update_webform_settings();
+}
+
+/******************************************************************************/
+// Webform-8.x-5.0-rc25 - November 5, 2018 (No update required).
+/******************************************************************************/
+
+/******************************************************************************/
+// Webform-8.x-5.0-rc26 - November 5, 2018 (No update required).
+/******************************************************************************/
+
+/******************************************************************************/
+// Webform-8.x-5.0-rc27 - November 28, 2018.
+/******************************************************************************/
+
+/**
+ * Issue #3013767: Computed twig element is not working on multi-step form.
+ */
+function webform_update_8151() {
+  $config_factory = \Drupal::configFactory();
+  foreach ($config_factory->listAll('webform.webform.') as $webform_config_name) {
+    $webform_config = $config_factory->getEditable($webform_config_name);
+    $elements = $webform_config->get('elements');
+
+    // Try to decode elements.
+    try {
+      $elements = Yaml::decode($elements);
+    }
+    catch (\Exception $exception) {
+      continue;
+    }
+
+    // Make sure elements is an array.
+    if (!is_array($elements)) {
+      continue;
+    }
+
+    $has_computed_element = FALSE;
+    $flattened_elements =& WebformFormHelper::flattenElements($elements);
+    foreach ($flattened_elements as &$element) {
+      // Convert #value property to #template property.
+      // @see \Drupal\webform\Entity\Webform::initElementsRecursive
+      if (isset($element['#type']) && strpos($element['#type'], 'webform_computed_') === 0) {
+        $has_computed_element = TRUE;
+        if (isset($element['#value']) && !isset($element['#template'])) {
+          $element['#template'] = $element['#value'];
+          unset($element['#value']);
+        }
+      }
+    }
+    if ($has_computed_element) {
+      $webform_config->set('elements', Yaml::encode($elements));
+      $webform_config->save(TRUE);
+    }
+  }
+}
+
+/**
+ * Issue #3014933: Webform paths not being removed when a webform is deleted.
+ */
+function webform_update_8153() {
+  // Load all webforms to improve performance.
+  $webform = Webform::loadMultiple();
+
+  if (\Drupal::entityTypeManager()->hasDefinition('path_alias')) {
+    $storage = \Drupal::entityTypeManager()->getStorage('path_alias');
+    $ids = $storage->getQuery()
+      ->condition('path', '/webform/', 'STARTS_WITH')
+      ->execute();
+
+    /** @var \Drupal\path_alias\PathAliasInterface $path_alias */
+    foreach ($storage->loadMultiple($ids) as $path_alias) {
+      if (preg_match('#^/webform/([^/]+)/(?:drafts|submissions)$#', $path_alias->getPath(), $match)) {
+        // Check if the webform still exists.
+        $webform_id = $match[1];
+        if (!isset($webform[$webform_id])) {
+          $path_alias->delete();
+        }
+      }
+    }
+  }
+  else {
+    $database = \Drupal::database();
+    $select = $database->select('url_alias', 'u');
+    $select->fields('u', ['pid', 'source', 'alias', 'langcode']);
+    $select->condition('source', '/webform/%', 'LIKE');
+    $result = $select->execute();
+    while ($record = $result->fetchAssoc()) {
+      if (preg_match('#^/webform/([^/]+)/(?:drafts|submissions)$#', $record['source'], $match)) {
+        // Check if the webform still exists.
+        $webform_id = $match[1];
+        if (!isset($webform[$webform_id])) {
+          // Delete the broken URL alias.
+          $database->delete('url_alias')
+            ->condition('pid', $record['pid'])
+            ->execute();
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Issue #3015990: Option not to store the IP address for logged-in users.
+ */
+function webform_update_8154() {
+  _webform_update_webform_settings();
+}
+
+/******************************************************************************/
+// Webform-8.x-5.0-rc28 - December 7, 2018
+/******************************************************************************/
+
+/**
+ * Issue #3017679: 2 different validation range modes for date/time field.
+ */
+function webform_update_8155() {
+  $config_factory = \Drupal::configFactory();
+  foreach ($config_factory->listAll('webform.webform.') as $webform_config_name) {
+    $webform_config = $config_factory->getEditable($webform_config_name);
+    $elements = $webform_config->get('elements');
+
+    // Try to decode elements.
+    try {
+      $elements = Yaml::decode($elements);
+    }
+    catch (\Exception $exception) {
+      continue;
+    }
+
+    // Make sure elements is an array.
+    if (!is_array($elements)) {
+      continue;
+    }
+
+    $has_date_element = FALSE;
+    $flattened_elements =& WebformFormHelper::flattenElements($elements);
+    foreach ($flattened_elements as &$element) {
+      // Convert #min/max property to #date_date_(min|max) property.
+      // @see \Drupal\webform\Entity\Webform::initElementsRecursive
+      if (isset($element['#type']) && in_array($element['#type'], ['date', 'datetime', 'datelist'])) {
+        $has_date_element = TRUE;
+        if (isset($element['#min']) && !isset($element['#date_date_min'])) {
+          $element['#date_date_min'] = $element['#min'];
+          unset($element['#min']);
+        }
+        if (isset($element['#max']) && !isset($element['#date_date_max'])) {
+          $element['#date_date_max'] = $element['#max'];
+          unset($element['#max']);
+        }
+      }
+    }
+    if ($has_date_element) {
+      $webform_config->set('elements', Yaml::encode($elements));
+      $webform_config->save(TRUE);
+    }
+  }
+}
+
+/******************************************************************************/
+// Webform-8.x-5.0-rc29 - December 7, 2018. (No update required).
+/******************************************************************************/
+
+/******************************************************************************/
+// Webform-8.x-5.0-rc30 - December 16, 2018.
+/******************************************************************************/
+
+/**
+ * Issue #3015180: Add 'webform_submission_log' submodule.
+ */
+function webform_update_8156() {
+  $enable = \Drupal::config('webform.settings')->get('settings.default_submission_log');
+  if (!$enable) {
+    $query = \Drupal::entityQuery('webform')
+      ->condition('settings.submission_log', TRUE)
+      ->count();
+    $enable = $query->execute() > 0;
+  }
+
+  if ($enable) {
+    try {
+      \Drupal::service('module_installer')->install(['webform_submission_log']);
+    }
+    catch (\Drupal\Core\Database\SchemaObjectExistsException $exception) {
+      // This is actually expected. The table {webform_submission_log} would exist
+      // from webform submission entity schema.
+    }
+
+    // Because MySQL does not allow default value on blob/text column types and
+    // we want to add a not null blob column to a table that is likely to have
+    // existing rows, we are doing it in such a 3-step fashion.
+    \Drupal::database()->schema()->addField('webform_submission_log', 'variables', [
+      'type' => 'blob',
+      'size' => 'big',
+      'description' => 'Serialized array of variables that match the message string and that is passed into the t() function.',
+    ]);
+
+    \Drupal::database()->update('webform_submission_log')->fields([
+      'variables' => serialize([]),
+    ])->execute();
+
+    \Drupal::database()->schema()->changeField('webform_submission_log', 'variables', 'variables', [
+      'type' => 'blob',
+      'not null' => TRUE,
+      'size' => 'big',
+      'description' => 'Serialized array of variables that match the message string and that is passed into the t() function.',
+    ]);
+  }
+}
+
+/******************************************************************************/
+// Webform-8.x-5.0-rc31 - December 31, 2018. (No update required).
+/******************************************************************************/
+
+/******************************************************************************/
+// Webform-8.x-5.0 - December 24, 2018. (No update required).
+/******************************************************************************/
+
+/******************************************************************************/
+// Webform-8.x-5.1 - January 2, 2019.
+/******************************************************************************/
+
+/**
+ * Issue #3022398: Possible modification to update hook and/or documentation.
+ */
+function webform_update_8157() {
+  _webform_update_webform_submission_storage_schema();
+}
+
+/******************************************************************************/
+// Webform-8.x-5.2 - TDB.
+/******************************************************************************/
+
+/**
+ * Issue #3023863: Typo in State/Province codes options.
+ */
+function webform_update_8158() {
+  /** @var \Drupal\webform\WebformOptionsInterface $webform_options */
+  $webform_options = WebformOptions::load('state_province_codes');
+  if (!$webform_options) {
+    return;
+  }
+  $options = $webform_options->getOptions();
+  if (isset($options['AE']) && $options['AE'] === 'Armed Forces (Canada, Europe, Africa, or Middle East') {
+    $options['AE'] = 'Armed Forces (Canada, Europe, Africa, or Middle East)';
+    $webform_options->setOptions($options)->save();
+  }
+}
+
+/**
+ * Issue #3023223: Remove unused fields settings.
+ */
+function webform_update_8159() {
+  /** @var \Drupal\field\FieldStorageConfigInterface[] $field_storage_configs */
+  $field_storage_configs = FieldStorageConfig::loadMultiple();
+  foreach ($field_storage_configs as $field_storage_config) {
+    if ($field_storage_config->getType() !== 'webform') {
+      continue;
+    }
+
+    list($entity_type, $field_name) = explode('.', $field_storage_config->getConfigTarget());
+    $bundles = $field_storage_config->getBundles();
+    foreach ($bundles as $bundle) {
+      $config = \Drupal::configFactory()
+        ->getEditable("field.field.$entity_type.$bundle.$field_name");
+      $data = $config->getRawData();
+      if (isset($data['settings']['default_data'])) {
+        unset(
+          $data['settings']['default_data'],
+          $data['settings']['status'],
+          $data['settings']['open'],
+          $data['settings']['close']
+        );
+        $config->setData($data)->save();
+      }
+    }
+  }
+}
+
+/**
+ * Issue #3019987: Fatal error: Allowed memory size after updating to rc29.
+ */
+function webform_update_8160() {
+  $config = \Drupal::configFactory()
+    ->getEditable('webform.webform.example_computed_elements');
+  if (!$config) {
+    return;
+  }
+
+  // Remove nested calculation elements.
+  $elements = WebformYaml::decode($config->get('elements'));
+  if (isset($elements['calculation']) && isset($elements['calculation']['calculation'])) {
+    $path = drupal_get_path('module', 'webform') . '/modules/webform_examples/config/install/webform.webform.example_computed_elements.yml';
+    $data = Yaml::decode(file_get_contents($path));
+    $config->set('elements', $data['elements'])->save();
+  }
+}
+
+/**
+ * Issue #3026068: Ensure the webform submission has the langcode entity key set.
+ */
+function webform_update_8161() {
+  // Installations that were updated from 8.x-5.0-beta10 or older might have a
+  // unclean langcode definition, update it. First make sure that the langcode
+  // entity key is set, if not, set it and update the field definition.
+  $entity_definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  $entity_type = $entity_definition_update_manager->getEntityType('webform_submission');
+  if (!$entity_type->getKey('langcode')) {
+    $keys = $entity_type->getKeys();
+    $keys['langcode'] = 'langcode';
+    $entity_type->set('entity_keys', $keys);
+    $entity_definition_update_manager->updateEntityType($entity_type);
+
+    $langcode_field = BaseFieldDefinition::create('language')
+      ->setName('langcode')
+      ->setTargetEntityTypeId('webform_submission')
+      ->setLabel(t('Language'))
+      ->setDescription(t('The submission language code.'));
+    \Drupal::entityDefinitionUpdateManager()->updateFieldStorageDefinition($langcode_field);
+  }
+}
+
+/**
+ * Issue #3035054: Captcha challenge still visible after 'close time'.
+ */
+function webform_update_8162() {
+  \Drupal::configFactory()
+    ->getEditable('webform.settings')
+    ->set('third_party_settings.captcha', [
+      'replace_administration_mode' => TRUE,
+    ])
+    ->save();
+}
+
+/**
+ * Issue #2902977: Provide tool for importing submissions from a CSV document.
+ */
+function webform_update_8163() {
+  _webform_update_admin_settings();
+}
+
+/**
+ * Issue #3050884: Allow draft(s) previous message to be customized.
+ */
+function webform_update_8164() {
+  _webform_update_admin_settings();
+  _webform_update_webform_settings();
+}
+
+/**
+ * Issue #3053420: Allows Ajax visual effects to be customized.
+ */
+function webform_update_8165() {
+  _webform_update_admin_settings();
+  _webform_update_webform_settings();
+}
+
+/**
+ * Issue #3049023: All Webforms are listed on Content languages form.
+ */
+function webform_update_8166() {
+  _webform_update_webform_submission_translation();
+}
+
+/**
+ * Issue #3026111: Create a logo and header for the Webform module.
+ */
+function webform_update_8167() {
+  \Drupal::configFactory()->getEditable('webform.settings')
+    ->clear('ui.contribute_disabled')
+    ->clear('contribute')
+    ->save();
+}
+
+/**
+ * Issue #3033726: Provide option to redirect to a URL if Remote Post fails.
+ */
+function webform_update_8168() {
+  _webform_update_webform_handler_settings();
+}
+
+/**
+ * Issue #3062308: Add the ability to use admin theme for a webform's canonical route.
+ */
+function webform_update_8169() {
+  _webform_update_webform_settings();
+}
+
+/**
+ * Issue #3064070: Split STATE_DRAFT into STATE_DRAFT_CREATED and STATE_DRAFT_UPDATE.
+ */
+function webform_update_8170() {
+  // List of handler is that use webform submission state.
+  $states_handler_ids = ['action', 'email', 'scheduled_email', 'remote_post'];
+
+  $config_factory = \Drupal::configFactory();
+  foreach ($config_factory->listAll('webform.webform.') as $webform_config_name) {
+    $webform_config = $config_factory->getEditable($webform_config_name);
+    $data = $webform_config->getRawData();
+    $handler_updated = FALSE;
+    foreach ($data['handlers'] as &$handler) {
+      $settings = $handler['settings'];
+      if (!in_array($handler['id'], $states_handler_ids)) {
+        continue;
+      }
+
+      if (isset($settings['states'])
+        && is_array($settings['states'])
+        && in_array('draft', $settings['states'])) {
+        // Remove old 'draft' state.
+        WebformArrayHelper::removeValue($settings['states'], 'draft');
+        // Prepend new 'draft_created' and 'draft_updated' states.
+        $settings['states'] = array_merge([
+          'draft_created',
+          'draft_updated',
+        ], $settings['states']);
+      }
+
+      if ($handler['id'] === 'remote_post'
+        && isset($settings['draft_url'])) {
+        $settings['draft_created_url'] = $settings['draft_url'];
+        $settings['draft_created_custom_data'] = $settings['draft_custom_data'];
+        $settings['draft_updated_url'] = $settings['draft_url'];
+        $settings['draft_updated_custom_data'] = $settings['draft_custom_data'];
+        unset($settings['draft_url']);
+        unset($settings['draft_custom_data']);
+      }
+
+      if ($handler['settings'] !== $settings) {
+        $handler_updated = TRUE;
+        $handler['settings'] = $settings;
+      }
+    }
+
+    if ($handler_updated) {
+      $webform_config->setData($data)->save();
+    }
+  }
+}
+
+/**
+ * Issue #3066994: Form elements keys (machine name) to be in all cases not just lowercase.
+ */
+function webform_update_8171() {
+  _webform_update_admin_settings();
+}
+
+/**
+ * Issue #3073995: Setting to enable ajax on all webforms.
+ */
+function webform_update_8172() {
+  _webform_update_admin_settings();
+}
+
+/**
+ * Issue #3076086: Allow confirm email to use flexbox.
+ */
+function webform_update_8173() {
+  $config_factory = \Drupal::configFactory();
+  foreach ($config_factory->listAll('webform.webform.') as $webform_config_name) {
+    $webform_config = $config_factory->getEditable($webform_config_name);
+    $data = $webform_config->getRawData();
+    if (strpos($data['elements'], 'webform_flexbox') !== FALSE
+      && strpos($data['elements'], 'webform_email_confirm') !== FALSE
+    ) {
+      $elements = WebformYaml::decode($data['elements']);
+      _webform_update_8173($elements);
+      $data['elements'] = WebformYaml::encode($elements);
+      $webform_config->setData($data)->save();
+    }
+  }
+}
+
+/**
+ * Recursively add flexbox: '0' to email confirm elements.
+ *
+ * @param array $element
+ *   An element.
+ */
+function _webform_update_8173(array &$element) {
+  if (isset($element['#type'])
+    && $element['#type'] === 'webform_email_confirm'
+    && !isset($element['#flexbox'])) {
+    $element['#flexbox'] = '0';
+  }
+  foreach (Element::children($element) as $key) {
+    if (is_array($element[$key])) {
+      _webform_update_8173($element[$key]);
+    }
+  }
+}
+
+/**
+ * Issue #3084531: Allow Email handler add additional parameters.
+ */
+function webform_update_8174() {
+  _webform_update_webform_handler_settings();
+}
+
+/**
+ * Issue #3087865: Webform email handler default subject is missing title.
+ */
+function webform_update_8175() {
+  // Update translated webform.settings configuration.
+  foreach (['config', 'config_snapshot'] as $table_name) {
+    if (!\Drupal::database()->schema()->tableExists($table_name)) {
+      continue;
+    }
+    $query = \Drupal::database()->select($table_name, 'c')
+      ->fields('c', ['name', 'collection', 'data'])
+      ->condition('name', 'webform.settings');
+    $result = $query->execute();
+    while ($record = $result->fetchAssoc()) {
+      $data = unserialize($record['data']);
+      $data['mail']['default_subject'] = str_replace('[webform_submission:source-entity]', '[webform_submission:source-title]', $data['mail']['default_subject']);
+      \Drupal::database()->update($table_name)
+        ->fields(['data' => serialize($data)])
+        ->condition('collection', $record['collection'])
+        ->condition('name', $record['name'])
+        ->execute();
+    }
+  }
+}
+
+/**
+ * Issue #3086507: Allow wizard pages / bar to be updated based on states API.
+ */
+function webform_update_8176() {
+  _webform_update_webform_settings();
+}
+
+/**
+ * Issue #3082822: Anonymous role view submission via secure token.
+ */
+function webform_update_8177() {
+  _webform_update_webform_settings();
+}
+
+/**
+ * Issue #3095275: Allow webform management category/state to be customized.
+ */
+function webform_update_8178() {
+  _webform_update_admin_settings();
+}
+
+/**
+ * Issue #3101300: Allow 'Save' (update) action label to be customized.
+ */
+function webform_update_8179() {
+  $config_factory = \Drupal::configFactory();
+  foreach ($config_factory->listAll('webform.webform.') as $webform_config_name) {
+    $webform_config = $config_factory->getEditable($webform_config_name);
+    $elements = $webform_config->get('elements');
+
+    // Try to decode elements.
+    try {
+      $elements = Yaml::decode($elements);
+    }
+    catch (\Exception $exception) {
+      continue;
+    }
+
+    // Make sure elements is an array.
+    if (!is_array($elements)) {
+      continue;
+    }
+
+    // Copy submit attributes to update attributes to prevent any
+    // unexpected regressions.
+    $has_actions_element = FALSE;
+    $flattened_elements =& WebformFormHelper::flattenElements($elements);
+    foreach ($flattened_elements as &$element) {
+      if (!isset($element['#type']) || $element['#type'] !== 'webform_actions') {
+        continue;
+      }
+
+      if (!empty($element['#submit__attributes']) && empty($element['#update__attributes'])) {
+        $element['#update__attributes'] = $element['#submit__attributes'];
+        $has_actions_element = TRUE;
+      }
+    }
+    if ($has_actions_element) {
+      $webform_config->set('elements', Yaml::encode($elements));
+      $webform_config->save(TRUE);
+    }
+  }
+}
+
+/**
+ * Issue #3103171: Move deprecated jQuery UI buttons element into a sub-module.
+ */
+function webform_update_8180() {
+  $config_factory = \Drupal::configFactory();
+  foreach ($config_factory->listAll('webform.webform.') as $webform_config_name) {
+    $webform_config = $config_factory->get($webform_config_name);
+    $elements = $webform_config->get('elements');
+    if (strpos($elements, 'webform_buttons') !== FALSE) {
+      // Enable the webform_jqueryui_buttons.module.
+      \Drupal::service('module_installer')
+        ->install(['webform_jqueryui_buttons']);
+      return;
+    }
+  }
+}
+
+/**
+ * Issue #3103032: Move deprecated geocomplete element into a sub-module.
+ */
+function webform_update_8181() {
+  $config_factory = \Drupal::configFactory();
+  $install_webform_location_geocomplete = FALSE;
+  foreach ($config_factory->listAll('webform.webform.') as $webform_config_name) {
+    $webform_config = $config_factory->get($webform_config_name);
+    $elements = $webform_config->get('elements');
+    if (strpos($elements, 'webform_location_geocomplete') !== FALSE) {
+      $install_webform_location_geocomplete = TRUE;
+      break;
+    }
+  }
+
+  // Install and configure the webform_location_geocomplete.module.
+  $config = \Drupal::configFactory()->getEditable('webform.settings');
+  if ($install_webform_location_geocomplete) {
+    // Install the webform_location_geocomplete.module.
+    \Drupal::service('module_installer')
+      ->install(['webform_location_geocomplete']);
+
+    // Move the default Google maps API key.
+    $api_key = $config->get('element.default_google_maps_api_key');
+    if ($api_key) {
+      $config->clear('element.default_google_maps_api_key');
+      $config->set('third_party_settings.webform_location_geocomplete.default_google_maps_api_key', $api_key);
+      $config->save();
+    }
+  }
+
+  // Remove 'webform_location_geocomplete' from excluded elements.
+  $config->clear('element.excluded_elements.webform_location_geocomplete');
+}
+
+/**
+ * Issue #3102996: Move deprecated toggles elements into a sub-module.
+ */
+function webform_update_8182() {
+  $config_factory = \Drupal::configFactory();
+  foreach ($config_factory->listAll('webform.webform.') as $webform_config_name) {
+    $webform_config = $config_factory->get($webform_config_name);
+    $elements = $webform_config->get('elements');
+    if (strpos($elements, 'webform_toggle') !== FALSE) {
+      // Enable the webform_toggles.module.
+      \Drupal::service('module_installer')
+        ->install(['webform_toggles']);
+      return;
+    }
+  }
+}
+
+/**
+ * Issue #3103571: Move deprecated icheck support into a dedicated sub-module.
+ */
+function webform_update_8183() {
+  $config_factory = \Drupal::configFactory();
+  foreach ($config_factory->listAll('webform.webform.') as $webform_config_name) {
+    $webform_config = $config_factory->get($webform_config_name);
+    $elements = $webform_config->get('elements');
+    if (strpos($elements, 'icheck') !== FALSE) {
+      // Enable the webform_icheck.module.
+      \Drupal::service('module_installer')
+        ->install(['webform_icheck']);
+      return;
+    }
+  }
+}
+
+/**
+ * Issue #3094270: Add webform variants support.
+ */
+function webform_update_8184() {
+  _webform_update_admin_settings();
+  _webform_update_webform_settings();
+}
+
+/**
+ * Issue #3104049: Exclude attached files from email submission values.
+ */
+function webform_update_8185() {
+  _webform_update_webform_handler_settings();
+}
+
+/**
+ * Issue #3108150: Save numeric properties as numbers instead of strings.
+ */
+function webform_update_8186() {
+  /** @var \Drupal\webform\Plugin\WebformElementManagerInterface $element_manager */
+  $element_manager = \Drupal::service('plugin.manager.webform.element');
+
+  $config_factory = \Drupal::configFactory();
+  foreach ($config_factory->listAll('webform.webform.') as $webform_config_name) {
+    $webform_config = $config_factory->getEditable($webform_config_name);
+    $elements = $webform_config->get('elements');
+
+    // Try to decode elements.
+    try {
+      $elements = Yaml::decode($elements);
+    }
+    catch (\Exception $exception) {
+      continue;
+    }
+
+    // Make sure elements is an array.
+    if (!is_array($elements)) {
+      continue;
+    }
+
+    $has_numeric_element_property = FALSE;
+    $flattened_elements =& WebformFormHelper::flattenElements($elements);
+    foreach ($flattened_elements as &$element) {
+      $webform_element = $element_manager->getElementInstance($element);
+      $default_properties = WebformArrayHelper::addPrefix($webform_element->getDefaultProperties());
+      foreach ($element as $property_name => $property_value) {
+        // Make sure the default properties exists.
+        if (!array_key_exists($property_name, $default_properties)) {
+          continue;
+        }
+
+        // See if the default is NULL or numeric.
+        $default_value = $default_properties[$property_name];
+        if (!is_null($default_value) && !is_numeric($default_value)) {
+          continue;
+        }
+
+        $cast_value = ($property_value == (int) $property_value) ? (int) $property_value : (float) $property_value;
+        if ($property_value == $cast_value) {
+          $element[$property_name] = $cast_value;
+          $has_numeric_element_property = TRUE;
+        }
+      }
+    }
+
+    if ($has_numeric_element_property) {
+      $webform_config->set('elements', Yaml::encode($elements));
+      $webform_config->save(TRUE);
+    }
+  }
+}
+
+/**
+ * Issue #3108266: Update external libraries. Display warning about InputMask.
+ */
+function webform_update_8187() {
+  if (!file_exists(\Drupal::root() . '/libraries/jquery.inputmask/dist/jquery.inputmask.min.js')) {
+    /** @var \Drupal\webform\WebformHelpManagerInterface $help_manager */
+    $help_manager = \Drupal::service('webform.help_manager');
+    $help_manager->addNotification('webform_update_8187',
+      t('<strong>ATTENTION DEVELOPERS!!!</strong> Please make sure to download and update the <a href=":href">Input Mask</a> library to version 5.0.x', [':href' => 'https://github.com/RobinHerbots/Inputmask']) .
+      ' ' . t('<a href=":href">Learn more about updating the Webform module\'s external libraries</a>', [':href' => 'https://www.drupal.org/docs/8/modules/webform/webform-libraries']),
+      'warning'
+    );
+  }
+}
+
+/**
+ * Issue #3097101: Remote Post cast boolean and numer values.
+ */
+function webform_update_8188() {
+  _webform_update_webform_handler_settings();
+}
+
+/**
+ * Issue #3108433: Allow users to personalize the submission list.
+ */
+function webform_update_8189() {
+  _webform_update_admin_settings();
+  _webform_update_webform_settings();
+}
+
+/**
+ * Issue #3121814: Webform submission check taking a long time.
+ */
+function webform_update_8191() {
+  // Copied from: history_update_8101()
+  // @see https://www.drupal.org/docs/8/api/update-api/updating-database-schema-andor-data-in-drupal-8
+  $spec = [
+    'description' => 'The base table for webform_submission entities.',
+    'fields' => [
+      'sid' => [
+        'type' => 'serial',
+        'unsigned' => FALSE,
+        'size' => 'normal',
+        'not null' => TRUE,
+      ],
+      'webform_id' => [
+        'description' => 'The ID of the target entity.',
+        'type' => 'varchar_ascii',
+        'length' => 32,
+        'not null' => TRUE,
+      ],
+      'uuid' => [
+        'type' => 'varchar_ascii',
+        'length' => 128,
+        'binary' => FALSE,
+        'not null' => TRUE,
+      ],
+      'langcode' => [
+        'type' => 'varchar_ascii',
+        'length' => 12,
+        'not null' => TRUE,
+      ],
+      'serial' => [
+        'type' => 'int',
+        'unsigned' => FALSE,
+        'size' => 'normal',
+        'not null' => FALSE,
+      ],
+      'token' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'binary' => FALSE,
+        'not null' => FALSE,
+      ],
+      'uri' => [
+        'type' => 'varchar',
+        'length' => 2000,
+        'binary' => FALSE,
+        'not null' => FALSE,
+      ],
+      'created' => [
+        'type' => 'int',
+        'not null' => FALSE,
+      ],
+      'completed' => [
+        'type' => 'int',
+        'not null' => FALSE,
+      ],
+      'changed' => [
+        'type' => 'int',
+        'not null' => FALSE,
+      ],
+      'in_draft' => [
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => FALSE,
+      ],
+      'current_page' => [
+        'type' => 'varchar',
+        'length' => 128,
+        'binary' => FALSE,
+        'not null' => FALSE,
+      ],
+      'remote_addr' => [
+        'type' => 'varchar',
+        'length' => 128,
+        'binary' => FALSE,
+        'not null' => FALSE,
+      ],
+      'uid' => [
+        'description' => 'The ID of the target entity.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+      ],
+      'entity_type' => [
+        'type' => 'varchar_ascii',
+        'length' => 32,
+        'binary' => FALSE,
+        'not null' => FALSE,
+      ],
+      'entity_id' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'binary' => FALSE,
+        'not null' => FALSE,
+      ],
+      'locked' => [
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => FALSE,
+      ],
+      'sticky' => [
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => FALSE,
+      ],
+      'notes' => [
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ],
+    ],
+    'unique keys' => [
+      'webform_submission_field__uuid__value' => ['uuid'],
+    ],
+    'primary key' => ['sid'],
+    'indexes' => [
+      'webform_submission_field__webform_id__target_id' => ['webform_id'],
+      'webform_submission_field__uid__target_id' => ['uid'],
+      'webform_submission_field__token' => ['token'],
+    ],
+    'foreign keys' => [],
+  ];
+  Database::getConnection()
+    ->schema()
+    ->addIndex('webform_submission', 'webform_submission__token', ['token'], $spec);
+}
+
+/**
+ * Unsafe HMAC construction.
+ */
+function webform_update_8192() {
+  // Check if the webform directory exists.
+  $webform_uri = 'public://webform';
+  if (!\Drupal::service('file_system')->prepareDirectory($webform_uri)) {
+    return NULL;
+  }
+
+  $invalid_signatures = [];
+  $files = \Drupal::service('file_system')->scanDirectory('public://webform/', '/signature-/');
+  foreach ($files as $file) {
+    $value = file_get_contents($file->uri);
+    $value = 'data:image/png;base64,' . base64_encode($value);
+    if (WebformSignatureElement::isSignatureValid($value)) {
+      continue;
+    }
+
+    // Get invalid signature's submission id.
+    if (preg_match('#public://webform/[a-z0-9_]+/signature/(\d+)/#', $file->uri, $match)) {
+      $invalid_signatures[] = $match[1];
+    }
+
+    // Delete invalid invalid signature file.
+    \Drupal::service('file_system')->delete($file->uri);
+  }
+
+  // Exit if all signatures are valid.
+  if (!$invalid_signatures) {
+    return NULL;
+  }
+
+  // Load invalid signature's submissions.
+  $webform_submissions = WebformSubmission::loadMultiple($invalid_signatures);
+  if (!$webform_submissions) {
+    return NULL;
+  }
+
+  // Return plain text or HTML notice.
+  if (PHP_SAPI === 'cli') {
+    $text = t('Invalid signature file detected and deleted. (@see @url)', ['@url' => 'https://www.drupal.org/security/psa']) . PHP_EOL;
+    foreach ($webform_submissions as $webform_submission) {
+      $text .= '- ' . $webform_submission->label() . ' (' . $webform_submission->toUrl()->setAbsolute()->toString() . ')' . PHP_EOL;
+    }
+    return $text;
+  }
+  else {
+    $links = [];
+    foreach ($webform_submissions as $webform_submission) {
+      $links[] = $webform_submission->toLink()->toRenderable();
+    }
+
+    $t_args = [':href' => 'https://www.drupal.org/security/psa'];
+    $build = [
+      'title' => [
+        '#markup' => t('Invalid signature file detected and deleted. (@see <a href=":href">PSA-XXXXX</a>)', $t_args),
+      ],
+      'links' => [
+        '#theme' => 'item_list',
+        '#items' => $links,
+      ],
+    ];
+    return \Drupal::service('renderer')->renderPlain($build);
+  }
+}
+
+/**
+ * Issue #3137964: Make it easier to embed/share a webform.
+ */
+function webform_update_8193() {
+  _webform_update_admin_settings();
+  _webform_update_webform_settings();
+}
+
+/**
+ * Issue #3144962: Webform cards.
+ */
+function webform_update_8195() {
+  _webform_update_webform_settings();
+}
+
+/**
+ * Issue #3153184: Allow a webform displayed as a page to have a custom theme.
+ */
+function webform_update_8196() {
+  _webform_update_webform_settings();
+}
+
+/**
+ * Issue #3144962: Webform cards.
+ */
+function webform_update_8197() {
+  _webform_update_admin_settings();
 }

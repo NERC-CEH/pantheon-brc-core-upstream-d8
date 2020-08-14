@@ -322,6 +322,20 @@ interface WebformSubmissionStorageInterface extends ContentEntityStorageInterfac
    */
   public function getSourceEntityTypes(WebformInterface $webform);
 
+  /**
+   * Get webform submission source entities as options.
+   *
+   * @param \Drupal\webform\WebformInterface $webform
+   *   A webform.
+   * @param string $entity_type
+   *   A source entity type.
+   *
+   * @return array
+   *   An array of source entities as options that the webform
+   *   has been submitted from.
+   */
+  public function getSourceEntityAsOptions(WebformInterface $webform, $entity_type);
+
   /****************************************************************************/
   // WebformSubmissionEntityList methods.
   /****************************************************************************/
@@ -499,6 +513,9 @@ interface WebformSubmissionStorageInterface extends ContentEntityStorageInterfac
    *   (optional) An additional variable that is passed by reference.
    * @param mixed $context2
    *   (optional) An additional variable that is passed by reference.
+   *
+   * @return \Drupal\Core\Access\AccessResult|null
+   *   If 'access' method is invoked an AccessResult is returned.
    */
   public function invokeWebformHandlers($method, WebformSubmissionInterface $webform_submission, &$context1 = NULL, &$context2 = NULL);
 
@@ -556,10 +573,22 @@ interface WebformSubmissionStorageInterface extends ContentEntityStorageInterfac
    *
    * @param \Drupal\webform\WebformSubmissionInterface $webform_submission
    *   A webform submission.
-   * @param array $values
-   *   The value to be logged includes 'handler_id', 'operation', 'message', and 'data'.
+   * @param array $context
+   *   The values/context to be logged includes 'handler_id', 'operation', 'message', and 'data'.
+   *
+   * @deprecated Instead call the 'webform_submission' logger channel directly.
+   *
+   *  $message = 'Some message with an %argument.'
+   *  $context = [
+   *    '%argument' => 'Some value'
+   *    'link' => $webform_submission->toLink($this->t('Edit'), 'edit-form')->toString(),
+   *    'webform_submission' => $webform_submission,
+   *    'handler_id' => NULL,
+   *    'data' => [],
+   *  ];
+   *  \Drupal::logger('webform_submission')->notice($message, $context);
    */
-  public function log(WebformSubmissionInterface $webform_submission, array $values = []);
+  public function log(WebformSubmissionInterface $webform_submission, array $context = []);
 
   /****************************************************************************/
   // Draft methods.
@@ -580,6 +609,10 @@ interface WebformSubmissionStorageInterface extends ContentEntityStorageInterfac
    */
   public function loadDraft(WebformInterface $webform, EntityInterface $source_entity = NULL, AccountInterface $account = NULL);
 
+  /****************************************************************************/
+  // Anonymous submission methods.
+  /****************************************************************************/
+
   /**
    * React to an event when a user logs in.
    *
@@ -587,5 +620,17 @@ interface WebformSubmissionStorageInterface extends ContentEntityStorageInterfac
    *   Account that has just logged in.
    */
   public function userLogin(UserInterface $account);
+
+  /**
+   * Get anonymous user's submission ids.
+   *
+   * @param \Drupal\Core\Session\AccountInterface|null $account
+   *   A user account.
+   *
+   * @return array|
+   *   A array of submission ids or NULL if the user us not anonymous or has
+   *   not saved submissions.
+   */
+  public function getAnonymousSubmissionIds(AccountInterface $account);
 
 }
