@@ -2,12 +2,12 @@
 
 /**
  * @file
+ * Hooks for the shs module.
  *
  * This file contains no working PHP code; it exists to provide additional
  * documentation for doxygen as well as to document hooks in the standard Drupal
  * manner.
  */
-use Drupal\shs\Controller\ShsController;
 
 /**
  * Alter the list of used javascript classes to create the shs widgets.
@@ -18,7 +18,7 @@ use Drupal\shs\Controller\ShsController;
  *   Additional information about the current context (i.e. additional field
  *   settings).
  */
-function hook_shs_class_definitions_alter(&$definitions, $context) {
+function hook_shs_class_definitions_alter(array &$definitions, array $context) {
   if (!empty($context['settings']['custom_widget'])) {
     // Use custom class for option elements.
     $definitions['views']['widgetItem'] = 'Drupal.customShs.MyWidgetItemView';
@@ -26,8 +26,7 @@ function hook_shs_class_definitions_alter(&$definitions, $context) {
 }
 
 /**
- * Alter the list of used javascript classes to create the shs widgets for an
- * individual field.
+ * Alter the list of used javascript classes for an individual field.
  *
  * @param array $definitions
  *   List of class names keyed by type and class key.
@@ -35,7 +34,7 @@ function hook_shs_class_definitions_alter(&$definitions, $context) {
  *   Additional information about the current context (i.e. additional field
  *   settings).
  */
-function hook_shs_FIELDNAME_class_definitions_alter(&$definitions, $context) {
+function hook_shs_FIELDNAME_class_definitions_alter(array &$definitions, array $context) {
   // Use custom class for option elements.
   $definitions['views']['widgetItem'] = 'Drupal.customShs.MyWidgetItemView';
 }
@@ -50,9 +49,9 @@ function hook_shs_FIELDNAME_class_definitions_alter(&$definitions, $context) {
  * @param string $field_name
  *   Name of field the provided settings are used for.
  */
-function hook_shs_js_settings_alter(&$settings_shs, $bundle, $field_name) {
+function hook_shs_js_settings_alter(array &$settings_shs, $bundle, $field_name) {
   if ($field_name == 'field_article_terms') {
-    $settings_shs['settings']['anyLabel'] = t(' - Select an item - ');
+    $settings_shs['settings']['anyLabel'] = t('- Select an item -');
   }
 }
 
@@ -66,9 +65,10 @@ function hook_shs_js_settings_alter(&$settings_shs, $bundle, $field_name) {
  * @param string $field_name
  *   Name of field the provided settings are used for.
  */
-function hook_shs_FIELDNAME_js_settings_alter(&$settings_shs, $bundle, $field_name) {
+function hook_shs_FIELDNAME_js_settings_alter(array &$settings_shs, $bundle, $field_name) {
   $settings_shs['labels'] = [
-    FALSE, // No label for first level.
+    // No label for first level.
+    FALSE,
     t('Country'),
     t('City'),
   ];
@@ -89,16 +89,15 @@ function hook_shs_FIELDNAME_js_settings_alter(&$settings_shs, $bundle, $field_na
  *
  * @see ShsController::getTermData()
  */
-function hook_shs_term_data_alter(&$data, $context) {
+function hook_shs_term_data_alter(array &$data, array $context) {
   // Prepend each term name (rendered option label) with dots.
-  array_walk($data, function(&$term, &$key) {
+  array_walk($data, function (&$term, &$key) {
     $term->name = $term->name . ' ...';
   });
 }
 
 /**
- * Alter the <strong>uncached</strong> term data for a specific bundle
- * (vocabulary).
+ * Alter the <strong>uncached</strong> term data for a specific bundle.
  *
  * @param array $data
  *   Array with term data used for a single SHS widget.
@@ -111,7 +110,7 @@ function hook_shs_term_data_alter(&$data, $context) {
  * @see ShsController::getTermData()
  * @see hook_shs_term_data_alter()
  */
-function hook_shs__bundle_BUNDLENAME__term_data_alter(&$data, $context) {
+function hook_shs__bundle_BUNDLENAME__term_data_alter(array &$data, array $context) {
 
 }
 
@@ -129,7 +128,7 @@ function hook_shs__bundle_BUNDLENAME__term_data_alter(&$data, $context) {
  * @see ShsController::getTermData()
  * @see hook_shs_term_data_alter()
  */
-function hook_shs__field_IDENTIFIER__term_data_alter(&$data, $context) {
+function hook_shs__field_IDENTIFIER__term_data_alter(array &$data, array $context) {
 
 }
 
@@ -148,19 +147,18 @@ function hook_shs__field_IDENTIFIER__term_data_alter(&$data, $context) {
  *   - parent: Term Id of parent term (0 for first level)
  *   - encodingOptions: encoding options used by json_encode(). Do not change.
  */
-function hook_shs_term_data_response_alter(&$content, $context) {
-  $content = json_decode($data);
+function hook_shs_term_data_response_alter(&$content, array $context) {
+  $data = json_decode($content);
   // Prepend the term name (rendered option label) with its key (option value).
-  array_walk($content, function(&$term, &$key) {
+  array_walk($data, function (&$term, &$key) {
     $term->name = $key . ': ' . $term->name;
   });
   $options = isset($context['encodingOptions']) ? $context['encodingOptions'] : 0;
-  $data = json_encode($content, $options);
+  $content = json_encode($data, $options);
 }
 
 /**
- * Alter the response of SHS sent to the browser for a single bundle
- * (vocabulary).
+ * Alter the response of SHS sent to the browser for a single bundle.
  *
  * @param string $content
  *   Json encoded string with data from ShsController::getTermData().
@@ -173,7 +171,7 @@ function hook_shs_term_data_response_alter(&$content, $context) {
  *
  * @see hook_shs_term_data_response_alter()
  */
-function hook_shs__bundle_BUNDLENAME__term_data_response_alter(&$content, $context) {
+function hook_shs__bundle_BUNDLENAME__term_data_response_alter(&$content, array $context) {
 
 }
 
@@ -191,6 +189,6 @@ function hook_shs__bundle_BUNDLENAME__term_data_response_alter(&$content, $conte
  *
  * @see hook_shs_term_data_response_alter()
  */
-function hook_shs__field_IDENTIFIER__term_data_response_alter(&$content, $context) {
+function hook_shs__field_IDENTIFIER__term_data_response_alter(&$content, array $context) {
 
 }

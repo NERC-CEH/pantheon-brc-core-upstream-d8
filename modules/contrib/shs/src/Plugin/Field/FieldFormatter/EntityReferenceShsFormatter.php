@@ -7,6 +7,7 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\Plugin\Field\FieldFormatter\EntityReferenceLabelFormatter;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Entity\EntityInterface;
 
 /**
  * Plugin implementation of the 'entity reference taxonomy term SHS' formatter.
@@ -53,12 +54,11 @@ class EntityReferenceShsFormatter extends EntityReferenceLabelFormatter {
     $output_as_link = $this->getSetting('link');
 
     foreach ($this->getEntitiesToView($items, $langcode) as $delta => $entity) {
-      $label = $entity->label();
       // If the link is to be displayed and the entity has a uri, display a
       // link.
       if ($output_as_link && !$entity->isNew()) {
         try {
-          $uri = $entity->urlInfo();
+          $entity->toUrl();
         }
         catch (UndefinedLinkTemplateException $e) {
           // This exception is thrown by \Drupal\Core\Entity\Entity::urlInfo()

@@ -2477,18 +2477,18 @@
     },
     {
         "name": "drupal/bootstrap_library",
-        "version": "1.13.0",
-        "version_normalized": "1.13.0.0",
+        "version": "1.14.0",
+        "version_normalized": "1.14.0.0",
         "source": {
             "type": "git",
             "url": "https://git.drupalcode.org/project/bootstrap_library.git",
-            "reference": "8.x-1.13"
+            "reference": "8.x-1.14"
         },
         "dist": {
             "type": "zip",
-            "url": "https://ftp.drupal.org/files/projects/bootstrap_library-8.x-1.13.zip",
-            "reference": "8.x-1.13",
-            "shasum": "e75ace404e8f2dc2c5b2303b7a95186486f26ded"
+            "url": "https://ftp.drupal.org/files/projects/bootstrap_library-8.x-1.14.zip",
+            "reference": "8.x-1.14",
+            "shasum": "02ce49a5f8b2047150ae89350ad9caac1e04e352"
         },
         "require": {
             "drupal/core": "^8 || ^9",
@@ -2497,8 +2497,8 @@
         "type": "drupal-module",
         "extra": {
             "drupal": {
-                "version": "8.x-1.13",
-                "datestamp": "1588867613",
+                "version": "8.x-1.14",
+                "datestamp": "1597506570",
                 "security-coverage": {
                     "status": "covered",
                     "message": "Covered by Drupal's security advisory policy"
@@ -2757,18 +2757,18 @@
     },
     {
         "name": "drupal/collapsiblock",
-        "version": "2.1.0",
-        "version_normalized": "2.1.0.0",
+        "version": "3.0.0",
+        "version_normalized": "3.0.0.0",
         "source": {
             "type": "git",
             "url": "https://git.drupalcode.org/project/collapsiblock.git",
-            "reference": "8.x-2.1"
+            "reference": "3.0.0"
         },
         "dist": {
             "type": "zip",
-            "url": "https://ftp.drupal.org/files/projects/collapsiblock-8.x-2.1.zip",
-            "reference": "8.x-2.1",
-            "shasum": "e90acb456f6cfb52378478214c7435d95e93970f"
+            "url": "https://ftp.drupal.org/files/projects/collapsiblock-3.0.0.zip",
+            "reference": "3.0.0",
+            "shasum": "49fb169ad62d061b15c868a036ebc38b48906299"
         },
         "require": {
             "drupal/core": "^8 || ^9"
@@ -2776,8 +2776,8 @@
         "type": "drupal-module",
         "extra": {
             "drupal": {
-                "version": "8.x-2.1",
-                "datestamp": "1588032521",
+                "version": "3.0.0",
+                "datestamp": "1599195573",
                 "security-coverage": {
                     "status": "covered",
                     "message": "Covered by Drupal's security advisory policy"
@@ -4338,18 +4338,18 @@
     },
     {
         "name": "drupal/ds",
-        "version": "3.8.0",
-        "version_normalized": "3.8.0.0",
+        "version": "3.9.0",
+        "version_normalized": "3.9.0.0",
         "source": {
             "type": "git",
             "url": "https://git.drupalcode.org/project/ds.git",
-            "reference": "8.x-3.8"
+            "reference": "8.x-3.9"
         },
         "dist": {
             "type": "zip",
-            "url": "https://ftp.drupal.org/files/projects/ds-8.x-3.8.zip",
-            "reference": "8.x-3.8",
-            "shasum": "a6a11a49d7e7757fd758a875ee0fe98e90dc59cb"
+            "url": "https://ftp.drupal.org/files/projects/ds-8.x-3.9.zip",
+            "reference": "8.x-3.9",
+            "shasum": "7b419763cd87c2b3f06313489500746705a46334"
         },
         "require": {
             "drupal/core": "^8.8 || ^9"
@@ -4361,8 +4361,8 @@
         "type": "drupal-module",
         "extra": {
             "drupal": {
-                "version": "8.x-3.8",
-                "datestamp": "1595604979",
+                "version": "8.x-3.9",
+                "datestamp": "1598898821",
                 "security-coverage": {
                     "status": "covered",
                     "message": "Covered by Drupal's security advisory policy"
@@ -6096,18 +6096,18 @@
     },
     {
         "name": "drupal/menu_breadcrumb",
-        "version": "1.13.0",
-        "version_normalized": "1.13.0.0",
+        "version": "1.14.0",
+        "version_normalized": "1.14.0.0",
         "source": {
             "type": "git",
             "url": "https://git.drupalcode.org/project/menu_breadcrumb.git",
-            "reference": "8.x-1.13"
+            "reference": "8.x-1.14"
         },
         "dist": {
             "type": "zip",
-            "url": "https://ftp.drupal.org/files/projects/menu_breadcrumb-8.x-1.13.zip",
-            "reference": "8.x-1.13",
-            "shasum": "6f19a3db4c88e1d6d3cc8937844e02f0abbe69f1"
+            "url": "https://ftp.drupal.org/files/projects/menu_breadcrumb-8.x-1.14.zip",
+            "reference": "8.x-1.14",
+            "shasum": "3edeb447410cdb0635d0babbfc641010014bee7f"
         },
         "require": {
             "drupal/core": "^8 || ^9"
@@ -6115,8 +6115,8 @@
         "type": "drupal-module",
         "extra": {
             "drupal": {
-                "version": "8.x-1.13",
-                "datestamp": "1591033168",
+                "version": "8.x-1.14",
+                "datestamp": "1598626277",
                 "security-coverage": {
                     "status": "covered",
                     "message": "Covered by Drupal's security advisory policy"
@@ -7341,6 +7341,59 @@
         }
     },
     {
+        "name": "drupal/shs",
+        "version": "1.0.0-alpha5",
+        "version_normalized": "1.0.0.0-alpha5",
+        "source": {
+            "type": "git",
+            "url": "https://git.drupalcode.org/project/shs.git",
+            "reference": "8.x-1.0-alpha5"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://ftp.drupal.org/files/projects/shs-8.x-1.0-alpha5.zip",
+            "reference": "8.x-1.0-alpha5",
+            "shasum": "6c9004ca33eebe85fb7d1d0d4a6749cd1042ccf5"
+        },
+        "require": {
+            "drupal/core": "^8.8 || ^9"
+        },
+        "require-dev": {
+            "drupal/chosen": "*"
+        },
+        "type": "drupal-module",
+        "extra": {
+            "drupal": {
+                "version": "8.x-1.0-alpha5",
+                "datestamp": "1598635902",
+                "security-coverage": {
+                    "status": "not-covered",
+                    "message": "Alpha releases are not covered by Drupal security advisories."
+                }
+            }
+        },
+        "installation-source": "dist",
+        "notification-url": "https://packages.drupal.org/8/downloads",
+        "license": [
+            "GPL-2.0-or-later"
+        ],
+        "authors": [
+            {
+                "name": "jhedstrom",
+                "homepage": "https://www.drupal.org/user/208732"
+            },
+            {
+                "name": "stBorchert",
+                "homepage": "https://www.drupal.org/user/36942"
+            }
+        ],
+        "description": "Creates a simple hierarchical select widget for taxonomy fields.",
+        "homepage": "https://www.drupal.org/project/shs",
+        "support": {
+            "source": "https://git.drupalcode.org/project/shs"
+        }
+    },
+    {
         "name": "drupal/simple_oauth",
         "version": "4.5.0",
         "version_normalized": "4.5.0.0",
@@ -7787,6 +7840,56 @@
         }
     },
     {
+        "name": "drupal/terms_of_use",
+        "version": "2.0.0",
+        "version_normalized": "2.0.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://git.drupalcode.org/project/terms_of_use.git",
+            "reference": "8.x-2.0"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://ftp.drupal.org/files/projects/terms_of_use-8.x-2.0.zip",
+            "reference": "8.x-2.0",
+            "shasum": "50f5b65b0cd3870d8bf5e861925ab7208c2393ee"
+        },
+        "require": {
+            "drupal/core": "^8 || ^9"
+        },
+        "type": "drupal-module",
+        "extra": {
+            "drupal": {
+                "version": "8.x-2.0",
+                "datestamp": "1598772156",
+                "security-coverage": {
+                    "status": "covered",
+                    "message": "Covered by Drupal's security advisory policy"
+                }
+            }
+        },
+        "installation-source": "dist",
+        "notification-url": "https://packages.drupal.org/8/downloads",
+        "license": [
+            "GPL-2.0-or-later"
+        ],
+        "authors": [
+            {
+                "name": "Chill35",
+                "homepage": "https://www.drupal.org/user/92035"
+            },
+            {
+                "name": "ivnish",
+                "homepage": "https://www.drupal.org/user/3547706"
+            }
+        ],
+        "description": "Adds terms of Use to the registration page.",
+        "homepage": "https://www.drupal.org/project/terms_of_use",
+        "support": {
+            "source": "https://git.drupalcode.org/project/terms_of_use"
+        }
+    },
+    {
         "name": "drupal/tmgmt",
         "version": "1.11.0",
         "version_normalized": "1.11.0.0",
@@ -8122,18 +8225,18 @@
     },
     {
         "name": "drupal/view_unpublished",
-        "version": "1.0.0-rc3",
-        "version_normalized": "1.0.0.0-RC3",
+        "version": "1.0.0",
+        "version_normalized": "1.0.0.0",
         "source": {
             "type": "git",
             "url": "https://git.drupalcode.org/project/view_unpublished.git",
-            "reference": "8.x-1.0-rc3"
+            "reference": "8.x-1.0"
         },
         "dist": {
             "type": "zip",
-            "url": "https://ftp.drupal.org/files/projects/view_unpublished-8.x-1.0-rc3.zip",
-            "reference": "8.x-1.0-rc3",
-            "shasum": "6973708d48b76531fa9227d8b959a516e1cb9129"
+            "url": "https://ftp.drupal.org/files/projects/view_unpublished-8.x-1.0.zip",
+            "reference": "8.x-1.0",
+            "shasum": "74ebdf1b4f6963f7bb63192bc314014c0132d03c"
         },
         "require": {
             "drupal/core": "^8 || ^9"
@@ -8141,11 +8244,11 @@
         "type": "drupal-module",
         "extra": {
             "drupal": {
-                "version": "8.x-1.0-rc3",
-                "datestamp": "1595646359",
+                "version": "8.x-1.0",
+                "datestamp": "1597688978",
                 "security-coverage": {
-                    "status": "not-covered",
-                    "message": "RC releases are not covered by Drupal security advisories."
+                    "status": "covered",
+                    "message": "Covered by Drupal's security advisory policy"
                 }
             }
         },

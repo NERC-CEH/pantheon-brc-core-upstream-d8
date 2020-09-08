@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\shs_chosen\Plugin\Field\FieldWidget\OptionsShsChosenWidget.
- */
-
 namespace Drupal\shs_chosen\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\FieldItemListInterface;

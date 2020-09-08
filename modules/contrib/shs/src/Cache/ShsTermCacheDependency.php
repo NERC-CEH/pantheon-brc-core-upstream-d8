@@ -30,7 +30,7 @@ class ShsTermCacheDependency implements CacheableDependencyInterface {
    * {@inheritdoc}
    */
   public function getCacheTags() {
-    return Cache::mergeTags($this->tags, \Drupal::entityManager()->getDefinition('taxonomy_term')->getListCacheTags());
+    return Cache::mergeTags($this->tags, \Drupal::entityTypeManager()->getDefinition('taxonomy_term')->getListCacheTags());
   }
 
   /**

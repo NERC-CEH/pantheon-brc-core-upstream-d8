@@ -3,12 +3,11 @@ type: module
 description: 'Creates a simple hierarchical select widget for taxonomy fields.'
 dependencies:
   - drupal:system (>=8.6)
-  - taxonomy
-# core: 8.x
+  - drupal:taxonomy
+core_version_requirement: ^8.8 || ^9
 package: User interface
 
-# Information added by Drupal.org packaging script on 2018-09-12
-version: '8.x-1.0-alpha4'
-core: '8.x'
+# Information added by Drupal.org packaging script on 2020-08-28
+version: '8.x-1.0-alpha5'
 project: 'shs'
-datestamp: 1536746309
+datestamp: 1598635903

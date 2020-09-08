@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\shs_chosen\Plugin\views\filter\ShsChosenTaxonomyIndexTid.
- */
-
 namespace Drupal\shs_chosen\Plugin\views\filter;
 
 use Drupal\Core\Form\FormStateInterface;
