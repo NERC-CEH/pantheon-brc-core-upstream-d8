@@ -1,15 +1,15 @@
-name: Views Bootstrap
+name: Views Bootstrap 4
 type: module
-description: 'Views Twitter Bootstrap Components.'
+description: Allows for different styles to be used in views to work with Bootstrap 4 components.
 package: Views
-# core: 8.x
+core: 8.x
+core_version_requirement: ^8 || ^9
 dependencies:
   - drupal:views
 libraries:
   - views_bootstrap/components
 
-# Information added by Drupal.org packaging script on 2018-09-19
-version: '8.x-3.1'
-core: '8.x'
+# Information added by Drupal.org packaging script on 2020-05-21
+version: '8.x-4.3'
 project: 'views_bootstrap'
-datestamp: 1537360698
+datestamp: 1590086607
