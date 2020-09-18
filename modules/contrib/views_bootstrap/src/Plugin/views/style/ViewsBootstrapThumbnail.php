@@ -7,20 +7,20 @@ use Drupal\views\Plugin\views\style\StylePluginBase;
 use Drupal\Component\Utility\Html;
 
 /**
- * Style plugin to render each item in an ordered or unordered list.
+ * Style plugin to render each item as a row in a Bootstrap thumbnail.
  *
  * @ingroup views_style_plugins
  *
  * @ViewsStyle(
- *   id = "views_bootstrap_grid",
- *   title = @Translation("Bootstrap Grid"),
- *   help = @Translation("Displays rows in a Bootstrap Grid layout"),
- *   theme = "views_bootstrap_grid",
+ *   id = "views_bootstrap_thumbnail",
+ *   title = @Translation("Bootstrap Thumbnails"),
+ *   help = @Translation("Displays rows in a Bootstrap Grid layout with thumbnails"),
+ *   theme = "views_bootstrap_thumbnail",
  *   theme_file = "../views_bootstrap.theme.inc",
  *   display_types = {"normal"}
  * )
  */
-class ViewsBootstrapGrid extends StylePluginBase {
+class ViewsBootstrapThumbnail extends StylePluginBase {
   /**
    * Overrides \Drupal\views\Plugin\views\style\StylePluginBase::usesRowPlugin.
    *

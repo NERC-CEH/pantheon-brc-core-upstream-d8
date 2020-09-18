@@ -21,47 +21,43 @@ class ViewsBootstrap {
     $hooks['views_bootstrap_accordion'] = [
       'preprocess functions' => [
         'template_preprocess_views_bootstrap_accordion',
-        'template_preprocess_views_view_accordion',
       ],
       'file' => 'views_bootstrap.theme.inc',
     ];
     $hooks['views_bootstrap_carousel'] = [
       'preprocess functions' => [
         'template_preprocess_views_bootstrap_carousel',
-        'template_preprocess_views_view_carousel',
       ],
       'file' => 'views_bootstrap.theme.inc',
-    ];
-    $hooks['views_bootstrap_cards'] = [
-      'preprocess functions' => [
-        'template_preprocess_views_bootstrap_cards',
-        'template_preprocess_views_view_cards',
-      ],
     ];
     $hooks['views_bootstrap_grid'] = [
       'preprocess functions' => [
         'template_preprocess_views_bootstrap_grid',
+        'template_preprocess_views_view_grid',
       ],
       'file' => 'views_bootstrap.theme.inc',
     ];
     $hooks['views_bootstrap_list_group'] = [
       'preprocess functions' => [
         'template_preprocess_views_bootstrap_list_group',
-        'template_preprocess_views_view_list_group',
       ],
       'file' => 'views_bootstrap.theme.inc',
     ];
     $hooks['views_bootstrap_media_object'] = [
       'preprocess functions' => [
         'template_preprocess_views_bootstrap_media_object',
-        'template_preprocess_views_view_media_object',
+      ],
+      'file' => 'views_bootstrap.theme.inc',
+    ];
+    $hooks['views_bootstrap_panel'] = [
+      'preprocess functions' => [
+        'template_preprocess_views_bootstrap_panel',
       ],
       'file' => 'views_bootstrap.theme.inc',
     ];
     $hooks['views_bootstrap_tab'] = [
       'preprocess functions' => [
         'template_preprocess_views_bootstrap_tab',
-        'template_preprocess_views_view_tab',
       ],
       'file' => 'views_bootstrap.theme.inc',
     ];
@@ -72,23 +68,21 @@ class ViewsBootstrap {
       ],
       'file' => 'views_bootstrap.theme.inc',
     ];
+    $hooks['views_bootstrap_dropdown'] = [
+      'preprocess functions' => [
+        'template_preprocess_views_bootstrap_dropdown',
+      ],
+      'file' => 'views_bootstrap.theme.inc',
+    ];
+    $hooks['views_bootstrap_thumbnail'] = [
+      'preprocess functions' => [
+        'template_preprocess_views_bootstrap_grid',
+        'template_preprocess_views_view_grid',
+      ],
+      'file' => 'views_bootstrap.theme.inc',
+    ];
 
     return $hooks;
-  }
-
-
-  /**
-   * Return an array of breakpoint names.
-   */
-  public static function getBreakpoints() {
-    return ['xs', 'sm', 'md', 'lg', 'xl'];
-  }
-
-  /**
-   * Get column class prefix for the breakpoint.
-   */
-  public static function getColumnPrefix($breakpoint) {
-    return 'col' . ($breakpoint != 'xs' ? '-' . $breakpoint : '');
   }
 
   /**
