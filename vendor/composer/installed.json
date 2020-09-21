@@ -7840,6 +7840,60 @@
         }
     },
     {
+        "name": "drupal/tb_megamenu",
+        "version": "1.0.0-beta1",
+        "version_normalized": "1.0.0.0-beta1",
+        "source": {
+            "type": "git",
+            "url": "https://git.drupalcode.org/project/tb_megamenu.git",
+            "reference": "8.x-1.0-beta1"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://ftp.drupal.org/files/projects/tb_megamenu-8.x-1.0-beta1.zip",
+            "reference": "8.x-1.0-beta1",
+            "shasum": "280dfe09aacd761aa2afa0edb41eeaf9b61d3e80"
+        },
+        "require": {
+            "drupal/core": "^8 || ^9"
+        },
+        "type": "drupal-module",
+        "extra": {
+            "drupal": {
+                "version": "8.x-1.0-beta1",
+                "datestamp": "1599847241",
+                "security-coverage": {
+                    "status": "not-covered",
+                    "message": "Project has not opted into security advisory coverage!"
+                }
+            }
+        },
+        "installation-source": "dist",
+        "notification-url": "https://packages.drupal.org/8/downloads",
+        "license": [
+            "GPL-2.0-or-later"
+        ],
+        "authors": [
+            {
+                "name": "andrewozone",
+                "homepage": "https://www.drupal.org/user/3430095"
+            },
+            {
+                "name": "knaffles",
+                "homepage": "https://www.drupal.org/user/1140512"
+            },
+            {
+                "name": "themodularlab",
+                "homepage": "https://www.drupal.org/user/3190381"
+            }
+        ],
+        "description": "Megamenu solutions for Drupal.",
+        "homepage": "https://www.drupal.org/project/tb_megamenu",
+        "support": {
+            "source": "https://git.drupalcode.org/project/tb_megamenu"
+        }
+    },
+    {
         "name": "drupal/terms_of_use",
         "version": "2.0.0",
         "version_normalized": "2.0.0.0",
@@ -8586,66 +8640,6 @@
         "homepage": "https://www.drupal.org/project/views_templates",
         "support": {
             "source": "https://git.drupalcode.org/project/views_templates"
-        }
-    },
-    {
-        "name": "drupal/we_megamenu",
-        "version": "1.11.0",
-        "version_normalized": "1.11.0.0",
-        "source": {
-            "type": "git",
-            "url": "https://git.drupalcode.org/project/we_megamenu.git",
-            "reference": "8.x-1.11"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://ftp.drupal.org/files/projects/we_megamenu-8.x-1.11.zip",
-            "reference": "8.x-1.11",
-            "shasum": "e43b5c37ce72611cd35faf7bcc792304aadf89d8"
-        },
-        "require": {
-            "drupal/core": "^8 || ^9"
-        },
-        "type": "drupal-module",
-        "extra": {
-            "drupal": {
-                "version": "8.x-1.11",
-                "datestamp": "1592456472",
-                "security-coverage": {
-                    "status": "covered",
-                    "message": "Covered by Drupal's security advisory policy"
-                }
-            }
-        },
-        "installation-source": "dist",
-        "notification-url": "https://packages.drupal.org/8/downloads",
-        "license": [
-            "GPL-2.0+"
-        ],
-        "authors": [
-            {
-                "name": "Hai Nguyen Ngoc (HaiNN)",
-                "homepage": "https://www.drupal.org/u/hainn",
-                "role": "Maintainer"
-            },
-            {
-                "name": "WeebPal",
-                "homepage": "https://www.drupal.org/user/1861072"
-            },
-            {
-                "name": "buivankim2020",
-                "homepage": "https://www.drupal.org/user/2959439"
-            },
-            {
-                "name": "dinhbao",
-                "homepage": "https://www.drupal.org/user/3635964"
-            }
-        ],
-        "description": "This powerful Drupal module helps you create custom menu, video and Drupal Blocks.",
-        "homepage": "https://www.drupal.org/project/we_megamenu",
-        "support": {
-            "source": "https://git.drupalcode.org/project/we_megamenu",
-            "issues": "https://www.drupal.org/project/issues/we_megamenu"
         }
     },
     {
