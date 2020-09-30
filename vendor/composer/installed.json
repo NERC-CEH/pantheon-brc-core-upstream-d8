@@ -340,17 +340,17 @@
     },
     {
         "name": "commerceguys/addressing",
-        "version": "v1.0.8",
-        "version_normalized": "1.0.8.0",
+        "version": "v1.0.9",
+        "version_normalized": "1.0.9.0",
         "source": {
             "type": "git",
             "url": "https://github.com/commerceguys/addressing.git",
-            "reference": "cf202c913c10d85085ab5ed9ec88607e312839ce"
+            "reference": "7f6b8780ae20862529a0ceaaf102a3f7ff740b91"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/commerceguys/addressing/zipball/cf202c913c10d85085ab5ed9ec88607e312839ce",
-            "reference": "cf202c913c10d85085ab5ed9ec88607e312839ce",
+            "url": "https://api.github.com/repos/commerceguys/addressing/zipball/7f6b8780ae20862529a0ceaaf102a3f7ff740b91",
+            "reference": "7f6b8780ae20862529a0ceaaf102a3f7ff740b91",
             "shasum": ""
         },
         "require": {
@@ -366,7 +366,7 @@
         "suggest": {
             "symfony/validator": "to validate addresses"
         },
-        "time": "2020-05-26T11:04:04+00:00",
+        "time": "2020-09-12T12:15:49+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
