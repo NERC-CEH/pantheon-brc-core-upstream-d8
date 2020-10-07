@@ -6,7 +6,6 @@ use Drupal\commerce_paypal\Event\ExpressCheckoutRequestEvent;
 use Drupal\commerce_paypal\Event\PayPalEvents;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_payment\Entity\PaymentInterface;
-use Drupal\commerce_payment\Exception\InvalidRequestException;
 use Drupal\commerce_payment\Exception\PaymentGatewayException;
 use Drupal\commerce_payment\PaymentMethodTypeManager;
 use Drupal\commerce_payment\PaymentTypeManager;
@@ -30,7 +29,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  *
  * @CommercePaymentGateway(
  *   id = "paypal_express_checkout",
- *   label = @Translation("PayPal (Express Checkout)"),
+ *   label = @Translation("PayPal - Express Checkout [LEGACY-DEPRECATED]"),
  *   display_label = @Translation("PayPal"),
  *    forms = {
  *     "offsite-payment" = "Drupal\commerce_paypal\PluginForm\ExpressCheckoutForm",
@@ -39,6 +38,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  *   credit_card_types = {
  *     "amex", "discover", "mastercard", "visa",
  *   },
+ *   requires_billing_information = FALSE,
  * )
  */
 class ExpressCheckout extends OffsitePaymentGatewayBase implements ExpressCheckoutInterface {
@@ -199,12 +199,12 @@ class ExpressCheckout extends OffsitePaymentGatewayBase implements ExpressChecko
 
     $form['solution_type'] = [
       '#type' => 'radios',
-      '#title' => t('Type of checkout flow'),
-      '#description' => t('Express Checkout Account Optional (ECAO) where PayPal accounts are not required for payment may not be available in all markets.'),
+      '#title' => $this->t('Type of checkout flow'),
+      '#description' => $this->t('Express Checkout Account Optional (ECAO) where PayPal accounts are not required for payment may not be available in all markets.'),
       '#options' => [
-        'Mark' => t('Require a PayPal account (this is the standard configuration).'),
-        'SoleLogin' => t('Allow PayPal AND credit card payments, defaulting to the PayPal form.'),
-        'SoleBilling' => t('Allow PayPal AND credit card payments, defaulting to the credit card form.'),
+        'Mark' => $this->t('Require a PayPal account (this is the standard configuration).'),
+        'SoleLogin' => $this->t('Allow PayPal AND credit card payments, defaulting to the PayPal form.'),
+        'SoleBilling' => $this->t('Allow PayPal AND credit card payments, defaulting to the credit card form.'),
       ],
       '#default_value' => $this->configuration['solution_type'],
     ];
@@ -288,22 +288,34 @@ class ExpressCheckout extends OffsitePaymentGatewayBase implements ExpressChecko
 
     // Set the Payer ID used to finalize payment.
     $order_express_checkout_data['payerid'] = $paypal_response['PAYERID'];
-    $order->setData('paypal_express_checkout', $order_express_checkout_data);
 
+    // Note: There is no need to save the order here, because it will be
+    // saved by the Commerce PaymentController after onReturn() completes.
+    $order->setData('paypal_express_checkout', $order_express_checkout_data);
     // If the user is anonymous, add their PayPal e-mail to the order.
     if (empty($order->mail)) {
       $order->setEmail($paypal_response['EMAIL']);
     }
-    $order->save();
 
     // DoExpressCheckoutPayment API Operation (NVP).
     // Completes an Express Checkout transaction.
     $paypal_response = $this->doExpressCheckoutDetails($order);
 
     // Nothing to do for failures for now - no payment saved.
-    // @todo - more about the failures.
-    if ($paypal_response['PAYMENTINFO_0_PAYMENTSTATUS'] == 'Failed') {
+    if (isset($paypal_response['PAYMENTINFO_0_PAYMENTSTATUS']) && $paypal_response['PAYMENTINFO_0_PAYMENTSTATUS'] == 'Failed') {
       throw new PaymentGatewayException($paypal_response['PAYMENTINFO_0_LONGMESSAGE'], $paypal_response['PAYMENTINFO_0_ERRORCODE']);
+    }
+
+    if ($paypal_response['ACK'] == 'Failure') {
+      // When a buyer's funding source fails, the DoExpressCheckoutPayment and
+      // DoAuthorization call, a 10486 error is returned.
+      // @link https://developer.paypal.com/docs/classic/express-checkout/ht_ec_fundingfailure10486/
+      if (isset($paypal_response['L_ERRORCODE0']) && $paypal_response['L_ERRORCODE0'] == "10486") {
+        $message = $paypal_response['L_LONGMESSAGE0'];
+        throw new PaymentGatewayException("$message Express Checkout payment failed due to a bad funding source; it is possible that the transaction exceeded the buyer's card limit.", $paypal_response['L_ERRORCODE0']);
+      }
+
+      throw new PaymentGatewayException($paypal_response['L_LONGMESSAGE0'], $paypal_response['L_ERRORCODE0']);
     }
 
     $payment_storage = $this->entityTypeManager->getStorage('commerce_payment');
@@ -315,35 +327,10 @@ class ExpressCheckout extends OffsitePaymentGatewayBase implements ExpressChecko
       'remote_id' => $paypal_response['PAYMENTINFO_0_TRANSACTIONID'],
       'remote_state' => $paypal_response['PAYMENTINFO_0_PAYMENTSTATUS'],
     ]);
+    $status_mapping = $this->getStatusMapping();
 
-    // Process payment status received.
-    // @todo payment updates if needed.
-    // If we didn't get an approval response code...
-    switch ($paypal_response['PAYMENTINFO_0_PAYMENTSTATUS']) {
-      case 'Voided':
-        $payment->state = 'authorization_voided';
-        break;
-
-      case 'Pending':
-        $payment->state = 'authorization';
-        break;
-
-      case 'Completed':
-      case 'Processed':
-        $payment->state = 'completed';
-        break;
-
-      case 'Refunded':
-        $payment->state = 'refunded';
-        break;
-
-      case 'Partially-Refunded':
-        $payment->state = 'partially_refunded';
-        break;
-
-      case 'Expired':
-        $payment->state = 'authorization_expired';
-        break;
+    if (isset($status_mapping[$paypal_response['PAYMENTINFO_0_PAYMENTSTATUS']])) {
+      $payment->setState($status_mapping[$paypal_response['PAYMENTINFO_0_PAYMENTSTATUS']]);
     }
 
     $payment->save();
@@ -448,41 +435,30 @@ class ExpressCheckout extends OffsitePaymentGatewayBase implements ExpressChecko
       return FALSE;
     }
     // Exit when we don't get a payment status we recognize.
-    if (!in_array($ipn_data['payment_status'], ['Failed', 'Voided', 'Pending', 'Completed', 'Refunded'])) {
+    if (!in_array($ipn_data['payment_status'], ['Voided', 'Pending', 'Completed', 'Refunded'])) {
       throw new BadRequestHttpException('Invalid payment status');
     }
+    $payment_storage = $this->entityTypeManager->getStorage('commerce_payment');
+    $amount = new Price($ipn_data['mc_gross'], $ipn_data['mc_currency']);
+
     // If this is a prior authorization capture IPN...
     if (in_array($ipn_data['payment_status'], ['Voided', 'Pending', 'Completed']) && !empty($ipn_data['auth_id'])) {
       // Ensure we can load the existing corresponding transaction.
-      $payment = $this->loadPaymentByRemoteId($ipn_data['auth_id']);
+      $payment = $payment_storage->loadByRemoteId($ipn_data['auth_id']);
       // If not, bail now because authorization transactions should be created
       // by the Express Checkout API request itself.
       if (!$payment) {
         $this->logger->warning('IPN for Order @order_number ignored: authorization transaction already created.', ['@order_number' => $ipn_data['invoice']]);
         return FALSE;
       }
-      $amount = new Price($ipn_data['mc_gross'], $ipn_data['mc_currency']);
       $payment->setAmount($amount);
-      // Update the payment state.
-      switch ($ipn_data['payment_status']) {
-        case 'Voided':
-          $payment->state = 'authorization_voided';
-          break;
-
-        case 'Pending':
-          $payment->state = 'authorization';
-          break;
-
-        case 'Completed':
-          $payment->state = 'completed';
-          break;
-      }
+      $payment->setState($this->getStatusMapping($ipn_data['payment_status']));
       // Update the remote id.
-      $payment->remote_id = $ipn_data['txn_id'];
+      $payment->setRemoteId($ipn_data['txn_id']);
     }
     elseif ($ipn_data['payment_status'] == 'Refunded') {
       // Get the corresponding parent transaction and refund it.
-      $payment = $this->loadPaymentByRemoteId($ipn_data['parent_txn_id']);
+      $payment = $payment_storage->loadByRemoteId($ipn_data['txn_id']);
       if (!$payment) {
         $this->logger->warning('IPN for Order @order_number ignored: the transaction to be refunded does not exist.', ['@order_number' => $ipn_data['invoice']]);
         return FALSE;
@@ -503,20 +479,9 @@ class ExpressCheckout extends OffsitePaymentGatewayBase implements ExpressChecko
       }
       $payment->setRefundedAmount($new_refunded_amount);
     }
-    elseif ($ipn_data['payment_status'] == 'Failed') {
-      // ToDo - to check and report existing payments???
-    }
-    else {
-      // In other circumstances, exit the processing, because we handle those
-      // cases directly during API response processing.
-      $this->logger->notice('IPN for Order @order_number ignored: this operation was accommodated in the direct API response.', ['@order_number' => $ipn_data['invoice']]);
-      return FALSE;
-    }
+
     if (isset($payment)) {
-      $payment->currency_code = $ipn_data['mc_currency'];
-      // Set the transaction's statuses based on the IPN's payment_status.
       $payment->setRemoteState($ipn_data['payment_status']);
-      // Save the transaction information.
       $payment->save();
     }
   }
@@ -550,7 +515,6 @@ class ExpressCheckout extends OffsitePaymentGatewayBase implements ExpressChecko
    */
   public function setExpressCheckout(PaymentInterface $payment, array $extra) {
     $order = $payment->getOrder();
-
     $amount = $this->rounder->round($payment->getAmount());
     $configuration = $this->getConfiguration();
 
@@ -564,20 +528,16 @@ class ExpressCheckout extends OffsitePaymentGatewayBase implements ExpressChecko
     // Build a name-value pair array for this transaction.
     $nvp_data = [
       'METHOD' => 'SetExpressCheckout',
-
       // Default the Express Checkout landing page to the Mark solution.
       'SOLUTIONTYPE' => 'Mark',
       'LANDINGPAGE' => 'Login',
-
       // Disable entering notes in PayPal, we don't have any way to accommodate
       // them right now.
       'ALLOWNOTE' => '0',
-
       'PAYMENTREQUEST_0_PAYMENTACTION' => $payment_action,
       'PAYMENTREQUEST_0_AMT' => $amount->getNumber(),
       'PAYMENTREQUEST_0_CURRENCYCODE' => $amount->getCurrencyCode(),
-      'PAYMENTREQUEST_0_INVNUM' => $order->id(),
-
+      'PAYMENTREQUEST_0_INVNUM' => $order->id() . '-' . $this->time->getCurrentTime(),
       // Set the return and cancel URLs.
       'RETURNURL' => $extra['return_url'],
       'CANCELURL' => $extra['cancel_url'],
@@ -794,7 +754,6 @@ class ExpressCheckout extends OffsitePaymentGatewayBase implements ExpressChecko
 
     // Make the PayPal NVP API request.
     return $this->doRequest($nvp_data, $order);
-
   }
 
   /**
@@ -822,7 +781,6 @@ class ExpressCheckout extends OffsitePaymentGatewayBase implements ExpressChecko
 
     // Make the PayPal NVP API request.
     return $this->doRequest($nvp_data, $order);
-
   }
 
   /**
@@ -843,7 +801,6 @@ class ExpressCheckout extends OffsitePaymentGatewayBase implements ExpressChecko
 
     // Make the PayPal NVP API request.
     return $this->doRequest($nvp_data, $payment->getOrder());
-
   }
 
   /**
@@ -876,7 +833,6 @@ class ExpressCheckout extends OffsitePaymentGatewayBase implements ExpressChecko
 
     // Make the PayPal NVP API request.
     return $this->doRequest($nvp_data, $payment->getOrder());
-
   }
 
   /**
@@ -909,22 +865,33 @@ class ExpressCheckout extends OffsitePaymentGatewayBase implements ExpressChecko
   }
 
   /**
-   * Loads the payment for a given remote id.
+   * Returns a mapping of PayPal payment statuses to payment states.
    *
-   * @param string $remote_id
-   *   The remote id property for a payment.
+   * @param string $status
+   *   (optional) The PayPal payment status.
    *
-   * @return \Drupal\commerce_payment\Entity\PaymentInterface
-   *   Payment object.
-   *
-   * @todo: to be replaced by Commerce core payment storage method
-   * @see https://www.drupal.org/node/2856209
+   * @return array|string
+   *   An array containing the PayPal remote statuses as well as their
+   *   corresponding states. if $status is specified, the corresponding state
+   *   is returned.
    */
-  protected function loadPaymentByRemoteId($remote_id) {
-    /** @var \Drupal\commerce_payment\PaymentStorage $storage */
-    $storage = $this->entityTypeManager->getStorage('commerce_payment');
-    $payment_by_remote_id = $storage->loadByProperties(['remote_id' => $remote_id]);
-    return reset($payment_by_remote_id);
+  protected function getStatusMapping($status = NULL) {
+    $mapping = [
+      'Voided' => 'authorization_voided',
+      'Pending' => 'authorization',
+      'Processed' => 'completed',
+      'Completed' => 'completed',
+      'Refunded' => 'refunded',
+      'Partially-Refunded' => 'partially_refunded',
+      'Expired' => 'authorization_expired',
+    ];
+
+    // If a status was passed, return its corresponding payment state.
+    if (isset($status) && isset($mapping[$status])) {
+      return $mapping[$status];
+    }
+
+    return $mapping;
   }
 
 }

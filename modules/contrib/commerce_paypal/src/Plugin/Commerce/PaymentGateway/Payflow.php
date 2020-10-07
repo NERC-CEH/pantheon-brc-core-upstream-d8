@@ -26,7 +26,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @CommercePaymentGateway(
  *   id = "paypal_payflow",
- *   label = "PayPal (Payflow)",
+ *   label = "PayPal - Payflow",
  *   display_label = "Credit Card",
  *   payment_method_types = {"credit_card"},
  *   credit_card_types = {
@@ -188,16 +188,22 @@ class Payflow extends OnsitePaymentGatewayBase implements PayflowInterface {
   }
 
   /**
-   * Format the expiration date for Payflow from the provided payment details.
+   * Formats the expiration date from the provided payment details.
+   *
+   * PayPal requires the expiration date to be in MMYY format.
+   * Using a four-digit year (MMYYYY) will cause some banks to decline
+   * transactions because the expiration date is considered invalid.
+   * For example, 072018 will be interpreted as 0720 instead of 0718.
    *
    * @param array $payment_details
-   *   The payment details array.
+   *   The payment details.
    *
    * @return string
-   *   The expiration date string.
+   *   The expiration date, in the MMYY format.
    */
   protected function getExpirationDate(array $payment_details) {
-    return $payment_details['expiration']['month'] . $payment_details['expiration']['year'];
+    $date = \DateTime::createFromFormat('Y', $payment_details['expiration']['year']);
+    return $payment_details['expiration']['month'] . $date->format('y');
   }
 
   /**
@@ -219,6 +225,51 @@ class Payflow extends OnsitePaymentGatewayBase implements PayflowInterface {
     ];
 
     return $parameters + $defaultParameters;
+  }
+
+  /**
+   * Get the remote transaction number ('pnref') of a payment.
+   *
+   * @param \Drupal\commerce_payment\Entity\PaymentInterface $payment
+   *   The payment.
+   *
+   * @return string
+   *   The Payflow transaction number.
+   */
+  protected function getTransactionNumber(PaymentInterface $payment) {
+    return explode('|', $payment->getRemoteId())[0];
+  }
+
+  /**
+   * Get the remote authorization code ('authcode') of a payment.
+   *
+   * @param \Drupal\commerce_payment\Entity\PaymentInterface $payment
+   *   The payment.
+   *
+   * @return string
+   *   The Payflow authorization code.
+   */
+  protected function getAuthorizationCode(PaymentInterface $payment) {
+    $remote_id = $payment->getRemoteId();
+
+    return (strpos($remote_id, '|') !== FALSE) ? explode('|', $remote_id)[1] : $remote_id;
+  }
+
+  /**
+   * Gets a composite Remote ID from two Payflow payment transaction fields.
+   *
+   * @param array $data
+   *   A data array including 'pnref' and 'authcode' keys.
+   *
+   * @return bool|string
+   *   FALSE if required keys are missing, or a string "<pnref>|<authcode>".
+   */
+  protected function prepareRemoteId(array $data) {
+    if (!array_key_exists('pnref', $data) || !array_key_exists('authcode', $data)) {
+      return FALSE;
+    }
+
+    return $data['pnref'] . '|' . $data['authcode'];
   }
 
   /**
@@ -346,7 +397,7 @@ class Payflow extends OnsitePaymentGatewayBase implements PayflowInterface {
       }
 
       $payment
-        ->setRemoteId($data['pnref'])
+        ->setRemoteId($this->prepareRemoteId($data))
         ->setRemoteState('3')
         ->save();
     }
@@ -369,7 +420,7 @@ class Payflow extends OnsitePaymentGatewayBase implements PayflowInterface {
         'trxtype' => 'D',
         'amt' => $this->rounder->round($amount)->getNumber(),
         'currency' => $amount->getCurrencyCode(),
-        'origid' => $payment->getRemoteId(),
+        'origid' => $this->getTransactionNumber($payment),
       ]);
 
       if ($data['result'] !== '0') {
@@ -391,7 +442,7 @@ class Payflow extends OnsitePaymentGatewayBase implements PayflowInterface {
   public function voidPayment(PaymentInterface $payment) {
     $this->validatePayment($payment, 'authorization');
 
-    $remoteId = $payment->getRemoteId();
+    $remoteId = $this->getTransactionNumber($payment);
 
     if (empty($remoteId)) {
       throw new PaymentGatewayException('Remote authorization ID could not be determined.');
@@ -400,7 +451,7 @@ class Payflow extends OnsitePaymentGatewayBase implements PayflowInterface {
     try {
       $data = $this->executeTransaction([
         'trxtype' => 'V',
-        'origid' => $payment->getRemoteId(),
+        'origid' => $this->getTransactionNumber($payment),
         'verbosity' => 'HIGH',
       ]);
 
@@ -430,7 +481,8 @@ class Payflow extends OnsitePaymentGatewayBase implements PayflowInterface {
     $amount = $amount ?: $payment->getAmount();
     $amount = $this->rounder->round($amount);
     $this->assertRefundAmount($payment, $amount);
-    if (empty($payment->getRemoteId())) {
+    $transaction_number = $this->getTransactionNumber($payment);
+    if (empty($transaction_number)) {
       throw new InvalidRequestException('Could not determine the remote payment details.');
     }
 
@@ -439,7 +491,8 @@ class Payflow extends OnsitePaymentGatewayBase implements PayflowInterface {
 
       $data = $this->executeTransaction([
         'trxtype' => 'C',
-        'origid' => $payment->getRemoteId(),
+        'origid' => $transaction_number,
+        'amt' => $amount->getNumber(),
       ]);
       if ($data['result'] !== '0') {
         throw new PaymentGatewayException('Credit could not be completed. Message: ' . $data['respmsg'], $data['result']);
