@@ -62,7 +62,8 @@ class ViewsBootstrapDropdown extends StylePluginBase {
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
 
     $form['help'] = [
-      '#markup' => $this->t('The Bootstrap dropdown renderer can present a list of links in a drop-down menu format.'),
+      '#markup' => $this->t('The Bootstrap dropdown style displays a list of links in a drop-down menu format (<a href=":docs">see Bootstrap documentation</a>).', [':docs' => 'https://getbootstrap.com/docs/3.4/javascript/#dropdowns']),
+      '#weight' => -99,
     ];
 
     $form['button_text'] = [

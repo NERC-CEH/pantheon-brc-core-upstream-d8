@@ -26,6 +26,13 @@ use Drupal\Component\Serialization\Json;
  *     "id" = "id",
  *     "menu" = "menu",
  *   },
+ *   config_export = {
+ *     "id",
+ *     "menu",
+ *     "theme",
+ *     "block_config",
+ *     "menu_config",
+ *   },
  *   links = {
  *     "edit-form" = "/admin/structure/tb-megamenu/{tb_megamenu}",
  *     "delete-form" = "/admin/structure/tb-megamenu/{tb_megamenu}/delete",

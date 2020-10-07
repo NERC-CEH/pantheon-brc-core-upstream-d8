@@ -48,6 +48,11 @@ class ViewsBootstrapMediaObject extends StylePluginBase {
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
     parent::buildOptionsForm($form, $form_state);
 
+    $form['help'] = [
+      '#markup' => $this->t('The Bootstrap media object displays content with an image item lead with heading and text (<a href=":docs">see Bootstrap documentation</a>).', [':docs' => 'https://getbootstrap.com/docs/3.4/components/#media']),
+      '#weight' => -99,
+    ];
+
     $fields = $this->displayHandler->getFieldLabels(TRUE);
     $optionalFields = ['' => $this->t('<None>')];
     $optionalFields += $this->displayHandler->getFieldLabels(TRUE);
@@ -59,6 +64,15 @@ class ViewsBootstrapMediaObject extends StylePluginBase {
       '#required' => TRUE,
       '#default_value' => $this->options['heading_field'],
       '#description' => $this->t('Select the field that will be used as the media object heading.'),
+    ];
+
+    $form['body_field'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Body field'),
+      '#options' => $optionalFields,
+      '#required' => FALSE,
+      '#default_value' => $this->options['body_field'],
+      '#description' => $this->t('Select the field that will be used as the media object body.'),
     ];
 
     $form['image_field'] = [
@@ -80,15 +94,6 @@ class ViewsBootstrapMediaObject extends StylePluginBase {
       ],
       '#default_value' => $this->options['image_class'],
       '#description' => $this->t('Align the media object image left or right.'),
-    ];
-
-    $form['body_field'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Body field'),
-      '#options' => $optionalFields,
-      '#required' => FALSE,
-      '#default_value' => $this->options['body_field'],
-      '#description' => $this->t('Select the field that will be used as the media object body.'),
     ];
 
   }

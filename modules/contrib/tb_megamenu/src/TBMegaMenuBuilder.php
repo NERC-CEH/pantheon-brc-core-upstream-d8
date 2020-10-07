@@ -98,6 +98,8 @@ class TBMegaMenuBuilder {
    *
    * @return \Drupal\Core\Entity\EntityInterface|null
    *   The block entity.
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public static function loadEntityBlock($block_id) {
     return \Drupal::entityTypeManager()->getStorage('block')->load($block_id);
@@ -212,7 +214,7 @@ class TBMegaMenuBuilder {
       '#menu_name' => $menu_name,
       '#block_theme' => $theme,
       '#section' => 'backend',
-      '#post_render' => ['tb_megamenu_attach_number_columns'],
+      '#post_render' => ['\Drupal\tb_megamenu\Controller\TBMegaMenuController::tb_megamenu_attach_number_columns'],
     ];
   }
 

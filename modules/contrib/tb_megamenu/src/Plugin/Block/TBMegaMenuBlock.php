@@ -43,7 +43,7 @@ class TBMegaMenuBlock extends BlockBase {
       '#menu_name' => $menu_name,
       '#block_theme' => $theme_name,
       '#attached' => ['library' => ['tb_megamenu/theme.tb_megamenu']],
-      '#post_render' => ['tb_megamenu_attach_number_columns'],
+      '#post_render' => ['\Drupal\tb_megamenu\Controller\TBMegaMenuController::tb_megamenu_attach_number_columns'],
     ];
   }
 

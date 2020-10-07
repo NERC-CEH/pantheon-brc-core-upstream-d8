@@ -23,7 +23,7 @@ function views_bootstrap_help($route_name, RouteMatchInterface $route_match) {
       $output .= '<h3>' . t('Uses') . '</h3>';
       $output .= '<p>' . t('<a href=":views">Create a view</a> using one of the following styles:', [':views' => '/admin/structure/views/add']) . '</p>';
       $output .= '<ul>';
-      $output .= '<li>' . t('<a href=":docs">Accordion</a>', [':docs' => 'https://getbootstrap.com/docs/3.4/javascript/#collapse']) . '</li>';
+      $output .= '<li>' . t('<a href=":docs">Accordion</a>', [':docs' => 'https://getbootstrap.com/docs/3.4/javascript/#collapse-example-accordion']) . '</li>';
       $output .= '<li>' . t('<a href=":docs">Carousel</a>', [':docs' => 'https://getbootstrap.com/docs/3.4/javascript/#carousel']) . '</li>';
       $output .= '<li>' . t('<a href=":docs">Dropdown</a>', [':docs' => 'https://getbootstrap.com/docs/3.4/javascript/#dropdowns']) . '</li>';
       $output .= '<li>' . t('<a href=":docs">Grid</a>', [':docs' => 'https://getbootstrap.com/docs/3.4/css/#grid']) . '</li>';

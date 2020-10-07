@@ -54,6 +54,12 @@ class ViewsBootstrapTab extends StylePluginBase {
    */
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
     parent::buildOptionsForm($form, $form_state);
+
+    $form['help'] = [
+      '#markup' => $this->t('The Bootstrap tabs displays content with tab titles linked to dynamically displayed content (<a href=":docs">see Bootstrap documentation</a>).', [':docs' => 'https://getbootstrap.com/docs/3.4/javascript/#tabs']),
+      '#weight' => -99,
+    ];
+
     $form['tab_field'] = [
       '#type' => 'select',
       '#title' => $this->t('Tab field'),

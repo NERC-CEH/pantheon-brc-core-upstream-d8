@@ -142,6 +142,11 @@ class ViewsBootstrapThumbnail extends StylePluginBase {
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
     parent::buildOptionsForm($form, $form_state);
 
+    $form['help'] = [
+      '#markup' => $this->t('The Bootstrap thumbnails extends the grid display with the thumbnail component to showcase linked images (<a href=":docs">see Bootstrap documentation</a>).', [':docs' => 'https://getbootstrap.com/docs/3.4/components/#thumbnails']),
+      '#weight' => -99,
+    ];
+
     $form['alignment'] = [
       '#type' => 'radios',
       '#title' => $this->t('Alignment'),

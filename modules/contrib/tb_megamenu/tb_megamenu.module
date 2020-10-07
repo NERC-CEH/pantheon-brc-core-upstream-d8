@@ -27,7 +27,7 @@ function tb_megamenu_help($route_name, RouteMatchInterface $route_match) {
       $output .= '<h3>' . t('Uses') . '</h3>';
       $output .= '<p>' . t('TB Mega Menu is developed following Drupal standards and best practices. Along with those must-have functions of a mega menu: display not just menu items but image, slideshow, video, article and customize any of them upon your favour...; below are the most noticeable features that TB Mega Menu has:') . '</p>';
       $output .= '<ul>';
-      $output .= '<li>' . t('Synchronized with Drupal core menu, auto updated if thereâ€™s any change with Drupal core menu') . '</li>';
+      $output .= '<li>' . t('Synchronized with Drupal core menu, auto updated if there is any change with Drupal core menu') . '</li>';
       $output .= '<li>' . t('Bootstrap framework') . '</li>';
       $output .= '<li>' . t('Responsive ready') . '</li>';
       $output .= '<li>' . t('Multiple built-in styles designed with years of theming experience') . '</li>';
@@ -721,15 +721,6 @@ function tb_megamenu_block_view_tb_megamenu_menu_block_alter(array &$build, Bloc
 /**
  * Attach the number of columns into JS.
  */
-function tb_megamenu_attach_number_columns($childrens, $elements) {
-  $number_columns = &drupal_static('column');
-  $render_array = [];
-  $render_array['#attached']['drupalSettings']['TBMegaMenu'] = [
-    'TBElementsCounter' => ['column' => $number_columns],
-  ];
-  \Drupal::service('renderer')->render($render_array);
-  return $childrens;
-}
 /**
  * Recursively remove menu items without access rights.
  *
@@ -739,7 +730,7 @@ function tb_megamenu_attach_number_columns($childrens, $elements) {
 function tb_megamenu_check_access( array &$menu_items ) {
   foreach ($menu_items as $route => &$item ) {
     if ($item->access instanceof AccessResultInterface && !$item->access->isAllowed()) {
-      unset($menu_items{$route});
+      unset($menu_items[$route]);
       continue;
     }
     if ($item->hasChildren) {

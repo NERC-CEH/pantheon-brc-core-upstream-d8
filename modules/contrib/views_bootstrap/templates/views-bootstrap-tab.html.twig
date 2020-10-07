@@ -1,5 +1,5 @@
 {{ attach_library('views_bootstrap/tabs') }}
-{% set wrapper_classes = [] %}
+{% set wrapper_classes = ['views-bootstrap-tabs'] %}
 {% set option_classes = ['nav'] %}
 {% set option_classes = option_classes|merge(['nav-' ~ tab_type]) %}
 {% if tab_position == 'justified' or tab_position == 'stacked' %}
