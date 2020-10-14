@@ -24,6 +24,7 @@
         "drupal/admin_toolbar": "^2.4",
         "drupal/autofloat": "^1.1",
         "drupal/backup_migrate": "^4.1",
+        "drupal/bibcite_migrate": "^1.0@alpha",
         "drupal/bootstrap": "^3.23",
         "drupal/bootstrap_layouts": "^5.2",
         "drupal/bootstrap_library": "^1.14",
