@@ -257,13 +257,13 @@
   Drupal.eu_cookie_compliance.resizeListener = function () {
     var $wrapper = $('#sliding-popup');
 
-    const debounce = (func, wait) => {
-      let timeout;
+    var debounce = function (func, wait) {
+      var timeout;
 
-      return function executedFunction(...args) {
-        const later = () => {
+      return function executedFunction() {
+        var later = function () {
           clearTimeout(timeout);
-          func(...args);
+          func();
         };
 
         clearTimeout(timeout);
@@ -271,16 +271,16 @@
       };
     };
 
-    const checkIfPopupIsClosed = debounce(function () {
-      const wrapperHeight = $wrapper.outerHeight();
+    var checkIfPopupIsClosed = debounce(function () {
+      var wrapperHeight = $wrapper.outerHeight();
       if (drupalSettings.eu_cookie_compliance.popup_position) {
-        const wrapperTopProperty = parseFloat($wrapper.css('bottom'));
+        var wrapperTopProperty = parseFloat($wrapper.css('bottom'));
         if (wrapperTopProperty !== 0) {
           $wrapper.css('top', wrapperHeight * -1);
         }
       }
       else {
-        const wrapperBottomProperty = parseFloat($wrapper.css('bottom'));
+        var wrapperBottomProperty = parseFloat($wrapper.css('bottom'));
         if (wrapperBottomProperty !== 0) {
           $wrapper.css('bottom', wrapperHeight * -1);
         }
@@ -292,7 +292,6 @@
     });
 
     window.addEventListener('resize', checkIfPopupIsClosed);
-
   };
 
   Drupal.eu_cookie_compliance.createPopup = function (html, closed) {
