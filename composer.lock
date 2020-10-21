@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b3774d1e85cfd8c9464f42f496e68c87",
+    "content-hash": "1acdc184d81a553837323288cef93dc6",
     "packages": [
         {
             "name": "academicpuma/citeproc-php",
@@ -208,7 +208,7 @@
             "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/audiolabs/bibtexparser.git",
+                "url": "git@github.com:audiolabs/bibtexparser.git",
                 "reference": "b2d7794f49887ee7801c780b215d4d66b0f2e475"
             },
             "dist": {
@@ -5007,17 +5007,17 @@
         },
         {
             "name": "drupal/eu_cookie_compliance",
-            "version": "1.9.0",
+            "version": "1.12.0",
             "source": {
                 "type": "git",
                 "url": "https://git.drupalcode.org/project/eu-cookie-compliance.git",
-                "reference": "8.x-1.9"
+                "reference": "8.x-1.12"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://ftp.drupal.org/files/projects/eu_cookie_compliance-8.x-1.9.zip",
-                "reference": "8.x-1.9",
-                "shasum": "1dd57c3fe517d907c0a44bee4ef73f30e98993d3"
+                "url": "https://ftp.drupal.org/files/projects/eu_cookie_compliance-8.x-1.12.zip",
+                "reference": "8.x-1.12",
+                "shasum": "098ac66b0bf0bd62b040bfa27a73eee71f1b20b4"
             },
             "require": {
                 "drupal/core": "^8.8 || ^9"
@@ -5025,8 +5025,8 @@
             "type": "drupal-module",
             "extra": {
                 "drupal": {
-                    "version": "8.x-1.9",
-                    "datestamp": "1588751057",
+                    "version": "8.x-1.12",
+                    "datestamp": "1602924501",
                     "security-coverage": {
                         "status": "covered",
                         "message": "Covered by Drupal's security advisory policy"
@@ -5035,7 +5035,7 @@
             },
             "notification-url": "https://packages.drupal.org/8/downloads",
             "license": [
-                "GPL-2.0+"
+                "GPL-2.0-or-later"
             ],
             "authors": [
                 {
@@ -5049,48 +5049,13 @@
                     "role": "Maintainer"
                 },
                 {
+                    "name": "Neslee Canil Pinto",
+                    "homepage": "https://www.drupal.org/u/neslee-canil-pinto",
+                    "role": "Maintainer"
+                },
+                {
                     "name": "See other contributors",
                     "homepage": "https://www.drupal.org/node/1538032/committers"
-                },
-                {
-                    "name": "achton",
-                    "homepage": "https://www.drupal.org/user/712454"
-                },
-                {
-                    "name": "blairski",
-                    "homepage": "https://www.drupal.org/user/120835"
-                },
-                {
-                    "name": "dakku",
-                    "homepage": "https://www.drupal.org/user/97634"
-                },
-                {
-                    "name": "grzegorz.bartman",
-                    "homepage": "https://www.drupal.org/user/363120"
-                },
-                {
-                    "name": "id.tornado",
-                    "homepage": "https://www.drupal.org/user/2754049"
-                },
-                {
-                    "name": "killua99",
-                    "homepage": "https://www.drupal.org/user/699418"
-                },
-                {
-                    "name": "mibfire",
-                    "homepage": "https://www.drupal.org/user/155136"
-                },
-                {
-                    "name": "naveenvalecha",
-                    "homepage": "https://www.drupal.org/user/2665733"
-                },
-                {
-                    "name": "nielsaers",
-                    "homepage": "https://www.drupal.org/user/752444"
-                },
-                {
-                    "name": "svenryen",
-                    "homepage": "https://www.drupal.org/user/667244"
                 }
             ],
             "description": "This module aims at making the website compliant with the new EU cookie regulation.",
@@ -5102,7 +5067,7 @@
                 "GDPR"
             ],
             "support": {
-                "source": "https://cgit.drupalcode.org/eu-cookie-compliance",
+                "source": "https://git.drupalcode.org/project/eu-cookie-compliance",
                 "docs": "https://www.drupal.org/project/eu_cookie_compliance",
                 "forum": "https://drupal.stackexchange.com/search?q=eu+cookie+compliance",
                 "issues": "https://www.drupal.org/project/issues/eu_cookie_compliance?version=8.x",
@@ -5355,6 +5320,65 @@
             "support": {
                 "source": "https://git.drupalcode.org/project/field_display_label",
                 "issues": "https://www.drupal.org/project/issues/field_display_label"
+            }
+        },
+        {
+            "name": "drupal/field_formatter_class",
+            "version": "1.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/field_formatter_class.git",
+                "reference": "8.x-1.4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/field_formatter_class-8.x-1.4.zip",
+                "reference": "8.x-1.4",
+                "shasum": "158a1151c37e6aed76702528269fe4a53378de8e"
+            },
+            "require": {
+                "drupal/core": "^8 || ^9"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "8.x-1.4",
+                    "datestamp": "1592471596",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Andrew Macpherson",
+                    "homepage": "https://www.drupal.org/u/andrewmacpherson",
+                    "role": "maintainer"
+                },
+                {
+                    "name": "Oleksandr Dekhteruk",
+                    "homepage": "https://www.drupal.org/u/pifagor",
+                    "role": "maintainer"
+                },
+                {
+                    "name": "mfer",
+                    "homepage": "https://www.drupal.org/user/25701"
+                },
+                {
+                    "name": "pifagor",
+                    "homepage": "https://www.drupal.org/user/2375692"
+                }
+            ],
+            "description": "Provides custom HTML class settings for field formatters.",
+            "homepage": "https://www.drupal.org/project/field_formatter_class",
+            "support": {
+                "source": "https://git.drupalcode.org/project/field_formatter_class",
+                "issues": "https://www.drupal.org/project/issues/field_formatter_class"
             }
         },
         {
@@ -5619,17 +5643,17 @@
         },
         {
             "name": "drupal/inline_entity_form",
-            "version": "1.0.0-rc7",
+            "version": "1.0.0-rc8",
             "source": {
                 "type": "git",
                 "url": "https://git.drupalcode.org/project/inline_entity_form.git",
-                "reference": "8.x-1.0-rc7"
+                "reference": "8.x-1.0-rc8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://ftp.drupal.org/files/projects/inline_entity_form-8.x-1.0-rc7.zip",
-                "reference": "8.x-1.0-rc7",
-                "shasum": "a11e59a8f3632728165170e9337cec9bc8eab870"
+                "url": "https://ftp.drupal.org/files/projects/inline_entity_form-8.x-1.0-rc8.zip",
+                "reference": "8.x-1.0-rc8",
+                "shasum": "103de382dd07b4acdd6bacd5ad76628fdf0eefda"
             },
             "require": {
                 "drupal/core": "^8.7.7 || ^9"
@@ -5640,8 +5664,8 @@
             "type": "drupal-module",
             "extra": {
                 "drupal": {
-                    "version": "8.x-1.0-rc7",
-                    "datestamp": "1595545223",
+                    "version": "8.x-1.0-rc8",
+                    "datestamp": "1602172716",
                     "security-coverage": {
                         "status": "not-covered",
                         "message": "RC releases are not covered by Drupal security advisories."
@@ -7512,17 +7536,17 @@
         },
         {
             "name": "drupal/search_api_solr",
-            "version": "1.5.0",
+            "version": "1.6.0",
             "source": {
                 "type": "git",
                 "url": "https://git.drupalcode.org/project/search_api_solr.git",
-                "reference": "8.x-1.5"
+                "reference": "8.x-1.6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://ftp.drupal.org/files/projects/search_api_solr-8.x-1.5.zip",
-                "reference": "8.x-1.5",
-                "shasum": "a8b276e93a229cf108a73d028738a3f6ccfd1d6d"
+                "url": "https://ftp.drupal.org/files/projects/search_api_solr-8.x-1.6.zip",
+                "reference": "8.x-1.6",
+                "shasum": "4355dc3ac52d125116dab84e1a45a437431938c9"
             },
             "require": {
                 "drupal/core": "~8.0",
@@ -7543,8 +7567,8 @@
             "type": "drupal-module",
             "extra": {
                 "drupal": {
-                    "version": "8.x-1.5",
-                    "datestamp": "1590238566",
+                    "version": "8.x-1.6",
+                    "datestamp": "1603090852",
                     "security-coverage": {
                         "status": "covered",
                         "message": "Covered by Drupal's security advisory policy"
@@ -7587,6 +7611,54 @@
                 "source": "http://git.drupal.org/project/search_api_solr.git",
                 "issues": "https://www.drupal.org/project/issues/search_api_solr",
                 "irc": "irc://irc.freenode.org/drupal-search-api"
+            }
+        },
+        {
+            "name": "drupal/show_email",
+            "version": "1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/show_email.git",
+                "reference": "8.x-1.1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/show_email-8.x-1.1.zip",
+                "reference": "8.x-1.1",
+                "shasum": "502fc7e0bb15ce06bdc9e81d39731a6ed77c3ce1"
+            },
+            "require": {
+                "drupal/core": "^8 || ^9"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "8.x-1.1",
+                    "datestamp": "1590783133",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "3ssom",
+                    "homepage": "https://www.drupal.org/user/758014"
+                },
+                {
+                    "name": "drpl",
+                    "homepage": "https://www.drupal.org/user/334568"
+                }
+            ],
+            "description": "Show registered user email address in profile page.",
+            "homepage": "https://www.drupal.org/project/show_email",
+            "support": {
+                "source": "https://git.drupalcode.org/project/show_email"
             }
         },
         {
@@ -8401,6 +8473,66 @@
             }
         },
         {
+            "name": "drupal/twitter_block",
+            "version": "3.0.0-alpha1",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/twitter_block.git",
+                "reference": "8.x-3.0-alpha1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/twitter_block-8.x-3.0-alpha1.zip",
+                "reference": "8.x-3.0-alpha1",
+                "shasum": "1ca5c6e30cda07b633273916bc0c3206e3928d81"
+            },
+            "require": {
+                "drupal/core": "^8.8 || ^9"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "8.x-3.0-alpha1",
+                    "datestamp": "1603037906",
+                    "security-coverage": {
+                        "status": "not-covered",
+                        "message": "Alpha releases are not covered by Drupal security advisories."
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0+"
+            ],
+            "authors": [
+                {
+                    "name": "Devin Carlson",
+                    "homepage": "https://www.drupal.org/user/290182"
+                },
+                {
+                    "name": "ZenDoodles",
+                    "homepage": "https://www.drupal.org/user/226976"
+                },
+                {
+                    "name": "cweagans",
+                    "homepage": "https://www.drupal.org/user/404732"
+                },
+                {
+                    "name": "naveenvalecha",
+                    "homepage": "https://www.drupal.org/user/2665733"
+                },
+                {
+                    "name": "subhojit777",
+                    "homepage": "https://www.drupal.org/user/1812492"
+                }
+            ],
+            "description": "Provides configurable blocks for a Twitter feed.",
+            "homepage": "http://drupal.org/project/twitter_block",
+            "support": {
+                "source": "https://git.drupalcode.org/project/twitter_block"
+            }
+        },
+        {
             "name": "drupal/user_registrationpassword",
             "version": "1.0.0-alpha5",
             "source": {
@@ -8682,6 +8814,70 @@
             "support": {
                 "source": "https://git.drupalcode.org/project/views_bootstrap",
                 "issues": "https://www.drupal.org/project/issues/views_bootstrap"
+            }
+        },
+        {
+            "name": "drupal/views_conditional",
+            "version": "1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/views_conditional.git",
+                "reference": "8.x-1.2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/views_conditional-8.x-1.2.zip",
+                "reference": "8.x-1.2",
+                "shasum": "cec1b52092d0a0b4298137835439dde888484ef4"
+            },
+            "require": {
+                "drupal/core": "^8 || ^9"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "8.x-1.2",
+                    "datestamp": "1602687547",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Shelane French",
+                    "homepage": "https://www.drupal.org/u/shelane",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "Anand Toshniwal (anand.toshniwal93)",
+                    "homepage": "https://www.drupal.org/u/anandtoshniwal93",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "Timofey Denisov (ofry)",
+                    "homepage": "https://www.drupal.org/u/ofry",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "MChittenden",
+                    "homepage": "https://www.drupal.org/u/mchittenden",
+                    "role": "Maintainer"
+                }
+            ],
+            "description": "Views Conditional is a simple module that allows you to define conditionals with fields in views",
+            "homepage": "https://www.drupal.org/project/views_conditional",
+            "keywords": [
+                "Drupal"
+            ],
+            "support": {
+                "source": "http://cgit.drupalcode.org/views_conditional",
+                "issues": "https://www.drupal.org/project/issues/views_conditional"
             }
         },
         {
