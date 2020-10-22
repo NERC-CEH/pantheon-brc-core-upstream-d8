@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bc33c0e24cc0bdc39f291e72ceda98e2",
+    "content-hash": "0bddf8cfb7de26b941059d92d4ae72ae",
     "packages": [
         {
             "name": "academicpuma/citeproc-php",
@@ -4953,7 +4953,7 @@
         },
         {
             "name": "drupal/entity_update",
-            "version": "1.2-rc7",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://git.drupalcode.org/project/entity_update.git",
@@ -8771,6 +8771,50 @@
             "homepage": "https://www.drupal.org/project/view_unpublished",
             "support": {
                 "source": "https://git.drupalcode.org/project/view_unpublished"
+            }
+        },
+        {
+            "name": "drupal/view_user_email",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/view_user_email.git",
+                "reference": "1.0.1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/view_user_email-1.0.1.zip",
+                "reference": "1.0.1",
+                "shasum": "00e480e03951dcb5a65e2128b7814c0224733c42"
+            },
+            "require": {
+                "drupal/core": "^8 || ^9"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "1.0.1",
+                    "datestamp": "1599077592",
+                    "security-coverage": {
+                        "status": "not-covered",
+                        "message": "Project has not opted into security advisory coverage!"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "davo20019",
+                    "homepage": "https://www.drupal.org/user/1486628"
+                }
+            ],
+            "description": "Allow site administrator the ability to grant users of certain roles access to another users email address.",
+            "homepage": "https://www.drupal.org/project/view_user_email",
+            "support": {
+                "source": "https://git.drupalcode.org/project/view_user_email"
             }
         },
         {
