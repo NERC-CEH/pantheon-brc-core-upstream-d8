@@ -16,6 +16,9 @@
              href="#{{ id }}-collapse-{{ key }}">
             {{row.title}}
           </a>
+          {% if row.label %}
+            <span class="badge pull-right">{{ row.label }}</span>
+          {% endif %}
         </h4>
       </div>
 

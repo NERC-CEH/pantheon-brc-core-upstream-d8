@@ -45,7 +45,9 @@ class ViewsBootstrapTab extends StylePluginBase {
     $options = parent::defineOptions();
     $options['tab_field'] = ['default' => NULL];
     $options['tab_type'] = ['default' => 'tabs'];
-    $options['justified'] = ['default' => FALSE];
+    $options['tab_position'] = ['default' => 'basic'];
+    $options['tab_fade'] = ['default' => FALSE];
+
     return $options;
   }
 
@@ -56,7 +58,7 @@ class ViewsBootstrapTab extends StylePluginBase {
     parent::buildOptionsForm($form, $form_state);
 
     $form['help'] = [
-      '#markup' => $this->t('The Bootstrap tabs displays content with tab titles linked to dynamically displayed content (<a href=":docs">see Bootstrap documentation</a>).', [':docs' => 'https://getbootstrap.com/docs/3.4/javascript/#tabs']),
+      '#markup' => $this->t('The Bootstrap tabs displays content with tab titles linked to dynamically displayed content (<a href=":docs">see documentation</a>).', [':docs' => 'https://www.drupal.org/docs/contributed-modules/views-bootstrap-for-bootstrap-3/tabs']),
       '#weight' => -99,
     ];
 

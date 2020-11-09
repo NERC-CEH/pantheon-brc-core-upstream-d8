@@ -45,7 +45,7 @@ use Symfony\Component\HttpFoundation\Response;
  *     "offsite-payment" = "Drupal\commerce_paypal\PluginForm\Checkout\PaymentOffsiteForm",
  *   },
  *   credit_card_types = {
- *     "amex", "discover", "mastercard", "visa",
+ *     "amex", "dinersclub", "discover", "jcb", "maestro", "mastercard", "visa", "unionpay"
  *   },
  *   payment_method_types = {"paypal_checkout"},
  *   payment_type = "paypal_checkout",
@@ -257,6 +257,7 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
         'jcb' => $this->t('JCB'),
         'elo' => $this->t('Elo'),
         'hiper' => $this->t('Hiper'),
+        'unionpay' => $this->t('Union Pay'),
       ],
       '#default_value' => $this->configuration['disable_card'],
     ];
@@ -724,18 +725,6 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
       // defines for the "shortcut" flow.
       $order->set('checkout_flow', 'paypal_checkout');
       $order->set('checkout_step', NULL);
-    }
-    elseif ($flow === 'mark') {
-      $payment_storage = $this->entityTypeManager->getStorage('commerce_payment');
-      /** @var \Drupal\commerce_payment\Entity\PaymentInterface $payment */
-      $payment = $payment_storage->create([
-        'state' => 'new',
-        'amount' => $order->getBalance(),
-        'payment_gateway' => $this->parentEntity->id(),
-        'payment_method' => $payment_method->id(),
-        'order_id' => $order->id(),
-      ]);
-      $this->createPayment($payment);
     }
   }
 

@@ -41,6 +41,7 @@ class ViewsBootstrapAccordion extends StylePluginBase {
     $options = parent::defineOptions();
     $options['panel_title_field'] = ['default' => NULL];
     $options['behavior'] = ['default' => 'closed'];
+    $options['label_field'] = ['default' => NULL];
 
     return $options;
   }
@@ -52,10 +53,9 @@ class ViewsBootstrapAccordion extends StylePluginBase {
     parent::buildOptionsForm($form, $form_state);
 
     $form['help'] = [
-      '#markup' => $this->t('The Bootstrap accordion displays content in collapsable panels (<a href=":docs">see Bootstrap documentation</a>).', [':docs' => 'https://getbootstrap.com/docs/3.4/javascript/#collapse-example-accordion']),
+      '#markup' => $this->t('The Bootstrap accordion displays content in collapsible panels (<a href=":docs">see documentation</a>).', [':docs' => 'https://www.drupal.org/docs/contributed-modules/views-bootstrap-for-bootstrap-3/accordion']),
       '#weight' => -99,
     ];
-
     $form['panel_title_field'] = [
       '#type' => 'select',
       '#title' => $this->t('Panel title field'),
@@ -63,6 +63,14 @@ class ViewsBootstrapAccordion extends StylePluginBase {
       '#required' => TRUE,
       '#default_value' => $this->options['panel_title_field'],
       '#description' => $this->t('Select the field that will be used as the accordion panel titles.'),
+    ];
+    $form['label_field'] = [
+      '#type' => 'select',
+      '#title' => t('Label field'),
+      '#options' => ['' => $this->t('- None -')] + $this->displayHandler->getFieldLabels(TRUE),
+      '#required' => FALSE,
+      '#default_value' => $this->options['label_field'],
+      '#description' => $this->t('Select the field that will be used as the label.'),
     ];
     $form['behavior'] = [
       '#type' => 'radios',

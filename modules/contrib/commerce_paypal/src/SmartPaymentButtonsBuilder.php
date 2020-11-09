@@ -6,12 +6,30 @@ use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_payment\Entity\PaymentGatewayInterface;
 use Drupal\commerce_paypal\Plugin\Commerce\PaymentGateway\CheckoutInterface;
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Url;
 
 /**
  * Provides a helper for building the Smart payment buttons.
  */
 class SmartPaymentButtonsBuilder implements SmartPaymentButtonsBuilderInterface {
+
+  /**
+   * The config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
+   * Constructs a new SmartPaymentButtonsBuilder object.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The configuration factory.
+   */
+  public function __construct(ConfigFactoryInterface $config_factory) {
+    $this->configFactory = $config_factory;
+  }
 
   /**
    * {@inheritdoc}
@@ -41,6 +59,10 @@ class SmartPaymentButtonsBuilder implements SmartPaymentButtonsBuilderInterface 
         'currency' => $order->getTotalPrice()->getCurrencyCode(),
       ],
     ];
+    // Include the "messages" component, only if credit messaging is configured.
+    if ($this->configFactory->get('commerce_paypal.credit_messaging_settings')->get('client_id')) {
+      $options['query']['components'] = 'buttons,messages';
+    }
     if (!empty($config['disable_funding'])) {
       $options['query']['disable-funding'] = implode(',', $config['disable_funding']);
     }

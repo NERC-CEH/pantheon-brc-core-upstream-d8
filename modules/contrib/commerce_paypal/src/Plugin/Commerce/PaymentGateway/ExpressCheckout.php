@@ -36,7 +36,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  *   },
  *   payment_method_types = {"credit_card"},
  *   credit_card_types = {
- *     "amex", "discover", "mastercard", "visa",
+ *     "amex", "dinersclub", "discover", "jcb", "maestro", "mastercard", "visa", "unionpay"
  *   },
  *   requires_billing_information = FALSE,
  * )

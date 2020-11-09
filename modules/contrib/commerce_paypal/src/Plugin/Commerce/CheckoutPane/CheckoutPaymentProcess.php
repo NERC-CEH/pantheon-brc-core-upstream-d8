@@ -50,7 +50,7 @@ class CheckoutPaymentProcess extends PaymentProcess {
    */
   protected function getErrorStepId() {
     $visible_steps = $this->checkoutFlow->getVisibleSteps();
-    return reset($visible_steps);
+    return key($visible_steps);
   }
 
 }

@@ -18,6 +18,7 @@ services:
 
   commerce_paypal.smart_payment_buttons_builder:
     class: Drupal\commerce_paypal\SmartPaymentButtonsBuilder
+    arguments: ['@config.factory']
 
   logger.channel.commerce_paypal:
     class: Drupal\Core\Logger\LoggerChannel

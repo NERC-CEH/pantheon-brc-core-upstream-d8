@@ -167,8 +167,8 @@ class CheckoutController extends ControllerBase {
         /** @var \Drupal\commerce_checkout\Entity\CheckoutFlowInterface $checkout_flow */
         $checkout_flow = $order->get('checkout_flow')->entity;
         $checkout_flow_plugin = $checkout_flow->getPlugin();
-        $redirect_step_id = $checkout_flow_plugin->getNextStepId($step_id);
-        $order->set('checkout_step', $redirect_step_id);
+        $step_id = $checkout_flow_plugin->getNextStepId($step_id);
+        $order->set('checkout_step', $step_id);
       }
       $order->save();
       $redirect_url = Url::fromRoute('commerce_checkout.form', [

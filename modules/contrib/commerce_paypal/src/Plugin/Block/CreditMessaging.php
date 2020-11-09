@@ -6,7 +6,7 @@ use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Class CreditMessaging
+ * Provides a PayPal credit messaging block.
  *
  * @Block(
  *   id = "commerce_paypal",
@@ -173,21 +173,31 @@ class CreditMessaging extends BlockBase {
    * {@inheritdoc}
    */
   public function build() {
-    // Build the element with markup to support the options set on the block.
-    if ($this->configuration['style'] == 'flex') {
-      $markup = '<div data-pp-message data-pp-placement="' . $this->configuration['placement'] . '" data-pp-style-layout="flex" data-pp-style-color="' . $this->configuration['color'] . '" data-pp-style-ratio="' . $this->configuration['ratio'] . '"></div>';
-    }
-    else {
-      $markup = '<div data-pp-message data-pp-placement="' . $this->configuration['placement'] . '" data-pp-style-layout="text" data-pp-style-logo-type="' . $this->configuration['logo_type'] . '" data-pp-style-logo-position="' . $this->configuration['logo_position'] . '" data-pp-style-text-size="' . $this->configuration['text_size'] . '" data-pp-style-text-color="' . $this->configuration['text_color'] . '"></div>';
-    }
-
     $element = [
-      '#type' => 'markup',
-      '#markup' => $markup,
+      '#type' => 'html_tag',
+      '#tag' => 'div',
+      '#attributes' => [
+        'data-pp-message' => '',
+        'data-pp-placement' => $this->configuration['placement'],
+        'data-pp-style-layout' => $this->configuration['style'],
+      ],
+      '#attached' => ['library' => ['commerce_paypal/credit_messaging']],
     ];
 
-    // Add Credit Messaging JS to the block.
-    $element['#attached']['library'][] = 'commerce_paypal/credit_messaging';
+    if ($this->configuration['style'] == 'flex') {
+      $element['#attributes'] += [
+        'data-pp-style-color' => $this->configuration['color'],
+        'data-pp-style-ratio' => $this->configuration['ratio'],
+      ];
+    }
+    else {
+      $element['#attributes'] += [
+        'data-pp-style-logo-type' => $this->configuration['logo_type'],
+        'data-pp-style-logo-position' => $this->configuration['logo_position'],
+        'data-pp-style-text-size' => $this->configuration['text_size'],
+        'data-pp-style-text-color' => $this->configuration['text_color'],
+      ];
+    }
 
     return $element;
   }

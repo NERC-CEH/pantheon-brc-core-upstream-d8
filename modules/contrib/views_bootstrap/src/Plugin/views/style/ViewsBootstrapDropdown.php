@@ -62,7 +62,7 @@ class ViewsBootstrapDropdown extends StylePluginBase {
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
 
     $form['help'] = [
-      '#markup' => $this->t('The Bootstrap dropdown style displays a list of links in a drop-down menu format (<a href=":docs">see Bootstrap documentation</a>).', [':docs' => 'https://getbootstrap.com/docs/3.4/javascript/#dropdowns']),
+      '#markup' => $this->t('The Bootstrap dropdown style displays a list of links in a drop-down menu format (<a href=":docs">see documentation</a>).', [':docs' => 'https://www.drupal.org/docs/contributed-modules/views-bootstrap-for-bootstrap-3/dropdown']),
       '#weight' => -99,
     ];
 
@@ -76,7 +76,15 @@ class ViewsBootstrapDropdown extends StylePluginBase {
     $form['button_class'] = [
       '#title' => $this->t('Button class'),
       '#description' => $this->t('Classes for the button that is the drop-down toggle.'),
-      '#type' => 'textfield',
+      '#type' => 'select',
+      '#options' => [
+        'btn btn-default' => $this->t('Default'),
+        'btn btn-primary' => $this->t('Primary'),
+        'btn btn-success' => $this->t('Success'),
+        'btn btn-info' => $this->t('Info'),
+        'btn btn-warning' => $this->t('Warning'),
+        'btn btn-danger' => $this->t('Danger'),
+      ],
       '#default_value' => $this->options['button_class'],
     ];
 

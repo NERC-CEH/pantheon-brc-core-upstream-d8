@@ -42,7 +42,7 @@ class ViewsBootstrapTable extends Table {
     parent::buildOptionsForm($form, $form_state);
 
     $form['help'] = [
-      '#markup' => $this->t('The Bootstrap table style adds default Bootstrap table classes and optional classes (<a href=":docs">see Bootstrap documentation</a>).', [':docs' => 'https://getbootstrap.com/docs/3.4/css/#tables']),
+      '#markup' => $this->t('The Bootstrap table style adds default Bootstrap table classes and optional classes (<a href=":docs">see documentation</a>).', [':docs' => 'https://www.drupal.org/docs/contributed-modules/views-bootstrap-for-bootstrap-3/table']),
       '#weight' => -99,
     ];
 

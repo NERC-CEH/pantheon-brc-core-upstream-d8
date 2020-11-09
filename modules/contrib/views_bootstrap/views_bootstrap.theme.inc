@@ -6,6 +6,7 @@
  */
 
 use Drupal\Component\Utility\Html;
+use Drupal\Component\Utility\Xss;
 use Drupal\views_bootstrap\ViewsBootstrap;
 use Drupal\Core\Template\Attribute;
 
@@ -25,13 +26,30 @@ function template_preprocess_views_bootstrap_accordion(array &$vars) {
   $group_title_field = isset($view->style_plugin->options['grouping'][0]) ? $view->style_plugin->options['grouping'][0]['field'] : "";
   $panel_title_field = $view->style_plugin->options['panel_title_field'];
   $vars['behavior'] = $view->style_plugin->options['behavior'];
+  $label_field = $view->style_plugin->options['label_field'] ?? '';
   $vars['attributes']['class'][] = 'panel-group';
   if ($panel_title_field) {
     foreach ($vars['rows'] as $id => $row) {
       $vars['group_title'] = $group_title_field ? $view->style_plugin->getField($id, $group_title_field) : "";
       $vars['rows'][$id] = [];
       $vars['rows'][$id]['content'] = $row;
-      $vars['rows'][$id]['title'] = $view->style_plugin->getField($id, $panel_title_field);
+      $vars['rows'][$id]['label'] = $label_field ? $view->style_plugin->getField($id, $label_field) : '';
+      $vars['rows'][$id]['title'] = [
+        '#markup' => Xss::filter($view->style_plugin->getField($id, $panel_title_field), [
+          'img',
+          'br',
+          'h2',
+          'h3',
+          'h4',
+          'h5',
+          'h6',
+          'span',
+          'strong',
+          'em',
+          'i',
+          'small',
+        ]),
+      ];
     }
   }
   else {
@@ -183,14 +201,13 @@ function template_preprocess_views_bootstrap_media_object(array &$vars) {
   $vars['image_class'] = $vars['view']->style_plugin->options['image_class'];
   $image_field = $vars['view']->style_plugin->options['image_field'];
   $heading_field = $vars['view']->style_plugin->options['heading_field'];
-  $body_field = $vars['view']->style_plugin->options['body_field'];
   $vars['attributes']['class'][] = 'media-object';
 
   foreach ($vars['rows'] as $id => $row) {
     $vars['rows'][$id] = [];
     $vars['rows'][$id]['image'] = $vars['view']->style_plugin->getField($id, $image_field);
     $vars['rows'][$id]['heading'] = $vars['view']->style_plugin->getField($id, $heading_field);
-    $vars['rows'][$id]['body'] = $vars['view']->style_plugin->getField($id, $body_field);
+    $vars['rows'][$id]['body'] = $row;
   }
 }
 
@@ -209,6 +226,7 @@ function template_preprocess_views_bootstrap_panel(array &$vars) {
   $vars['id'] = ViewsBootstrap::getUniqueId($view);
   $group_title_field = isset($view->style_plugin->options['grouping'][0]) ? $view->style_plugin->options['grouping'][0]['field'] : "";
   $panel_title_field = $view->style_plugin->options['panel_title_field'];
+  $panel_label_field = $view->style_plugin->options['panel_label_field'] ?? '';
   $panel_footer_field = $view->style_plugin->options['panel_footer_field'];
   $vars['attributes']['class'][] = 'panel-group';
   $vars['panel_class'] = $view->style_plugin->options['contextual_class'];
@@ -217,6 +235,7 @@ function template_preprocess_views_bootstrap_panel(array &$vars) {
     $vars['rows'][$id] = [];
     $vars['rows'][$id]['content'] = $row;
     $vars['rows'][$id]['title'] = $view->style_plugin->getField($id, $panel_title_field);
+    $vars['rows'][$id]['label'] = $panel_label_field ? $view->style_plugin->getField($id, $panel_label_field) : '';
     $vars['rows'][$id]['footer'] = $view->style_plugin->getField($id, $panel_footer_field);
   }
   // @TODO: Make sure that $vars['rows'] is rendered array.
@@ -247,7 +266,22 @@ function template_preprocess_views_bootstrap_tab(array &$vars) {
   if ($tab_field) {
     if (isset($view->field[$tab_field])) {
       foreach (array_keys($vars['rows']) as $key) {
-        $vars['tabs'][$key] = $view->style_plugin->getField($key, $tab_field);
+        $vars['tabs'][$key] = [
+          '#markup' => Xss::filter($view->style_plugin->getField($key, $tab_field), [
+            'img',
+            'br',
+            'h2',
+            'h3',
+            'h4',
+            'h5',
+            'h6',
+            'span',
+            'strong',
+            'em',
+            'i',
+            'small',
+          ]),
+        ];
       }
     }
     foreach ($vars['rows'] as $id => $row) {

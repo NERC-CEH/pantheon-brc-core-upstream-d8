@@ -143,7 +143,7 @@ class ViewsBootstrapThumbnail extends StylePluginBase {
     parent::buildOptionsForm($form, $form_state);
 
     $form['help'] = [
-      '#markup' => $this->t('The Bootstrap thumbnails extends the grid display with the thumbnail component to showcase linked images (<a href=":docs">see Bootstrap documentation</a>).', [':docs' => 'https://getbootstrap.com/docs/3.4/components/#thumbnails']),
+      '#markup' => $this->t('The Bootstrap thumbnails extends the grid display with the thumbnail component to showcase linked images (<a href=":docs">see documentation</a>).', [':docs' => 'https://www.drupal.org/docs/contributed-modules/views-bootstrap-for-bootstrap-3/thumbnail']),
       '#weight' => -99,
     ];
 

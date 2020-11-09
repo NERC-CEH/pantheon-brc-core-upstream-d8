@@ -30,7 +30,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   display_label = "Credit Card",
  *   payment_method_types = {"credit_card"},
  *   credit_card_types = {
- *     "amex", "discover", "mastercard", "visa",
+ *     "amex", "dinersclub", "discover", "jcb", "maestro", "mastercard", "visa", "unionpay"
  *   },
  * )
  */

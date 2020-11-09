@@ -124,3 +124,14 @@ commerce_payment.commerce_payment_gateway.plugin.paypal_payflow_link:
         response:
           type: string
           label: 'API response messages'
+
+commerce_paypal.credit_messaging_settings:
+  type: config_object
+  label: 'PayPal Credit messaging settings'
+  mapping:
+    client_id:
+      type: string
+      label: 'Client ID'
+    add_to_cart:
+      type: boolean
+      label: 'Enable on add to cart'

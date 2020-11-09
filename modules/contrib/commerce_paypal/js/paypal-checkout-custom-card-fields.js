@@ -38,7 +38,7 @@
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify($data)
           }).then(function(data) {
-            $form.find('input[name="payment_information[add_payment_method][payment_details][paypal_remote_id]"]').val(data.id);
+            $form.find("input[name$='[paypal_remote_id]']").val(data.id);
             return data.id;
           });
         },

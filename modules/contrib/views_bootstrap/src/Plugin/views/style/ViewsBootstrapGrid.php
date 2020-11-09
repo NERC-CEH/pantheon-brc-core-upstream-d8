@@ -143,7 +143,7 @@ class ViewsBootstrapGrid extends StylePluginBase {
     parent::buildOptionsForm($form, $form_state);
 
     $form['help'] = [
-      '#markup' => $this->t('The Bootstrap grid displays content in a responsive, mobile first fluid grid (<a href=":docs">see Bootstrap documentation</a>).', [':docs' => 'https://getbootstrap.com/docs/3.4/css/#grid']),
+      '#markup' => $this->t('The Bootstrap grid displays content in a responsive, mobile first fluid grid (<a href=":docs">see documentation</a>).', [':docs' => 'https://www.drupal.org/docs/contributed-modules/views-bootstrap-for-bootstrap-3/grid']),
       '#weight' => -99,
     ];
 
@@ -200,8 +200,9 @@ class ViewsBootstrapGrid extends StylePluginBase {
         4 => 4,
         6 => 6,
         12 => 12,
+        999 => $this->t('all'),
       ],
-      '#description' => $this->t('Choose the number of columns that views will wrap in a single row. This will be reflected in the HTML structure rendered regardless of the device size.'),
+      '#description' => $this->t('Choose the number of columns that views will wrap in a single row. This will be reflected in the HTML structure rendered regardless of the device size. If selecting "all" then use the alternative template.'),
     ];
 
     foreach (['xs', 'sm', 'md', 'lg'] as $size) {

@@ -6,6 +6,9 @@
       <div class="panel-heading">
         <h4 class="panel-title">
           {{row.title}}
+          {% if row.label %}
+            <span class="badge pull-right">{{ row.label }}</span>
+          {% endif %}
         </h4>
       </div>
       {% endif %}

@@ -7,6 +7,7 @@
 
 use Drupal\commerce_checkout\Entity\CheckoutFlowInterface;
 use Drupal\commerce_paypal\Plugin\Commerce\PaymentGateway\CheckoutInterface;
+use Drupal\commerce_price\Calculator;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -130,21 +131,26 @@ function commerce_paypal_commerce_checkout_flow_access(CheckoutFlowInterface $ch
  * Implements hook_library_info_build().
  */
 function commerce_paypal_library_info_build() {
-  $libraries = [];
-
   // Only build the PayPal Credit messaging JS if a PayPal Client ID was set on
   // the PayPal Credit messaging settings form.
-  $client_id = \Drupal::config('commerce_paypal.settings')->get('commerce_paypal.credit_messaging_client_id');
+  $client_id = \Drupal::config('commerce_paypal.credit_messaging_settings')->get('client_id');
 
-  if ($client_id) {
-    $url = 'https://www.paypal.com/sdk/js?client-id=' . $client_id . '&components=messages';
-    $libraries['credit_messaging'] = [
-      'header' => TRUE,
-      'js' => [
-        $url => ['type' => 'external'],
-      ],
-    ];
+  if (!$client_id) {
+    return [];
   }
+
+  $url = sprintf('https://www.paypal.com/sdk/js?client-id=%s&components=messages', $client_id);
+  $libraries['credit_messaging'] = [
+    'header' => TRUE,
+    'js' => [
+      $url => [
+        'type' => 'external',
+        'attributes' => [
+          'data-partner-attribution-id' => 'CommerceGuys_Cart_SPB',
+        ],
+      ],
+    ],
+  ];
 
   return $libraries;
 }
@@ -154,29 +160,47 @@ function commerce_paypal_library_info_build() {
  */
 function commerce_paypal_form_commerce_order_item_add_to_cart_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   // Check to see if PayPal Credit messaging is enabled on Add to Cart forms.
-  $enable_messaging = \Drupal::config('commerce_paypal.settings')->get('commerce_paypal.credit_messaging_add_to_cart');
+  $enable_messaging = \Drupal::config('commerce_paypal.credit_messaging_settings')->get('add_to_cart');
+  /** @var \Drupal\commerce_order\Entity\OrderItemInterface $order_item */
+  $order_item = $form_state->getFormObject()->getEntity();
 
-  if (!empty($enable_messaging)) {
-    /** @var \Drupal\commerce_product\Entity\ProductInterface $product */
-    $product = $form_state->get('product');
+  if (!$enable_messaging || !$order_item->getUnitPrice()) {
+    return;
+  }
+  // Add Credit Messaging JS to the form.
+  // @todo ensure messaging reapplies after an Ajax refresh.
+  $form['#attached']['library'][] = 'commerce_paypal/credit_messaging';
 
-    // @todo support other purchasable entity types than commerce_product.
-    if (!empty($product)) {
-      // Get the price amount from the default variation.
-      // @todo pick the price amount from the currently selected variation.
-      $amount = $product->getDefaultVariation()->get('price')->getValue()[0]['number'];
+  $form['paypal_credit_messaging_product'] = [
+    '#type' => 'html_tag',
+    '#tag' => 'div',
+    '#attributes' => [
+      'data-pp-message' => '',
+      'data-pp-placement' => 'product',
+      'data-pp-amount' => Calculator::trim($order_item->getUnitPrice()->getNumber()),
+    ],
+    '#weight' => 1,
+  ];
+}
 
-      // Add Credit Messaging JS to the form.
-      // @todo ensure messaging reapplies after an Ajax refresh.
-      $form['#attached']['library'][] = 'commerce_paypal/credit_messaging';
-
-      // Add the product placement messaging above the Add To Cart button.
-      $markup = '<div data-pp-message data-pp-placement="product" data-pp-amount="' . $amount . '"></div>';
-      $form['paypal_credit_messaging_product'] = [
-        '#type' => 'markup',
-        '#markup' => $markup,
-        '#weight' => 1,
-      ];
+/**
+ * Implements hook_js_alter().
+ */
+function commerce_paypal_js_alter(&$javascript, \Drupal\Core\Asset\AttachedAssetsInterface $assets) {
+  $client_id = \Drupal::config('commerce_paypal.credit_messaging_settings')->get('client_id');
+  if (!$client_id) {
+    return;
+  }
+  $paypal_checkout_js = drupal_get_path('module', 'commerce_paypal') . '/js/paypal-checkout.js';
+  // The paypal-checkout JS file isn't present, no need to do anything.
+  if (!isset($javascript[$paypal_checkout_js])) {
+    return;
+  }
+  // Remove the extra JS SDK added for credit messaging library if present.
+  foreach ($javascript as $key => $js) {
+    if (strpos($key, 'https://www.paypal.com/sdk/js') === 0) {
+      unset($javascript[$key]);
+      break;
     }
   }
 }

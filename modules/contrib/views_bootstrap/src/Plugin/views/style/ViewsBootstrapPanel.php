@@ -40,6 +40,7 @@ class ViewsBootstrapPanel extends StylePluginBase {
   protected function defineOptions() {
     $options = parent::defineOptions();
     $options['panel_title_field'] = ['default' => NULL];
+    $options['panel_label_field'] = ['default' => NULL];
     $options['panel_footer_field'] = ['default' => NULL];
     $options['contextual_class'] = ['default' => 'panel-default'];
 
@@ -53,7 +54,7 @@ class ViewsBootstrapPanel extends StylePluginBase {
     parent::buildOptionsForm($form, $form_state);
 
     $form['help'] = [
-      '#markup' => $this->t('The Bootstrap panels displays content in a box with optional header and footer elements (<a href=":docs">see Bootstrap documentation</a>).', [':docs' => 'https://getbootstrap.com/docs/3.4/components/#panels']),
+      '#markup' => $this->t('The Bootstrap panels displays content in a box with optional header and footer elements (<a href=":docs">see documentation</a>).', [':docs' => 'https://www.drupal.org/docs/contributed-modules/views-bootstrap-for-bootstrap-3/panels']),
       '#weight' => -99,
     ];
 
@@ -78,6 +79,15 @@ class ViewsBootstrapPanel extends StylePluginBase {
       '#options' => ['' => $this->t('- None -')] + $this->displayHandler->getFieldLabels(TRUE),
       '#default_value' => $this->options['panel_title_field'],
       '#description' => $this->t('Select the field that will be used as the panel heading titles.'),
+    ];
+
+    $form['panel_label_field'] = [
+      '#type' => 'select',
+      '#title' => t('Label field'),
+      '#options' => ['' => $this->t('- None -')] + $this->displayHandler->getFieldLabels(TRUE),
+      '#required' => FALSE,
+      '#default_value' => $this->options['label_field'],
+      '#description' => $this->t('Select the field that will be used as the label.'),
     ];
 
     $form['panel_footer_field'] = [
