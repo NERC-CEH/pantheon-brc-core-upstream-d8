@@ -34,6 +34,7 @@
         "drupal/bootstrap": "^3.23",
         "drupal/bootstrap_layouts": "^5.2",
         "drupal/bootstrap_library": "^1.14",
+        "drupal/bootstrap_quicktabs": "1.0-alpha2",
         "drupal/captcha": "^1.1",
         "drupal/chosen": "3.0.1",
         "drupal/chosen_lib": "3.0.1",
