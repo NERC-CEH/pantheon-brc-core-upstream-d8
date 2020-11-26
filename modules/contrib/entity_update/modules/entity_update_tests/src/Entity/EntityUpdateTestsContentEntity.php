@@ -50,6 +50,11 @@ class EntityUpdateTestsContentEntity extends ContentEntityBase {
 
     $fields = parent::baseFieldDefinitions($entity_type);
 
+    // Fix field.
+    $fields['fix'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Fix field.'))
+      ->setSettings(['max_length' => 10, 'text_processing' => 0]);
+
     // Dynamic name field to simulation deletation and creation.
     if (EntityUpdateTestHelper::fieldStatus('name')) {
       $fields['name'] = BaseFieldDefinition::create('string')
@@ -70,7 +75,7 @@ class EntityUpdateTestsContentEntity extends ContentEntityBase {
     if (in_array($type, $types)) {
       $fields['type'] = BaseFieldDefinition::create($type)
         ->setLabel(t('Type'))
-        ->setSettings(['max_length' => 100, 'text_processing' => 0]);
+        ->setSettings(['max_length' => 10, 'text_processing' => 0]);
     }
 
     return $fields;

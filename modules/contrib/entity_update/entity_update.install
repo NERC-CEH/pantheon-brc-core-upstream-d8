@@ -8,7 +8,7 @@
  */
 
 /**
- * Schema.
+ * Implements hook_schema().
  */
 function entity_update_schema() {
 

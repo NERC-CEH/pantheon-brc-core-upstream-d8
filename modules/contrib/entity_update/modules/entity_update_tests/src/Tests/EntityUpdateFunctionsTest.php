@@ -27,6 +27,11 @@ class EntityUpdateFunctionsTest extends WebTestBase {
   protected function setUp() {
     parent::setUp();
 
+    // Detele the entity created by install.
+    if ($entity = EntityUpdateTestsContentEntity::load(100)) {
+      $entity->delete();
+    }
+
     // Initialy, Disable the field 'name' => No need to update.
     EntityUpdateTestHelper::fieldDisable('name');
     EntityUpdateTestHelper::fieldDisable('description');
@@ -67,7 +72,7 @@ class EntityUpdateFunctionsTest extends WebTestBase {
     $list = EntityUpdate::getEntityTypesToUpdate();
     $this->assertEqual(count($list), 0, 'Every entities are up to date.');
     // Check fields list on database.
-    $fields = ['id', 'name'];
+    $fields = ['fix', 'id', 'name'];
     $res = EntityUpdateTestHelper::checkFieldList('entity_update_tests_cnt', $fields);
     $this->assert($res === TRUE, 'Entity schema database has correct fields [' . (print_r($res, TRUE)) . ']');
 
@@ -83,7 +88,7 @@ class EntityUpdateFunctionsTest extends WebTestBase {
     $list = EntityUpdate::getEntityTypesToUpdate();
     $this->assertEqual(count($list), 0, 'Every entities are up to date.');
     // Check fields list on database.
-    $fields = ['id', 'name', 'type'];
+    $fields = ['fix', 'id', 'name', 'type'];
     $res = EntityUpdateTestHelper::checkFieldList('entity_update_tests_cnt', $fields);
     $this->assert($res === TRUE, 'Entity schema database has correct fields [' . (print_r($res, TRUE)) . ']');
 
@@ -108,9 +113,43 @@ class EntityUpdateFunctionsTest extends WebTestBase {
     $res = EntityUpdate::basicUpdate();
     $this->assert($res, 'Entity schema has been updated (Field Remove).');
     // Check fields list on database.
-    $fields = ['id', 'type'];
+    $fields = ['fix', 'id', 'type'];
     $res = EntityUpdateTestHelper::checkFieldList('entity_update_tests_cnt', $fields);
     $this->assert($res === TRUE, 'Entity schema database has correct fields [' . (print_r($res, TRUE)) . ']');
+  }
+
+  /**
+   * Entity update function : basic --force.
+   */
+  public function testEntityUpdateBasicForce() {
+
+    // Create an entity.
+    $entity = EntityUpdateTestsContentEntity::create(['id' => 1]);
+    $entity->save();
+    $ids = \Drupal::entityQuery('entity_update_tests_cnt')->execute();
+    $this->assertEqual(count($ids), 1, 'Has one entity.');
+    // Enable the field.
+    EntityUpdateTestHelper::fieldEnable('name');
+    EntityUpdateTestHelper::fieldEnable('description');
+    // Check and Make Update using --force.
+    $res = EntityUpdate::basicUpdate(TRUE);
+    $this->assert($res, 'Entity schema has been updated (Field Add).');
+
+    // Disable field 'name'.
+    EntityUpdateTestHelper::fieldDisable('name');
+
+    // Update using --force.
+    $res = EntityUpdate::basicUpdate(TRUE);
+    $this->assert($res, 'Entity schema has been updated (Field Remove).');
+
+    // Update entity, add description.
+    $entity = EntityUpdateTestsContentEntity::load(1);
+    $entity->set('description', 'a description');
+    $entity->save();
+    EntityUpdateTestHelper::fieldDisable('description');
+    // Update using --force (After D8.5 this will update).
+    $res = EntityUpdate::basicUpdate(TRUE);
+    $this->assert($res, 'Entity schema has updated (Uninstall + data).');
   }
 
   /**
@@ -138,7 +177,7 @@ class EntityUpdateFunctionsTest extends WebTestBase {
     $this->assertEqual(count(EntityUpdate::getEntityTypesToUpdate()), 0, 'Entity type updated.');
 
     // Check fields list on database.
-    $fields = ['id', 'name', 'type'];
+    $fields = ['fix', 'id', 'name', 'type'];
     $res = EntityUpdateTestHelper::checkFieldList('entity_update_tests_cnt', $fields);
     $this->assert($res === TRUE, 'Entity schema database has correct fields [' . (print_r($res, TRUE)) . ']');
 
@@ -162,7 +201,7 @@ class EntityUpdateFunctionsTest extends WebTestBase {
     $this->assertEqual(count($ids), 1, 'Has one entity.');
 
     // Check fields list on database.
-    $fields = ['id', 'type'];
+    $fields = ['fix', 'id', 'type'];
     $res = EntityUpdateTestHelper::checkFieldList('entity_update_tests_cnt', $fields);
     $this->assert($res === TRUE, 'Entity schema database has correct fields [' . (print_r($res, TRUE)) . ']');
   }
@@ -192,7 +231,7 @@ class EntityUpdateFunctionsTest extends WebTestBase {
     $this->assertEqual(count(EntityUpdate::getEntityTypesToUpdate()), 1, 'Entity type updated.');
 
     // Check fields list on database.
-    $fields = ['id', 'name'];
+    $fields = ['fix', 'id', 'name'];
     $res = EntityUpdateTestHelper::checkFieldList('entity_update_tests_cnt', $fields);
     $this->assert($res === TRUE, 'Entity schema database has correct fields [' . (print_r($res, TRUE)) . ']');
 
@@ -220,9 +259,63 @@ class EntityUpdateFunctionsTest extends WebTestBase {
     $this->assertEqual(count($ids), 1, 'Has one entity.');
 
     // Check fields list on database.
-    $fields = ['id'];
+    $fields = ['fix', 'id'];
     $res = EntityUpdateTestHelper::checkFieldList('entity_update_tests_cnt', $fields);
     $this->assert($res === TRUE, 'Entity schema database has correct fields [' . (print_r($res, TRUE)) . ']');
+  }
+
+  /**
+   * Entity advanced update simulation.
+   */
+  public function testEntityUpdateAdvanced() {
+    /* TODO : Review this test */
+    // Enable the field.
+    EntityUpdateTestHelper::fieldEnable('name');
+    EntityUpdateTestHelper::fieldEnable('description');
+    // Update entity type.
+    $res = EntityUpdate::basicUpdate();
+    $this->assert($res, 'Entity schema has been updated (Field Add).');
+
+    // Create an entity.
+    $data = ['id' => 1, 'name' => 'name', 'description' => 'description'];
+    $entity = EntityUpdateTestsContentEntity::create($data);
+    $entity->save();
+    $ids = \Drupal::entityQuery('entity_update_tests_cnt')->execute();
+    $this->assertEqual(count($ids), 1, 'Has one entity.');
+
+    // Disable field 'name'.
+    EntityUpdateTestHelper::fieldDisable('name');
+    // Try update without --force.
+    $res = EntityUpdate::basicUpdate();
+    $this->assert(!$res, 'Entity schema is NOT updated (Uninstall + data).');
+    // Try update using --force (After D8.5 this will update).
+    $res = EntityUpdate::basicUpdate(TRUE);
+    $this->assert($res, 'Entity schema is updated (Uninstall + data).');
+
+    // Simulate advanced update. Re enable field.
+    EntityUpdateTestHelper::fieldEnable('name');
+    $res = EntityUpdate::basicUpdate(TRUE);
+    $this->assert($res, 'Entity schema is updated by advanced (Uninstall + data).');
+
+    // Cleanup backup DB.
+    $res = EntityUpdate::cleanupEntityBackup();
+    // Copy to backup DB.
+    $type = 'entity_update_tests_cnt';
+    $res = EntityUpdate::entityUpdateDataBackupDel(EntityUpdate::getEntityTypesToUpdate($type), $type);
+    $this->assert($res, 'Entity data backup.');
+    // Update codes (Disable field).
+    EntityUpdateTestHelper::fieldDisable('name');
+    // Update entity types.
+    $res = EntityUpdate::basicUpdate();
+    $this->assert($res, 'Entity schema has updated (without data).');
+    // Restore from backup DB.
+    $res = EntityUpdate::entityUpdateDataRestore();
+    $this->assert($res, 'Entity data Restore.');
+    // Count entities.
+    $ids = \Drupal::entityQuery('entity_update_tests_cnt')->execute();
+    $this->assertEqual(count($ids), 1, 'Has one entity.');
+    // Cleanup backup DB.
+    $res = EntityUpdate::cleanupEntityBackup();
   }
 
   /**
@@ -242,7 +335,7 @@ class EntityUpdateFunctionsTest extends WebTestBase {
     $this->assert($res, 'Entity schema has been updated (Field Add).');
 
     // Check fields list on database.
-    $fields = ['id', 'name'];
+    $fields = ['fix', 'id', 'name'];
     $res = EntityUpdateTestHelper::checkFieldList('entity_update_tests_cnt', $fields);
     $this->assert($res === TRUE, 'Entity schema database has correct fields [' . (print_r($res, TRUE)) . ']');
 
@@ -260,7 +353,7 @@ class EntityUpdateFunctionsTest extends WebTestBase {
     $this->assertEqual(count($ids), 1, 'Has one entity.');
 
     // Check fields list on database.
-    $fields = ['id'];
+    $fields = ['fix', 'id'];
     $res = EntityUpdateTestHelper::checkFieldList('entity_update_tests_cnt', $fields);
     $this->assert($res === TRUE, 'Entity schema database has correct fields [' . (print_r($res, TRUE)) . ']');
   }

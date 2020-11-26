@@ -17,5 +17,3 @@ Class USMARC Extends File {
 		$this->pointer = 0;
 	}
 }
-
-/* EOF: USMARC.php */

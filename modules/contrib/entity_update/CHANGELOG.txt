@@ -18,6 +18,10 @@ RC7
 - Add EntityUpdateHelper and Settings
 - Add --force option
 - Add --force and --rescue from UI
+RC8
+- Add tests for --force
+- Add advanced update simulation test.
+- Adaptation of EntityUpdateFunctionsTest for Drupal V > 8.5
 
 2017-11-05  1.1.1
 -----------------

@@ -39,12 +39,8 @@ class EntityUpdateUIAccessTest extends WebTestBase {
    */
   public function testAnonymousAccess() {
 
-    // Check home page.
-    $this->drupalGet('');
-    $this->assertResponse(200, 'Page :  Site homepage');
-
-    // Run tests.
-    $this->runPageAccess(403);
+    // Run tests for Anonymous users.
+    $this->runPageAccess(403, 'testAnonymousAccess');
   }
 
   /**
@@ -55,12 +51,8 @@ class EntityUpdateUIAccessTest extends WebTestBase {
     // Simple user login.
     $this->drupalLogin($this->user);
 
-    // Check home page.
-    $this->drupalGet('');
-    $this->assertResponse(200, 'Page :  Site homepage');
-
     // Run tests.
-    $this->runPageAccess(403);
+    $this->runPageAccess(403, 'testSimpleUserAccess');
   }
 
   /**
@@ -71,18 +63,21 @@ class EntityUpdateUIAccessTest extends WebTestBase {
     $this->drupalLogin($this->admin_user);
 
     // Run tests.
-    $this->runPageAccess(200);
+    $this->runPageAccess(200, 'testAdminsAccess');
   }
 
   /**
    * Run page tests.
    */
-  private function runPageAccess($code = NULL) {
+  private function runPageAccess($code = NULL, $method = '') {
 
     // Return if NULL.
     if (!$code) {
       return;
     }
+    // Check home page.
+    $this->drupalGet('');
+    $this->assertResponse(200, "Home : $method");
 
     $this->drupalGet('admin/config/development/entity-update');
     $this->assertResponse($code, "Page :  Root ($code)");

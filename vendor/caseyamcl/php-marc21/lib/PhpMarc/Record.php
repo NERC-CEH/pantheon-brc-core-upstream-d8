@@ -348,5 +348,3 @@ Class Record {
 		return $formatted;
 	}
 }
-
-/* EOF: Record.php */

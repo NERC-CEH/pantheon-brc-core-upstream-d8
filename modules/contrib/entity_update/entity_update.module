@@ -24,8 +24,18 @@ function entity_update_help($route_name, RouteMatchInterface $route_match) {
       return TRUE;
     }
 
-    $output = '';
-    $output .= <<<TEXT
+    $doclinks = <<<TEXT
+
+<h3>Documentation</h3>
+  <ul>
+    <li><a href='https://www.drupal.org/docs/8/modules/entity-update'>Entity Update documentation</a></li>
+    <li><a href='https://www.drupal.org/docs/8/modules/entity-update/entity-update-from-drush'>Entity Update from drush</a></li>
+    <li><a href='https://www.drupal.org/docs/8/modules/entity-update/entity-update-usage-from-web-browser'>Entity Update usage from web browser</a></li>
+    <li><a href='https://www.drupal.org/docs/8/modules/entity-update/update-entities-programmatically'>Update entities programmatically</a></li>
+  </ul>
+TEXT;
+
+    $output = <<<TEXT
 <h3>About</h3>
 <p>The main objective of the module Entity Update is allowed module developer and site administrators to update entity types schema even entities have data.
 The update can execute by drush command (recommended), from web browser or Programmatically. </p>
@@ -37,13 +47,7 @@ The update can execute by drush command (recommended), from web browser or Progr
 <br>  <b>You are the responsible of your work</b>.
 </p>
 
-<h3>Documentation</h3>
-  <ul>
-    <li><a href='https://www.drupal.org/docs/8/modules/entity-update'>Entity Update documentation</a></li>
-    <li><a href='https://www.drupal.org/docs/8/modules/entity-update/entity-update-from-drush'>Entity Update from drush</a></li>
-    <li><a href='https://www.drupal.org/docs/8/modules/entity-update/entity-update-usage-from-web-browser'>Entity Update usage from web browser</a></li>
-    <li><a href='https://www.drupal.org/docs/8/modules/entity-update/update-entities-programmatically'>Update entities programmatically</a></li>
-  </ul>
+$doclinks
 
 <h3>Usage Examples : entity-update (Via drush)</h3>
 <p>
@@ -80,7 +84,8 @@ Alias : <b>upec</b><br>
 <code>drush upec node --list --start=2 --length=3</code><br>
 </p>
 
-<b><i>Visit the documentation page for more examples</i></b>.
+<b><i>Visit the documentation for more examples</i></b>.
+$doclinks
 TEXT;
 
     return $output;

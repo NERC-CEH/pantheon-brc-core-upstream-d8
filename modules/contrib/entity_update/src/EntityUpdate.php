@@ -16,13 +16,19 @@ class EntityUpdate {
    */
   public static function basicUpdate($force = FALSE) {
     // Check all updateble entities are empty.
-    $list = self::getEntityTypesToUpdate();
     $flgOK = TRUE;
-    foreach ($list as $item => $entity_type_changes) {
-      if (!empty(\Drupal::entityQuery($item)->execute())) {
-        $flgOK = FALSE;
-        EntityUpdatePrint::drushLog("The entity '$item' is not empty", 'warning');
+    try {
+      $list = self::getEntityTypesToUpdate();
+      foreach ($list as $item => $entity_type_changes) {
+        if (!empty(\Drupal::entityQuery($item)->execute())) {
+          $flgOK = FALSE;
+          EntityUpdatePrint::drushLog("The entity '$item' is not empty", 'warning');
+        }
       }
+    }
+    catch (\Exception $e) {
+      EntityUpdatePrint::drushLog($e->getMessage(), 'error', NULL, TRUE);
+      $flgOK = FALSE;
     }
 
     // Return if one of the entity has data.

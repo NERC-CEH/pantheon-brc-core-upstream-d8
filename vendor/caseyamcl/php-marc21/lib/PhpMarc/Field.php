@@ -379,5 +379,3 @@ Class Field {
 	}
 	
 }
-
-/* EOF: Field.php */
