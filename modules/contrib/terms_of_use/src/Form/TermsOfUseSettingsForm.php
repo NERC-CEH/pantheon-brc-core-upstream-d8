@@ -92,6 +92,17 @@ class TermsOfUseSettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('terms_of_use_label_checkbox'),
       '#description' => $this->t('Type here something like "I agree with these terms." or "I CERTIFY THAT I AM OVER THE AGE OF 18 YEARS OLD.", without quotes. You can use the token @link to insert a link to the Terms in this label. For example, the label can be: "I agree with the @link.", without quotes. You may want to link to the Terms if you prefer not to show the full text of the Terms in the registration form. If you use the token, the Terms will not be shown.'),
     ];
+    $form['terms_of_use_form']['terms_of_use_open_link_in_new_window'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Open link in new window'),
+      '#default_value' => $config->get('terms_of_use_open_link_in_new_window'),
+      '#description' => t('Should any @link be opened in a new window.'),
+    ];
+    $form['terms_of_use_form']['terms_of_use_collapsed'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Display Terms of Use as collapsed'),
+      '#default_value' => $config->get('terms_of_use_collapsed'),
+    ];
     return parent::buildForm($form, $form_state);
   }
 
@@ -105,6 +116,8 @@ class TermsOfUseSettingsForm extends ConfigFormBase {
       ->set('terms_of_use_node', $form_state->getValue('terms_of_use_node'))
       ->set('terms_of_use_label_name', $form_state->getValue('terms_of_use_label_name'))
       ->set('terms_of_use_label_checkbox', $form_state->getValue('terms_of_use_label_checkbox'))
+      ->set('terms_of_use_open_link_in_new_window', (string) $form_state->getValue('terms_of_use_open_link_in_new_window'))
+      ->set('terms_of_use_collapsed', $form_state->getValue('terms_of_use_collapsed'))
       ->save();
   }
 

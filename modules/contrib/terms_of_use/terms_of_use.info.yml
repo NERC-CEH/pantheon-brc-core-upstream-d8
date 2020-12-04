@@ -4,7 +4,7 @@ core_version_requirement: ^8 || ^9
 type: module
 configure: terms_of_use.settings_form
 
-# Information added by Drupal.org packaging script on 2020-08-30
-version: '8.x-2.0'
+# Information added by Drupal.org packaging script on 2020-11-27
+version: '8.x-2.1'
 project: 'terms_of_use'
-datestamp: 1598772158
+datestamp: 1606460478

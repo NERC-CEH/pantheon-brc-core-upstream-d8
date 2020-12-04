@@ -22,10 +22,15 @@ function terms_of_use_form_user_register_form_alter(&$form, &$form_state) {
   $config = \Drupal::config('terms_of_use.settings');
   $title = $config->get('terms_of_use_label_name');
   $form['terms_of_use'] = [
-    '#type' => 'fieldset',
+    '#type' => 'details',
     '#title' => !empty($title) ? $title : t('Terms of Use'),
     '#weight' => 10,
   ];
+
+  // Set the details tag open/close based on the configuration.
+  $t_and_c_collapsed = $config->get('terms_of_use_collapsed') ? $config->get('terms_of_use_collapsed') : 0;
+  $t_and_c_collapsed = ($t_and_c_collapsed) ? 0 : 1;
+  $form['terms_of_use']['#open'] = $t_and_c_collapsed;
 
   $nid = $config->get('terms_of_use_node');
   $node = '';
@@ -38,6 +43,11 @@ function terms_of_use_form_user_register_form_alter(&$form, &$form_state) {
   if (!empty($node)) {
     if (!empty($checkbox_title) && strpos($checkbox_title, '@link') !== FALSE) {
       $replace = $node->toLink($node->label())->getUrl();
+      if ($config->get('terms_of_use_open_link_in_new_window')) {
+        $attributes = $replace->getOption('attributes');
+        $attributes['target'] = '_blank';
+        $replace->setOption('attributes', $attributes);
+      }
       $checkbox_title = str_replace('@link', Link::fromTextAndUrl($node->label(), $replace)->toString(), $checkbox_title);
     }
     else {
@@ -58,4 +68,19 @@ function terms_of_use_form_user_register_form_alter(&$form, &$form_state) {
     '#required' => TRUE,
   ];
 
+}
+
+/**
+ * Implements hook_entity_extra_field_info().
+ */
+function terms_of_use_entity_extra_field_info() {
+  $fields = [];
+
+  $fields['user']['user']['form']['terms_of_use'] = [
+    'label' => t('Terms of use settings'),
+    'description' => t('Terms of use module form element.'),
+    'weight' => 10,
+  ];
+
+  return $fields;
 }
