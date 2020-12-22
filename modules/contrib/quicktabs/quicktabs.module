@@ -33,6 +33,7 @@ function quicktabs_theme($existing, $type, $theme, $path) {
         'block' => NULL,
         'classes' => NULL,
         'id' => NULL,
+        'tabid' => NULL,
       ],
       'template' => 'quicktabs-block-content',
     ],

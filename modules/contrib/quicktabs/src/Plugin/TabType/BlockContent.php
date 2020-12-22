@@ -64,10 +64,12 @@ class BlockContent extends TabTypeBase {
 
     if (strpos($options['bid'], 'block_content') !== FALSE) {
       $parts = explode(':', $options['bid']);
-      $entity_manager = \Drupal::service('entity_type.manager');
-      $block = $entity_manager->loadEntityByUuid($parts[0], $parts[1]);
-      $block_content = BlockContent::load($block->id());
-      $render = \Drupal::entityTypeManager()->getViewBuilder('block_content')->view($block_content);
+      $entity_repository = \Drupal::service('entity.repository');
+      $block = $entity_repository->loadEntityByUuid($parts[0], $parts[1]);
+      $entityTypeManager = \Drupal::entityTypeManager();
+      $block_content = $entityTypeManager->getStorage('block_content')->load($block->id());
+      $render = $entityTypeManager->getViewBuilder('block_content')->view($block_content);
+
     }
     else {
       $block_manager = \Drupal::service('plugin.manager.block');

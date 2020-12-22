@@ -20,6 +20,8 @@ Supported mapping sites:
 * Mapquest
 * OpenStreetMaps
 * Yandex maps
+* Waze - Directions
+* Waze - Navigate (Immediately starts navigating)
 
 REQUIREMENTS
 ------------

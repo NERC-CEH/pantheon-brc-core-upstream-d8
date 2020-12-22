@@ -24,7 +24,7 @@ interface TabTypeInterface extends PluginInspectionInterface {
    * Return a render array for an individual tab tat the theme layer to process.
    *
    * @return string
-   *   TODO: test if changing type to array works
+   *   @todo test if changing type to array works
    */
   public function render(array $tab);
 

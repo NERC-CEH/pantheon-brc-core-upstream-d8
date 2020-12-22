@@ -300,6 +300,7 @@ class QuickTabsInstanceEditForm extends EntityForm {
       $form_state->setRedirect('quicktabs.admin');
     }
     $this->messenger->addStatus($this->t('Your changes have been saved.'));
+    drupal_flush_all_caches();
   }
 
   /**

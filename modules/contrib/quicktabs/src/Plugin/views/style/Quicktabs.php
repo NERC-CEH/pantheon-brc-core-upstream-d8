@@ -7,6 +7,7 @@ use Drupal\views\Plugin\views\style\StylePluginBase;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Component\Utility\Xss;
 
 /**
  * Style plugin to render views rows as tabs.
@@ -130,7 +131,6 @@ class Quicktabs extends StylePluginBase {
     $set_count = 0;
 
     foreach ($sets as $index => $set) {
-      $title = strip_tags($index);
       $wrapper_attributes = [];
 
       if ($set_count === 0) {
@@ -139,7 +139,7 @@ class Quicktabs extends StylePluginBase {
 
       $tab_titles[] = [
         '0' => Link::fromTextAndUrl(
-          new TranslatableMarkup($title),
+          new TranslatableMarkup(Xss::filter($index, ['img', 'em', 'strong', 'h2', 'h3', 'h4', 'h5', 'h6', 'small', 'span', 'i', 'br'])),
           Url::fromRoute(
             '<current>',
             [],

@@ -60,7 +60,7 @@ class ViewContent extends TabTypeBase {
       '#size' => '40',
       '#required' => FALSE,
       '#default_value' => isset($tab['content'][$plugin_id]['options']['args']) ? $tab['content'][$plugin_id]['options']['args'] : '',
-      '#description' => $this->t('Additional arguments to send to the view as if they were part of the URL in the form of arg1/arg2/arg3. You may use %0, %1, ..., %N to grab arguments from the URL.'),
+      '#description' => $this->t('Additional arguments to send to the view as if they were part of the URL in the form of arg1/arg2/arg3. You may use %1, %2, ..., %N to grab arguments from the URL.'),
     ];
 
     return $form;
@@ -71,7 +71,31 @@ class ViewContent extends TabTypeBase {
    */
   public function render(array $tab) {
     $options = $tab['content'][$tab['type']]['options'];
-    $args = empty($options['args']) ? [] : array_map('trim', explode(',', $options['args']));
+    $args = empty($options['args']) ? [] : array_map('trim', explode('/', $options['args']));
+
+    if (isset($args)) {
+      $current_path = \Drupal::service('path.current')->getPath();
+
+      // If the request is a ajax callback we need to use $_SERVER['HTTP_REFERER'] to get current path.
+      if (strpos($current_path, '/quicktabs/ajax/') !== FALSE) {
+        $request = \Drupal::request();
+        if ($request->server->get('HTTP_REFERER')) {
+          $referer = parse_url($request->server->get('HTTP_REFERER'), PHP_URL_PATH);
+
+          // Stripping the language path prefix.
+          $current_language = \Drupal::service('language_manager')->getCurrentLanguage()->getId();
+          $path = str_replace("/$current_language/", '/', $referer);
+
+          $current_path = \Drupal::service('path.alias_manager')->getPathByAlias($path);
+        }
+
+      }
+      $url_args = explode('/', $current_path);
+      foreach ($url_args as $id => $arg) {
+        $args = str_replace("%$id", $arg, $args);
+      }
+      $args = preg_replace(',/?(%\d),', '', $args);
+    }
     $view = Views::getView($options['vid']);
 
     // Return empty render array if user doesn't have access.
@@ -79,7 +103,33 @@ class ViewContent extends TabTypeBase {
       return [];
     }
 
-    $render = $view->buildRenderable($options['display'], $args);
+    // Return empty if the view is empty.
+    $view_results = views_get_view_result($options['vid'], $options['display']);
+    if (!$view_results && !empty($options['vid']) && !empty($options['display'])) {
+      // If the initial view is empty, check the attachments.
+      $view = Views::getView($options['vid']);
+      $view->setDisplay($options['display']);
+      $display = $view->getDisplay();
+      $attachments = $display->getAttachedDisplays();
+
+      // If there are attachments, check if they are empty.
+      if (!empty($attachments)) {
+        foreach ($attachments as $attachment) {
+          if (!empty(views_get_view_result($options['vid'], $attachment))) {
+            $view_results = TRUE;
+            continue;
+          }
+        }
+      }
+    }
+
+    if (empty($view_results)) {
+      return [];
+    }
+
+    else {
+      $render = $view->buildRenderable($options['display'], $args);
+    }
 
     // Set additional cache keys that depend on the arguments provided for this
     // view.

@@ -29,6 +29,7 @@ Drupal.quicktabs.prepare = function(el) {
     var parent_li = $(element).parents('li').get(0);
 
     $(element).bind('click', {tab: tab}, Drupal.quicktabs.clickHandler);
+    $(element).bind('keydown', {myTabIndex: i}, Drupal.quicktabs.keyDownHandler);
   });
 }
 
@@ -36,8 +37,18 @@ Drupal.quicktabs.clickHandler = function(event) {
   var tab = event.data.tab;
   var element = this;
   // Set clicked tab to active.
+  // Flip the aria-selected attribute.
+  // The tabindex takes inactive tabs out of the tab pool,
+  // they can be accessed by keyboard navigation.
+  // This is a recommendation of the WAI-ARIA example:
+  // https://www.w3.org/TR/wai-aria-practices-1.1/examples/tabs/tabs-2/tabs.html
   $(this).parents('li').siblings().removeClass('active');
+  $(this).parents('li').siblings().attr('aria-selected', 'false');
+  $(this).parents('li').siblings().attr('tabindex', '-1');
+  $(this).parents('li').siblings().find('a').attr('tabindex', '-1');
   $(this).parents('li').addClass('active');
+  $(this).parents('li').attr('aria-selected', 'true');
+  $(this).attr('tabindex', '0');
 
   if ($(this).hasClass('use-ajax')) {
     $(this).addClass('quicktabs-loaded');
@@ -52,6 +63,39 @@ Drupal.quicktabs.clickHandler = function(event) {
 
   tab.tabpage.removeClass('quicktabs-hide');
   return false;
+}
+
+Drupal.quicktabs.keyDownHandler = function(event) {
+  var tabIndex = event.data.myTabIndex;
+
+  // This element should be a link element inside an
+  // unordered list of tabs. Get all links in the list.
+  var tabs = $(this).parent('li').parent("ul").find("li a");
+
+  // Trigger the click and focus events for the individual tabs.
+    switch (event.key) {
+        case 'ArrowLeft':
+        case 'ArrowUp':
+            event.preventDefault();
+            if (tabIndex <= 0) {
+                tabs[tabs.length - 1].click();
+                tabs[tabs.length - 1].focus();
+            } else {
+                tabs[tabIndex - 1].click();
+                tabs[tabIndex - 1].focus();
+            }
+            break;
+        case'ArrowRight':
+        case'ArrowDown':
+            event.preventDefault();
+            if (tabIndex >= tabs.length - 1) {
+                tabs[0].click();
+                tabs[0].focus();
+            } else {
+                tabs[tabIndex + 1].click();
+                tabs[tabIndex + 1].focus();
+            }
+    }
 }
 
 // Constructor for an individual tab

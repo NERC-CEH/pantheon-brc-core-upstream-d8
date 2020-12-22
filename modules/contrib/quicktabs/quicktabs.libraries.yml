@@ -23,24 +23,26 @@ quicktabs.form:
     - core/drupal
     - core/drupalSettings
 
-quicktabs.accordion:
+pamela:
   version: VERSION
-  js:
-    js/qt_accordion.js: {}
-  dependencies:
-    - core/jquery
-    - core/jquery.ui.accordion
-    - core/jquery.once
-    - core/drupal
-    - core/drupalSettings
+  css:
+    theme:
+      css/pamela.css: {}
 
-quicktabs.ui:
+on-the-gray:
   version: VERSION
-  js:
-    js/qt_ui_tabs.js: {}
-  dependencies:
-    - core/jquery
-    - core/jquery.ui.tabs
-    - core/jquery.once
-    - core/drupal
-    - core/drupalSettings
+  css:
+    theme:
+      css/on-the-gray.css: {}
+
+tabsbar:
+  version: VERSION
+  css:
+    theme:
+      css/tabsbar.css: {}
+
+material-tabs:
+  version: VERSION
+  css:
+    theme:
+      css/material-tabs.css: {}

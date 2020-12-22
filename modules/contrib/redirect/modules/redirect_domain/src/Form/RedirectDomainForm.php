@@ -133,7 +133,7 @@ class RedirectDomainForm extends ConfigFormBase {
     if ($redirects = $form_state->getValue('redirects')) {
       foreach ($redirects as $redirect) {
         if (strpos($redirect['from'], '://') !== FALSE) {
-          $form_state->setErrorByName('redirects', t('No protocol should be included in the redirect domain.'));
+          $form_state->setErrorByName('redirects', $this->t('No protocol should be included in the redirect domain.'));
         }
       }
     }
@@ -150,6 +150,7 @@ class RedirectDomainForm extends ConfigFormBase {
       foreach ($redirects as $redirect) {
         if (!empty($redirect['from']) && !empty($redirect['destination'])) {
           // Replace '.' with ':' for an eligible key.
+          // @see \Drupal\redirect_domain\EventSubscriber\DomainRedirectRequestSubscriber::onKernelRequestCheckDomainRedirect()
           $redirect['from'] = str_replace('.', ':', $redirect['from']);
           $domain_redirects[$redirect['from']][] = [
             'sub_path' => '/' . ltrim($redirect['sub_path'], '/'),
@@ -160,6 +161,6 @@ class RedirectDomainForm extends ConfigFormBase {
     }
     $domain_config->set('domain_redirects', $domain_redirects);
     $domain_config->save();
-    drupal_set_message(t('The domain redirects have been saved.'));
+    $this->messenger()->addMessage($this->t('The domain redirects have been saved.'));
   }
 }
