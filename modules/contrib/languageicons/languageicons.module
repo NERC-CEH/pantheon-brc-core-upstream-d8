@@ -1,10 +1,15 @@
 <?php
+
 /**
  * @file
- * Icons for language links.
+ * Main functions and hook implementations for the Language Icons module.
  *
  * This is a spin off from the Internationalization (i18n) package.
  */
+
+use Drupal\Component\Utility\Html;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
 
 /**
  * Implements hook_theme().
@@ -27,9 +32,9 @@ function languageicons_theme() {
  *
  * @todo The @handbook link needs to change to a module specific one.
  */
-function languageicons_help($path, $arg) {
-  switch ($path) {
-    case 'admin/help#languageicons':
+function languageicons_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.languageicons':
       $output = '<p>' . t('This module manages language icons for multilingual sites:') . '</p>';
       $output .= '<ul>';
       $output .= '<li>' . t('Automatically adds icons to language links.') . '</li>';
@@ -38,7 +43,7 @@ function languageicons_help($path, $arg) {
       $output .= '<p>' . t('For more information, please see <a href="@handbook">the online handbook section</a>.', array('@handbook' => 'http://drupal.org/node/133977')) . '</p>';
       return $output;
     case 'admin/config/regional/language/icons':
-      $output = '<p>' . t('To enable multilingual support for specific content types go to <a href="@configure_content_types">configure content types</a>.', array('@configure_content_types' => \Drupal\Core\Url::fromRoute('entity.node_type.collection'))) . '</p>';
+      $output = '<p>' . t('To enable multilingual support for specific content types go to <a href="@configure_content_types">configure content types</a>.', array('@configure_content_types' => Url::fromRoute('entity.node_type.collection'))) . '</p>';
       return $output;
   }
 }
@@ -104,7 +109,7 @@ function template_preprocess_languageicons_link_content(&$variables) {
   if ($path = \Drupal::config('languageicons.settings')->get('path')) {
     $variables['icon'] = [
       '#theme' => 'image',
-      '#uri' => str_replace('*', $language->getId(), \Drupal\Component\Utility\Html::escape($path)),
+      '#uri' => str_replace('*', $language->getId(), Html::escape($path)),
       '#alt' => $title,
       '#title' => $title,
       '#width' => $width,

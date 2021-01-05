@@ -15,10 +15,10 @@ ms-dropdown:
   title: 'Marghoob Suleman Dropdown jquery library'
   website: 'https://github.com/marghoobsuleman/ms-Dropdown'
   js:
-    /libraries/ms-Dropdown/js/msdropdown/jquery.dd.min.js: {}
+    /libraries/ms-dropdown/js/msdropdown/jquery.dd.min.js: {}
   css:
     component:
-      /libraries/ms-Dropdown/css/msdropdown/dd.css: {}
+      /libraries/ms-dropdown/css/msdropdown/dd.css: {}
   dependencies:
     - core/jquery
 

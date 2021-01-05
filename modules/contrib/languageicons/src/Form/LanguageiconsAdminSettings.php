@@ -40,7 +40,10 @@ class LanguageiconsAdminSettings extends ConfigFormBase {
     return ['languageicons.settings'];
   }
 
-  public function buildForm(array $form, \Drupal\Core\Form\FormStateInterface $form_state) {
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm(array $form, FormStateInterface $form_state) {
     $form['show'] = [
       '#type' => 'fieldset',
       '#title' => t('Add language icons'),

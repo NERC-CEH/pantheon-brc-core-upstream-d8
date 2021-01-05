@@ -176,7 +176,11 @@ function role_expire_user_form_submit($form, FormStateInterface &$form_state) {
           \Drupal::service('role_expire.api')->writeRecord($account->id(), $rid, $expiry_timestamp);
         }
         else {
-          \Drupal::service('role_expire.api')->deleteRecord($account->id(), $rid);
+          $roleExpirationCanBeDeleted = \Drupal::service('role_expire.api')->roleExpirationCanBeDeletedOnUserEditSave($rid);
+          if ($roleExpirationCanBeDeleted) {
+            \Drupal::service('role_expire.api')
+              ->deleteRecord($account->id(), $rid);
+          }
         }
       }
     }
@@ -197,7 +201,11 @@ function role_expire_user_form_submit($form, FormStateInterface &$form_state) {
       if (isset($del_roles)) {
         // We have the deleted roles, loop over them and remove their expiry info.
         foreach ($del_roles as $role_id) {
-          \Drupal::service('role_expire.api')->deleteRecord($account->id(), $role_id);
+          $roleExpirationCanBeDeleted = \Drupal::service('role_expire.api')->roleExpirationCanBeDeletedOnUserEditSave($role_id);
+          if ($roleExpirationCanBeDeleted) {
+            \Drupal::service('role_expire.api')
+              ->deleteRecord($account->id(), $role_id);
+          }
         }
       }
 

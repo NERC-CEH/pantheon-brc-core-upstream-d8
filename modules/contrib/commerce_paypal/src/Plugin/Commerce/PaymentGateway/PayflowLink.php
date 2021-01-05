@@ -312,7 +312,7 @@ class PayflowLink extends OffsitePaymentGatewayBase implements PayflowLinkInterf
       $payment->save();
     }
     else {
-      throw new PaymentGatewayException($this->t('Refund failed: @reason', ['@reason' => $response['RESPMSG']]), 'error');
+      throw new PaymentGatewayException($this->t('Refund failed: @reason', ['@reason' => $response['RESPMSG']]),  $response['RESULT']);
     }
   }
 
@@ -416,6 +416,9 @@ class PayflowLink extends OffsitePaymentGatewayBase implements PayflowLinkInterf
    * {@inheritdoc}
    */
   public function capturePayment(PaymentInterface $payment, Price $amount = NULL) {
+    // If not specified, capture the entire amount.
+    $amount = $amount ?: $payment->getAmount();
+
     $order = $payment->getOrder();
 
     // Prepare a name-value pair array to capture the requested amount.
@@ -445,7 +448,7 @@ class PayflowLink extends OffsitePaymentGatewayBase implements PayflowLinkInterf
         break;
 
       default:
-        throw new PaymentGatewayException($this->t('Prior authorization capture failed, so the transaction will remain in a pending status.'), 'error');
+        throw new PaymentGatewayException($this->t('Capture failed: @reason.', ['@reason' => $response['RESPMSG']]),  $response['RESULT']);
     }
 
     $payment->save();
@@ -738,7 +741,7 @@ class PayflowLink extends OffsitePaymentGatewayBase implements PayflowLinkInterf
       $new_payment->save();
     }
     else {
-      throw new PaymentGatewayException($this->t('Reference transaction failed.'), 'error');
+      throw new PaymentGatewayException($this->t('Reference transaction failed: @reason.', ['@reason' => $response['RESPMSG']]),  $response['RESULT']);
     }
   }
 

@@ -13,7 +13,7 @@ use Drupal\user\UserInterface;
  *   id = "role_expire_remove_expire_time",
  *   label = @Translation("Remove expire time for user roles"),
  *   category = @Translation("Role expire"),
- *   context = {
+ *   context_definitions = {
  *     "user" = @ContextDefinition("entity:user",
  *       label = @Translation("User")
  *     ),

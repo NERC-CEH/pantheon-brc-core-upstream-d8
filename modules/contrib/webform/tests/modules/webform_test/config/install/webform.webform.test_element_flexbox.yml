@@ -254,9 +254,9 @@ elements: |
           '#type': textfield
           '#title': Name
           '#title_display': invisible
-        gender:
+        sex:
           '#type': select
-          '#title': Gender
+          '#title': Sex
           '#title_display': invisible
           '#options':
             Male: Male
@@ -269,9 +269,9 @@ elements: |
           '#type': textfield
           '#title': Name
           '#title_display': invisible
-        gender:
+        sex:
           '#type': select
-          '#title': Gender
+          '#title': Sex
           '#title_display': invisible
           '#options':
             Male: Male
@@ -928,16 +928,28 @@ elements: |
     '#type': webform_flexbox
     '#align_items': flex-end
     toggle:
-      '#type': toggle
+      '#type': webform_toggle
       '#title': toggle
     toggle_textfield:
       '#type': textfield
       '#title': textfield
       '#flex': 5
     toggle_rating:
-      '#type': rating
+      '#type': webform_rating
       '#title': rating
-  
+  flexbox_inline_title:
+    '#type': webform_flexbox
+    flexbox_inline_title_textfield_01:
+      '#type': textfield
+      '#title': 'textfield 01'
+      '#title_display': inline
+      '#size': 20
+    flexbox_inline_title_textfield_02:
+      '#type': textfield
+      '#title': 'textfield 02'
+      '#title_display': inline
+      '#size': 20
+
 css: ''
 javascript: ''
 settings:
@@ -958,7 +970,7 @@ settings:
   form_previous_submissions: true
   form_confidential: false
   form_confidential_message: ''
-  form_remote_addr: true
+  form_disable_remote_addr: false
   form_convert_anonymous: false
   form_prepopulate: false
   form_prepopulate_source_entity: false
@@ -1067,6 +1079,7 @@ settings:
   results_customize: false
   token_view: false
   token_update: false
+  token_delete: false
   serial_disabled: false
 access:
   create:

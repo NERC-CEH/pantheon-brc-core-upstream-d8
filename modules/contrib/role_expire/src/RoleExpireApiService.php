@@ -5,6 +5,7 @@ namespace Drupal\role_expire;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Session\AccountInterface;
 
 /**
@@ -34,12 +35,20 @@ class RoleExpireApiService {
   protected $sessionManager;
 
   /**
+   * Module handler service.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandler
+   */
+  protected $moduleHandler;
+
+  /**
    * Constructs a new RoleExpireApiService object.
    */
-  public function __construct(ConfigFactory $configFactory, Connection $connection) {
+  public function __construct(ConfigFactory $configFactory, Connection $connection, ModuleHandler $moduleHandler) {
     $this->config = $configFactory;
     $this->database = $connection;
     $this->sessionManager = \Drupal::service('session_manager');
+    $this->moduleHandler = $moduleHandler;
   }
 
   /**
@@ -99,14 +108,18 @@ class RoleExpireApiService {
    *   User ID.
    * @param string $rid
    *   Role ID.
+   * @param bool $delete_session
+   *   Whether to terminate user session or not.
    */
-  public function deleteRecord($uid, $rid) {
+  public function deleteRecord($uid, $rid, $delete_session = TRUE) {
     $query = $this->database->delete('role_expire');
     $query->condition('uid', $uid)->condition('rid', $rid);
     $query->execute();
 
-    // Delete the user's sessions so they have login again with their new access.
-    $this->sessionManager->delete($uid);
+    if ($delete_session) {
+      // Delete the user's sessions so they have login again with their new access.
+      $this->sessionManager->delete($uid);
+    }
   }
 
   /**
@@ -124,12 +137,16 @@ class RoleExpireApiService {
    *
    * @param int $uid
    *   User ID.
+   * @param bool $delete_session
+   *   Whether to terminate user session or not.
    */
-  public function deleteUserRecords($uid) {
+  public function deleteUserRecords($uid, $delete_session = TRUE) {
     $this->database->delete('role_expire')->condition('uid', $uid)->execute();
 
-    // Delete the user's sessions so they have login again with their new access.
-    $this->sessionManager->delete($uid);
+    if ($delete_session) {
+      // Delete the user's sessions so they have login again with their new access.
+      $this->sessionManager->delete($uid);
+    }
   }
 
   /**
@@ -319,6 +336,55 @@ class RoleExpireApiService {
         \Drupal::logger('role_expire')->notice(t('Added default duration @default_duration to role @role to user @account.', array('@default_duration' => $default_duration, '@role' => $role_id, '@account' => $uid)));
       }
     }
+  }
+
+  /**
+   * On user form save we decide whether to delete role expiration or not.
+   *
+   * @param string $rid
+   *   Role ID.
+   *
+   * @return bool
+   *   Return TRUE if expiration for role can be deleted.
+   */
+  function roleExpirationCanBeDeletedOnUserEditSave($rid) {
+    $currentUser = \Drupal::currentUser();
+    if ($currentUser->hasPermission('administer permissions')) {
+      /*
+       * User with this permission won't be limited by roleassign and
+       * role_delegation modules.
+       */
+      return TRUE;
+    }
+
+    if ($this->moduleHandler->moduleExists('roleassign')) {
+      if ($currentUser->hasPermission('assign roles')) {
+        $roleassign_config = $this->config->get('roleassign.settings')
+          ->get('roleassign_roles');
+        $assignable_roles = array_values($roleassign_config);
+        if (!in_array($rid, $assignable_roles)) {
+          /*
+           * Current user doesn't have permission to assign this role. So,
+           * we shouldn't delete it's expiration time only because he/she
+           * doesn't see it.
+           */
+          return FALSE;
+        }
+      }
+    }
+
+    if ($this->moduleHandler->moduleExists('role_delegation')) {
+      if (!$currentUser->hasPermission(sprintf('assign %s role', $rid))) {
+        /*
+         * Current user doesn't have permission to assign this role. So,
+         * we shouldn't delete it's expiration time only because he/she
+         * doesn't see it.
+         */
+        return FALSE;
+      }
+    }
+
+    return TRUE;
   }
 
 }

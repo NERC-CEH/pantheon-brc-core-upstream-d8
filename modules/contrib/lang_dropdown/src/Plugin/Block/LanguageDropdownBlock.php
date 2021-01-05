@@ -13,9 +13,9 @@ use Drupal\Core\Path\PathMatcherInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
-use Drupal\lang_dropdown\Form\LanguageDropdownForm;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Form\FormBuilderInterface;
+use Drupal\lang_dropdown\Form\LanguageDropdownForm;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -666,11 +666,14 @@ class LanguageDropdownBlock extends BlockBase implements ContainerFactoryPluginI
     $this->configuration['hidden_languages'] = [];
     /** @var string $code */
     /** @var array $values */
-    foreach ($lang_dropdown['hideout']['languages'] as $code => $values) {
-      unset($values['language']);
-      foreach ($values as $rid => $value) {
-        if ($value) {
-          $this->configuration['hidden_languages'][$rid][] = $code;
+
+    if (isset($lang_dropdown['hideout']['languages']) && is_array($lang_dropdown['hideout']['languages'])) {
+      foreach ($lang_dropdown['hideout']['languages'] as $code => $values) {
+        unset($values['language']);
+        foreach ($values as $rid => $value) {
+          if ($value) {
+            $this->configuration['hidden_languages'][$rid][] = $code;
+          }
         }
       }
     }
@@ -728,11 +731,11 @@ class LanguageDropdownBlock extends BlockBase implements ContainerFactoryPluginI
       return [];
     }
 
-    $lang_dropdown_form = new LanguageDropdownForm($languages->links, $type, $this->configuration);
-    $form = $this->formBuilder->getForm($lang_dropdown_form);
+    $form = $this->formBuilder->getForm(LanguageDropdownForm::class, $languages->links, $type, $this->configuration);
 
     return [
       'lang_dropdown_form' => $form,
+      '#cache' => ['max-age' => 0],
     ];
   }
 

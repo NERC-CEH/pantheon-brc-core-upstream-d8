@@ -100,6 +100,22 @@ class PaymentMethodAddForm extends BasePaymentMethodAddForm {
     if ($this->shouldInjectForm($payment_method->getPaymentGateway()->getPlugin())) {
       parent::submitConfigurationForm($form, $form_state);
     }
+    else {
+      // Since we're not calling the parent submitConfigurationForm() method
+      // we need to duplicate the logic for setting the billing profile
+      /** @var \Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\OnsitePaymentGatewayInterface $payment_gateway_plugin */
+      $payment_gateway_plugin = $this->plugin;
+      /** @var \Drupal\commerce_payment\Entity\PaymentMethodInterface $payment_method */
+      $payment_method = $this->entity;
+
+      if ($payment_gateway_plugin->collectsBillingInformation()) {
+        /** @var \Drupal\commerce\Plugin\Commerce\InlineForm\EntityInlineFormInterface $inline_form */
+        $inline_form = $form['billing_information']['#inline_form'];
+        /** @var \Drupal\profile\Entity\ProfileInterface $billing_profile */
+        $billing_profile = $inline_form->getEntity();
+        $payment_method->setBillingProfile($billing_profile);
+      }
+    }
   }
 
   /**

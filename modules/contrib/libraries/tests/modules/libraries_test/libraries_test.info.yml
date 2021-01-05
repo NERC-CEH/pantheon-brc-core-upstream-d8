@@ -3,13 +3,13 @@ type: module
 description: Tests library detection and loading.
 core: 8.x
 dependencies:
-  - libraries
+  - libraries:libraries
 hidden: TRUE
 library_dependencies:
   - test_asset_library
   - test_asset_multiple_library
 
-# Information added by Drupal.org packaging script on 2020-12-16
-version: '8.x-3.0-alpha6'
+# Information added by Drupal.org packaging script on 2021-01-04
+version: '8.x-3.0-beta1'
 project: 'libraries'
-datestamp: 1608099126
+datestamp: 1609758296

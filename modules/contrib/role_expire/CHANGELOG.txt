@@ -1,3 +1,13 @@
+Role expire 2.0.0, 2020-12-24
+-----------------------------
+Adopted semantic versioning. No major changes since 8.x-1.8
+#3168571: User is logged out on role_expire deletion (make it optional)
+#3168813: Losing expiration data when combined with RoleAssign and Role Delegation
+
+Role expire 8.x-1.8, 2020-07-30
+-------------------------------
+#3160359: Error on react on event rule
+
 Role expire 8.x-1.7, 2020-06-27
 -------------------------------
 #3137887: PHP notice on registration page

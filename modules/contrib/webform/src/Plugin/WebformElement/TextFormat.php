@@ -190,7 +190,7 @@ class TextFormat extends WebformElementBase {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public static function trustedCallbacks() {
     return array_merge(parent::trustedCallbacks(), ['preRenderFixTextFormatStates']);
@@ -289,7 +289,7 @@ class TextFormat extends WebformElementBase {
    * {@inheritdoc}
    */
   public function preview() {
-    return (\Drupal::moduleHandler()->moduleExists('filter')) ? parent::preview() : [];
+    return ($this->moduleHandler->moduleExists('filter')) ? parent::preview() : [];
   }
 
   /**
