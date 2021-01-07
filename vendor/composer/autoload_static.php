@@ -106,6 +106,7 @@ class ComposerStaticInitfecfd7ceec5483b488adbd29547e891b
         ),
         'O' => 
         array (
+            'OpenIDConnectServer\\' => 20,
             'OomphInc\\ComposerInstallersExtender\\' => 36,
         ),
         'M' => 
@@ -119,6 +120,7 @@ class ComposerStaticInitfecfd7ceec5483b488adbd29547e891b
             'League\\Csv\\' => 11,
             'League\\Container\\' => 17,
             'Lcobucci\\JWT\\' => 13,
+            'Lcobucci\\Clock\\' => 15,
             'Laminas\\ZendFrameworkBridge\\' => 28,
             'Laminas\\Stdlib\\' => 15,
             'Laminas\\Feed\\' => 13,
@@ -350,6 +352,10 @@ class ComposerStaticInitfecfd7ceec5483b488adbd29547e891b
         array (
             0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
         ),
+        'OpenIDConnectServer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/steverhoades/oauth2-openid-connect-server/src',
+        ),
         'OomphInc\\ComposerInstallersExtender\\' => 
         array (
             0 => __DIR__ . '/..' . '/oomphinc/composer-installers-extender/src',
@@ -377,6 +383,10 @@ class ComposerStaticInitfecfd7ceec5483b488adbd29547e891b
         'Lcobucci\\JWT\\' => 
         array (
             0 => __DIR__ . '/..' . '/lcobucci/jwt/src',
+        ),
+        'Lcobucci\\Clock\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/lcobucci/clock/src',
         ),
         'Laminas\\ZendFrameworkBridge\\' => 
         array (
