@@ -106,7 +106,6 @@ class ComposerStaticInitfecfd7ceec5483b488adbd29547e891b
         ),
         'O' => 
         array (
-            'OpenIDConnectServer\\' => 20,
             'OomphInc\\ComposerInstallersExtender\\' => 36,
         ),
         'M' => 
@@ -351,10 +350,6 @@ class ComposerStaticInitfecfd7ceec5483b488adbd29547e891b
         'PHPMailer\\PHPMailer\\' => 
         array (
             0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
-        ),
-        'OpenIDConnectServer\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/steverhoades/oauth2-openid-connect-server/src',
         ),
         'OomphInc\\ComposerInstallersExtender\\' => 
         array (
