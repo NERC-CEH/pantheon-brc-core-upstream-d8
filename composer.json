@@ -19,7 +19,6 @@
         }		
     ],
     "require": {
-        "academicpuma/citeproc-php": "^1.0",
         "adci/full-name-parser": "^0.2.4",
         "audiolabs/bibtexparser": "dev-master",
         "caseyamcl/php-marc21": "^1.0",
