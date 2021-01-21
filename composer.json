@@ -142,7 +142,7 @@
         "drupal/webform_views": "5.0-alpha8",
         "drupal/weight": "^3.2",
         "lcobucci/clock": "^1.2",
-        "oomphinc/composer-installers-extender": "^1.1",
+        "oomphinc/composer-installers-extender": "2.0",
         "technosophos/libris": "2.0.2"
     },
     "conflict": {
