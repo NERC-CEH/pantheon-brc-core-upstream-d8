@@ -162,10 +162,10 @@
 			"vendor/package": ["test", "documentation"]
 		  }		
         },
-        "installer-types": ["library","bower-asset","npm-asset"],		
+        "installer-types": ["bower-asset","npm-asset"],		
         "installer-paths": {
             "core": ["type:drupal-core"],
-            "libraries/{$name}": ["type:drupal-library", "type:bower-asset", "type:npm-asset"],
+            "libraries/{$name}": ["type:bower-asset", "type:npm-asset"],
             "modules/contrib/{$name}": [
                 "type:drupal-module"
             ],
