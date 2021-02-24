@@ -1,0 +1,18 @@
+<?php
+
+/**
+ * @file
+ * Contains entity_legal_test.module
+ */
+
+use Drupal\user\UserInterface;
+
+/**
+ * Implements hook_user_login().
+ */
+function entity_legal_test_user_login(UserInterface $account) {
+  \Drupal::messenger()
+    ->addStatus('A status message sample')
+    ->addWarning('A warning message sample')
+    ->addError('An error message sample');
+}

@@ -1,0 +1,12 @@
+type: module
+name: 'Entity Legal Test'
+description: 'Testing module for Entity Legal'
+core: 8.x
+package: Testing
+dependencies:
+  - entity_legal:entity_legal
+
+# Information added by Drupal.org packaging script on 2020-06-06
+version: '3.0.0-beta1'
+project: 'entity_legal'
+datestamp: 1591465088
