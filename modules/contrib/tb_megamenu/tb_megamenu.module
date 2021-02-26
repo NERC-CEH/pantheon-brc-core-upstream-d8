@@ -12,7 +12,6 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Template\Attribute;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Component\Serialization\Json;
-use Drupal\tb_megamenu\TBMegaMenuBuilder;
 use Drupal\tb_megamenu\Entity\MegaMenuConfig;
 use Drupal\Core\Url;
 
@@ -193,9 +192,9 @@ function template_preprocess_tb_megamenu_row(array &$vars) {
  */
 function template_preprocess_tb_megamenu_column(array &$vars) {
   $col = $vars['col']['col_content'];
-  $col_config = $vars['col']['col_config'];
+  $col_config = isset($vars['col']['col_config']) ? $vars['col']['col_config'] : [];
 
-  TBMegaMenuBuilder::editColumnConfig($col_config);
+  \Drupal::service('tb_megamenu.menu_builder')->editColumnConfig($col_config);
   $vars['col_config'] = $col_config;
   $vars['close_button'] = FALSE;
   $vars['tb_items'] = [];
@@ -247,7 +246,8 @@ function template_preprocess_tb_megamenu_column(array &$vars) {
   $vars['attributes']['data-class'] = $col_config['class'];
   $vars['attributes']['data-width'] = $col_config['width'];
   $vars['attributes']['data-hidewcol'] = $col_config['hidewcol'];
-  $vars['attributes']['id'] = TBMegaMenuBuilder::getIdColumn($vars['block_config']['number-columns']);
+  $num_cols = isset($vars['block_config']['number-columns']) ? $vars['block_config']['number-columns'] : 1;
+  $vars['attributes']['id'] = \Drupal::service('tb_megamenu.menu_builder')->getIdColumn($num_cols);
 }
 
 /**
@@ -261,9 +261,9 @@ function template_preprocess_tb_megamenu_subnav(array &$vars) {
   $level = $vars['level'];
   $vars['lis'] = [];
   foreach ($col as $tb_item) {
-    $item = TBMegaMenuBuilder::getMenuItem($vars['menu_name'], $tb_item['plugin_id']);
+    $item = \Drupal::service('tb_megamenu.menu_builder')->getMenuItem($vars['menu_name'], $tb_item['plugin_id']);
     if (empty($tb_item)) {
-      // TODO: figure out how to handle NULLs in columns.
+      // @todo figure out how to handle NULLs in columns.
       continue;
     }
     if ($item->link == NULL) {
@@ -320,7 +320,7 @@ function template_preprocess_tb_megamenu_submenu(array &$vars) {
   $item_config = isset($menu_config[$plugin_id]) ? $menu_config[$plugin_id] : [];
   $submenu_config = isset($item_config['submenu_config']) ? $item_config['submenu_config'] : [];
   $vars['submenu_config'] = $submenu_config;
-  TBMegaMenuBuilder::editSubMenuConfig($submenu_config);
+  \Drupal::service('tb_megamenu.menu_builder')->editSubMenuConfig($submenu_config);
   $vars['rows'] = [];
   foreach ($item_config['rows_content'] as $row) {
     $vars['rows'][] = [
@@ -389,14 +389,15 @@ function template_preprocess_tb_megamenu(array &$vars) {
    *  $items = i18n_menu_localize_tree($items);
    * }
    */
-  // TODO: what does this function to do ?
+  // @todo what does this function to do ?
   // $items_page = menu_tree_page_data($menu_name);
   // $trail = tb_megamenu_build_page_trail($items_page);
-  $trail = TBMegaMenuBuilder::buildPageTrail($menu_items);
-  $menu_config = TBMegaMenuBuilder::getMenuConfig($menu_name, $theme);
-  $block_config = TBMegaMenuBuilder::getBlockConfig($menu_name, $theme);
-  TBMegaMenuBuilder::editBlockConfig($block_config);
-  TBMegaMenuBuilder::syncConfigAll($menu_items, $menu_config, $vars['section']);
+  $menu_builder = \Drupal::service('tb_megamenu.menu_builder');
+  $trail = $menu_builder->buildPageTrail($menu_items);
+  $menu_config = $menu_builder->getMenuConfig($menu_name, $theme);
+  $block_config = $menu_builder->getBlockConfig($menu_name, $theme);
+  $menu_builder->editBlockConfig($block_config);
+  $menu_builder->syncConfigAll($menu_items, $menu_config, $vars['section']);
   $vars['block_config'] = $block_config;
   $vars['attributes'] = new Attribute();
   $vars['attributes']['class'] = [];
@@ -439,6 +440,7 @@ function template_preprocess_tb_megamenu(array &$vars) {
 
   // Add a11y attributes.
   $vars['attributes']['role'] = t('navigation');
+  $vars['attributes']['aria-label'] = t('Main navigation');
 }
 
 /**
@@ -450,18 +452,19 @@ function template_preprocess_tb_megamenu(array &$vars) {
 function template_preprocess_tb_megamenu_backend(array &$vars) {
   $menu_name = $vars['menu_name'];
   $theme = $vars['block_theme'];
-  $block_config = TBMegaMenuBuilder::getBlockConfig($menu_name, $theme);
-  TBMegaMenuBuilder::editBlockConfig($block_config);
-  $vars['menu_content'] = TBMegaMenuBuilder::renderBlock($menu_name, $theme);
+  $menu_builder = \Drupal::service('tb_megamenu.menu_builder');
+  $block_config = $menu_builder->getBlockConfig($menu_name, $theme);
+  $menu_builder->editBlockConfig($block_config);
+  $vars['menu_content'] = $menu_builder->renderBlock($menu_name, $theme);
   $vars['item_toolbox'] = ['#theme' => 'tb_megamenu_item_toolbox'];
   $vars['submenu_toolbox'] = ['#theme' => 'tb_megamenu_submenu_toolbox'];
   $vars['column_toolbox'] = [
     '#theme' => 'tb_megamenu_column_toolbox',
-    '#blocks_options' => TBMegaMenuBuilder::getAllBlocks($theme),
+    '#blocks_options' => $menu_builder->getAllBlocks($theme),
   ];
   $vars['block_config'] = $block_config;
-  $vars['animation_options'] = TBMegaMenuBuilder::createAnimationOptions($block_config);
-  $vars['style_options'] = TBMegaMenuBuilder::createStyleOptions($block_config);
+  $vars['animation_options'] = $menu_builder->createAnimationOptions($block_config);
+  $vars['style_options'] = $menu_builder->createStyleOptions($block_config);
   $vars['edit_links'] = Url::fromRoute('entity.menu.edit_form', ['menu' => $menu_name])->toString();
 
   // Attach this to init TB Mega Menu (Importance).
@@ -475,7 +478,7 @@ function template_preprocess_tb_megamenu_backend(array &$vars) {
  *   Variables are declared in theme.
  */
 function template_preprocess_tb_megamenu_block(array &$vars) {
-  $entity_block = TBMegaMenuBuilder::loadEntityBlock($vars['block_id']);
+  $entity_block = \Drupal::service('tb_megamenu.menu_builder')->loadEntityBlock($vars['block_id']);
   if ($entity_block) {
     $plugin = $entity_block->getPlugin();
     $plugin_configuration = $plugin->getConfiguration();
@@ -577,7 +580,8 @@ function template_preprocess_tb_megamenu_item(array &$vars) {
   $trail = $vars['trail'];
   $menu_config = $vars['menu_config'];
   $item_config = isset($menu_config[$plugin_id]['item_config']) ? $menu_config[$plugin_id]['item_config'] : [];
-  TBMegaMenuBuilder::editItemConfig($item_config);
+  $menu_builder = \Drupal::service('tb_megamenu.menu_builder');
+  $menu_builder->editItemConfig($item_config);
   $vars['item_config'] = $item_config;
   if (!empty($menu_config[$plugin_id]['rows_content']) &&
       ($vars['section'] == 'backend' || !$item_config['hidesub'])) {
@@ -649,15 +653,13 @@ function template_preprocess_tb_megamenu_item(array &$vars) {
   }
 
   // Add a11y attributes to list item tag.
-  $vars['attributes']['role'] = t('listitem');
   $vars['attributes']['aria-level'] = $level;
 
   // Add a11y attributes to anchor tag.
   if (!empty($vars['link']['description'])) {
-    $vars['link']['attributes']['title'] = t($vars['link']['description']);
+    $vars['link']['attributes']['title'] = $vars['link']['description'];
   }
   if ($vars['submenu'] != NULL) {
-    $vars['link']['attributes']['aria-haspopup'] = t('true');
     $vars['link']['attributes']['aria-expanded'] = t('false');
   }
 
@@ -687,12 +689,13 @@ function tb_megamenu_update_megamenus(&$form, FormStateInterface $form_state) {
   $menu_name = $form_state->getValue('id');
   if ($menu_name) {
     $theme = \Drupal::config('system.theme')->get('default');
-    if ($menu_config = TBMegaMenuBuilder::getMenuConfig($menu_name, $theme)) {
+    $menu_builder = \Drupal::service('tb_megamenu.menu_builder');
+    if ($menu_config = $menu_builder->getMenuConfig($menu_name, $theme)) {
       $menu_tree_parameters = (new MenuTreeParameters)->onlyEnabledLinks();
       $menu_items = \Drupal::menuTree()->load($menu_name, $menu_tree_parameters);
-      $block_config = TBMegaMenuBuilder::getBlockConfig($menu_name, $theme);
-      TBMegaMenuBuilder::syncConfigAll($menu_items, $menu_config, 'backend');
-      TBMegaMenuBuilder::syncOrderMenus($menu_config);
+      $block_config = $menu_builder->getBlockConfig($menu_name, $theme);
+      $menu_builder->syncConfigAll($menu_items, $menu_config, 'backend');
+      $menu_builder->syncOrderMenus($menu_config);
 
       $config = MegaMenuConfig::loadMenu($menu_name, $theme);
       if ($config === NULL) {
@@ -719,22 +722,19 @@ function tb_megamenu_block_view_tb_megamenu_menu_block_alter(array &$build, Bloc
 }
 
 /**
- * Attach the number of columns into JS.
- */
-/**
  * Recursively remove menu items without access rights.
  *
  * @param array $menu_items
  *   Menu section to check.
  */
-function tb_megamenu_check_access( array &$menu_items ) {
-  foreach ($menu_items as $route => &$item ) {
+function tb_megamenu_check_access(array &$menu_items) {
+  foreach ($menu_items as $route => &$item) {
     if ($item->access instanceof AccessResultInterface && !$item->access->isAllowed()) {
       unset($menu_items[$route]);
       continue;
     }
     if ($item->hasChildren) {
-      tb_megamenu_check_access ($item->subtree);
+      tb_megamenu_check_access($item->subtree);
     }
   }
 }

@@ -100,6 +100,10 @@ class TestSource extends SourcePluginBase {
    */
   public function saveTranslation(JobItemInterface $job_item, $target_langcode) {
     // Set a variable that can be checked later for a given job item.
+    $data = $job_item->getData();
+    if (isset($data['dummy']['deep_nesting']['#translation']['#text']) && $data['dummy']['deep_nesting']['#translation']['#text'] == 'Invalid translation that will cause an exception') {
+      throw new \Exception('The translation cannot be saved.');
+    }
     \Drupal::state()->set('tmgmt_test_saved_translation_' . $job_item->getItemType() . '_' . $job_item->getItemId(), $job_item->getData());
     return TRUE;
   }

@@ -6,6 +6,6 @@
   "require-dev": {
     "drupal/metatag": "1.x-dev",
     "drupal/pathauto": "1.x-dev",
-    "drupal/webform": "5.x-dev"
+    "drupal/webform": "5.x-dev || 6.x-dev"
   }
 }

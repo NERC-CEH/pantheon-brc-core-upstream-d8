@@ -93,9 +93,23 @@ function _field_defaults_ui_submit(&$form, FormStateInterface $form_state) {
     // Only go ahead if default value field actually has value.
     if ($field_value = $form_state->getValue(['default_value_input', $field_name], 0)) {
 
-      // Fix odd term structure.
-      if (isset($field_value['target_id']) && is_array($field_value['target_id'])) {
-        $field_value = $field_value['target_id'];
+      if (isset($field_value['target_id'])) {
+        // Fix odd term structure.
+        if (is_array($field_value['target_id'])) {
+          $field_value = $field_value['target_id'];
+        }
+
+        $handler = $entity->getSetting('handler');
+        if (!empty($handler)) {
+          $definition = explode(':', $handler);
+          $provider = $definition[1] ?? $definition[0];
+        }
+
+        // Fix media structure.
+        if ($provider === 'media') {
+          $media_values = explode(':', $field_value['target_id']);
+          $field_value = $media_values[1] ?? $media_values[0];
+        }
       }
 
       $entity_type = $entity->getTargetEntityTypeId();
@@ -190,5 +204,5 @@ function field_defaults_batch_finished($success, $results, $operations) {
   else {
     $message = t('Finished with an error.');
   }
-  drupal_set_message($message);
+  \Drupal::messenger()->addMessage($message);
 }

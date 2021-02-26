@@ -302,16 +302,20 @@ class Helpers
                     */
                     if ($propName == "path_0") {
                         $split = explode('_', $propName);
-                        $translations[$split[0]][$split[1]][$propCount] = array('#text' => $tr, '#status' => 2);
+                        $translations[$split[0]][$split[1]][$propCount] = array(
+                            '#text' => $tr, '#status' => 2, '#origin' => 'transifex'
+                        );
                     } else {
                         $translations[$propName][$propCount]['value']['#text'] = $tr;
                         // Mark as reviewed
                         $translations[$propName][$propCount]['value']['#status'] = 2;
+                        $translations[$propName][$propCount]['value']['#origin'] = 'transifex';
                     }
                 } else {
                     $translations[$key]['#text'] = $tr;
                     // Mark as reviewed
                     $translations[$key]['#status'] = 2;
+                    $translations[$key]['#origin'] = 'transifex';
                 }
             }
         }

@@ -17,6 +17,10 @@ use Drupal\entity_test\Entity\EntityTestMul;
  *   entity_revision_parent_type_field = "parent_type",
  *   translatable = TRUE,
  *   content_translation_ui_skip = TRUE,
+ *   handlers = {
+ *     "access" = "Drupal\entity_test\EntityTestAccessControlHandler",
+ *     "view_builder" = "Drupal\entity_test\EntityTestViewBuilder"
+ *   },
  *   entity_keys = {
  *     "id" = "id",
  *     "uuid" = "uuid",

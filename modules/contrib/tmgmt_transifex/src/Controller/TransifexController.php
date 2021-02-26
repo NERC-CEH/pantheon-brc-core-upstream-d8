@@ -29,7 +29,7 @@ class TransifexController extends ControllerBase
         \Drupal::logger('tmgmt_transifex')->info('Webhook - Received webhook');
         if (!$translator->getSetting('secret')) {
             echo "Webhook not activated";
-            \Drupal::logger('tmgmt_transifex')->info('Webhook - Not active');
+            \Drupal::logger('tmgmt_transifex')->info('Webhook - Missing secret');
             return;
         }
 
@@ -59,12 +59,23 @@ class TransifexController extends ControllerBase
         $sig = base64_encode(hash_hmac('sha256', $msg, $translator->getSetting('secret'), true));
 
         if ($sig == $webhook_sig) {
-            $translator->getPlugin()->updateJobWithTranslations(
-                $translator,
-                $webhook['resource'],
-                $webhook['language'],
-                true
+            $event = $webhook['event'];
+            $resource = $webhook['resource'];
+            $language = $webhook['language'];
+
+            \Drupal::logger('tmgmt_transifex')->info(
+                'Received ' . $event . ' webhook for resource:' . $resource . ' and language: ' . $language
             );
+            if ($translator->getPlugin()->shouldWebhookUpdateTranslations(
+                $translator, $webhook
+            )) {
+                $translator->getPlugin()->updateJobWithTranslations(
+                    $translator,
+                    $resource,
+                    $language,
+                    false
+                );
+            }
         } else {
             \Drupal::logger('tmgmt_transifex')->error('Webhook - Invalid');
         }

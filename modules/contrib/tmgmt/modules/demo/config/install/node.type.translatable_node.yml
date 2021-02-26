@@ -1,6 +1,9 @@
 langcode: en
 status: true
 dependencies:
+  enforced:
+    module:
+      - tmgmt_demo
   module:
     - menu_ui
 third_party_settings:

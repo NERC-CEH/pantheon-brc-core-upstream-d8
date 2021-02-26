@@ -130,6 +130,10 @@ class Xliff extends \XMLWriter implements FormatInterface {
     $this->startElement('trans-unit');
     $this->writeAttribute('id', $key);
     $this->writeAttribute('resname', $key);
+    if (isset($element['#max_length'])) {
+      $this->writeAttribute('size-unit', 'char');
+      $this->writeAttribute('maxwidth', $element['#max_length']);
+    }
 
     $this->startElement('source');
     $this->writeAttribute('xml:lang', $this->job->getRemoteSourceLanguage());

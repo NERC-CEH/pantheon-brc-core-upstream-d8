@@ -872,10 +872,10 @@
   outline-offset: -2px;
 }
 .tb-megamenu span.tb-megamenu-no-link:hover {
-    cursor: default;
+  cursor: default;
 }
 .tb-megamenu span.tb-megamenu-no-link.tb-megamenu-no-submenu:hover {
-    color: inherit !important;
+  color: inherit !important;
 }
 @media (max-width: 979px) {
   .tb-megamenu .navbar .brand {

@@ -4,8 +4,12 @@ namespace Drupal\tmgmt_content\Plugin\tmgmt\Source;
 
 use Drupal\Core\Config\Entity\ThirdPartySettingsInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Plugin\DataType\EntityReference;
+use Drupal\Core\Entity\RevisionLogInterface;
+use Drupal\Core\Entity\TranslatableRevisionableStorageInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Session\AnonymousUserSession;
@@ -45,10 +49,84 @@ class ContentEntitySource extends SourcePluginBase implements SourcePreviewInter
   }
 
   /**
+   * Loads a list of entities for the given entity type ID.
+   *
+   * By providing the language code, the latest revisions affecting the
+   * specified translation (language code) will be returned.
+   *
+   * @param string $entity_type_id
+   *   The entity type ID.
+   * @param array $entity_ids
+   *   A list of entity IDs to load.
+   * @param string|null $langcode
+   *   (optional) The language code. Defaults to source entity language.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface[]
+   *   Returns a list of entities.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  public static function loadMultiple($entity_type_id, array $entity_ids, $langcode = NULL) {
+    /** @var \Drupal\Core\Entity\EntityStorageInterface $storage */
+    $storage = \Drupal::entityTypeManager()->getStorage($entity_type_id);
+
+    $entities = $storage->loadMultiple($entity_ids);
+
+    // Load the latest revision if the entity type is revisionable.
+    if ($storage->getEntityType()->isRevisionable() && $storage instanceof TranslatableRevisionableStorageInterface) {
+      foreach ($entities as $entity_id => $entity) {
+        // Use the specified langcode or fallback to the default language.
+        $translation_langcode = $langcode ?: $entity->language()->getId();
+        $revision_id = $storage->getLatestTranslationAffectedRevisionId($entity->id(), $translation_langcode);
+        // Get the pending revisions. If the returned revision ID is the same as
+        // the default one, there is no need for further checks.
+        if ($revision_id && $entity->getRevisionId() != $revision_id) {
+          $revision = $storage->loadRevision($revision_id);
+          // If the affected revision was the default one at some point, then it
+          // is an old revision that should be part of the already loaded
+          // default so we do not need to replace it here.
+          if (!$revision->wasDefaultRevision()) {
+            $entities[$entity_id] = $revision;
+          }
+        }
+      }
+    }
+
+    return $entities;
+  }
+
+  /**
+   * Loads a single entity for the given entity type ID.
+   *
+   * By providing the language code, the latest revisions affecting the
+   * specified translation (language code) will be returned.
+   *
+   * @param string $entity_type_id
+   *   The entity type ID.
+   * @param string $id
+   *   The entity ID.
+   * @param string|null $langcode
+   *   (optional) The language code. Defaults to source entity language.
+   *
+   * @return \Drupal\Core\Entity\ContentEntityInterface|null
+   *   The loaded entity or null if not found.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  public static function load($entity_type_id, $id, $langcode = NULL) {
+    $entities = static::loadMultiple($entity_type_id, [$id], $langcode);
+    return isset($entities[$id]) ? $entities[$id] : NULL;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function getLabel(JobItemInterface $job_item) {
-    if ($entity = $this->getEntity($job_item)) {
+    // Use the source language to a get label for the job item.
+    $langcode = $job_item->getJob() ? $job_item->getJob()->getSourceLangcode() : NULL;
+    if ($entity = static::load($job_item->getItemType(), $job_item->getItemId(), $langcode)) {
       return $entity->label() ?: $entity->id();
     }
   }
@@ -58,7 +136,8 @@ class ContentEntitySource extends SourcePluginBase implements SourcePreviewInter
    */
   public function getUrl(JobItemInterface $job_item) {
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
-    if ($entity = \Drupal::entityTypeManager()->getStorage($job_item->getItemType())->load($job_item->getItemId())) {
+    $langcode = $job_item->getJob() ? $job_item->getJob()->getSourceLangcode() : NULL;
+    if ($entity = static::load($job_item->getItemType(), $job_item->getItemId(), $langcode)) {
       if ($entity->hasLinkTemplate('canonical')) {
         $anonymous = new AnonymousUserSession();
         $url = $entity->toUrl();
@@ -82,7 +161,8 @@ class ContentEntitySource extends SourcePluginBase implements SourcePreviewInter
    * the Translation Management system.
    */
   public function getData(JobItemInterface $job_item) {
-    $entity = $this->getEntity($job_item);
+    $langcode = $job_item->getJob() ? $job_item->getJob()->getSourceLangcode() : NULL;
+    $entity = static::load($job_item->getItemType(), $job_item->getItemId(), $langcode);
     if (!$entity) {
       throw new TMGMTException(t('Unable to load entity %type with id %id', array('%type' => $job_item->getItemType(), '%id' => $job_item->getItemId())));
     }
@@ -146,11 +226,20 @@ class ContentEntitySource extends SourcePluginBase implements SourcePreviewInter
     $exclude_field_types = ['language'];
     $exclude_field_names = ['moderation_state'];
 
-    // Exclude field types from translation.
-    $translatable_fields = array_filter($field_definitions, function (FieldDefinitionInterface $field_definition) use ($exclude_field_types, $exclude_field_names) {
+    /** @var \Drupal\content_translation\ContentTranslationManagerInterface $content_translation_manager */
+    $content_translation_manager = \Drupal::service('content_translation.manager');
+    $is_bundle_translatable = $content_translation_manager->isEnabled($entity->getEntityTypeId(), $entity->bundle());
 
-      // Field is not translatable.
-      if (!$field_definition->isTranslatable()) {
+    // Exclude field types from translation.
+    $translatable_fields = array_filter($field_definitions, function (FieldDefinitionInterface $field_definition) use ($exclude_field_types, $exclude_field_names, $is_bundle_translatable) {
+
+      if ($is_bundle_translatable) {
+        // Field is not translatable.
+        if (!$field_definition->isTranslatable()) {
+          return FALSE;
+        }
+      }
+      elseif (!$field_definition->getFieldStorageDefinition()->isTranslatable()) {
         return FALSE;
       }
 
@@ -205,7 +294,7 @@ class ContentEntitySource extends SourcePluginBase implements SourcePreviewInter
             $langcode = $entity->language()->getId();
             // If the referenced entity is translatable and has a translation
             // use it instead of the default entity translation.
-            if ($referenced_entity->hasTranslation($langcode)) {
+            if ($content_translation_manager->isEnabled($referenced_entity->getEntityTypeId(), $referenced_entity->bundle()) && $referenced_entity->hasTranslation($langcode)) {
               $referenced_entity = $referenced_entity->getTranslation($langcode);
             }
             $data[$field_name][$delta][$property_key] = $this->extractTranslatableData($referenced_entity);
@@ -218,6 +307,23 @@ class ContentEntitySource extends SourcePluginBase implements SourcePreviewInter
       }
     }
     return $data;
+  }
+
+  /**
+   * Determines whether an entity is moderated.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity.
+   *
+   * @return bool
+   *   TRUE if the entity is moderated. Otherwise, FALSE.
+   */
+  public static function isModeratedEntity(EntityInterface $entity) {
+    if (!\Drupal::moduleHandler()->moduleExists('content_moderation')) {
+      return FALSE;
+    }
+
+    return \Drupal::service('content_moderation.moderation_information')->isModeratedEntity($entity);
   }
 
   /**
@@ -248,13 +354,16 @@ class ContentEntitySource extends SourcePluginBase implements SourcePreviewInter
       $property_definitions = $storage_definition->getPropertyDefinitions();
       foreach ($property_definitions as $property_definition) {
         // Look for entity_reference properties where the storage definition
-        // has a target type setting and that is enabled for content
-        // translation.
-        if (in_array($property_definition->getDataType(), ['entity_reference', 'entity_revision_reference']) && $storage_definition->getSetting('target_type') && $content_translation_manager->isEnabled($storage_definition->getSetting('target_type'))) {
-          // Include field if the target entity has the parent type field key
-          // set, which is defined by entity_reference_revisions.
-          $target_entity_type = \Drupal::entityTypeManager()->getDefinition($storage_definition->getSetting('target_type'));
-          if ($target_entity_type->get('entity_revision_parent_type_field')) {
+        // has a target type setting.
+        if (in_array($property_definition->getDataType(), ['entity_reference', 'entity_revision_reference']) && ($target_type_id = $storage_definition->getSetting('target_type'))) {
+          $is_target_type_enabled = $content_translation_manager->isEnabled($target_type_id);
+          $target_entity_type = \Drupal::entityTypeManager()->getDefinition($target_type_id);
+
+          // Include current entity reference field that is considered a
+          // composite and translatable or if the parent entity is considered a
+          // composite as well. This allows to embed nested untranslatable
+          // fields (For example: Paragraphs).
+          if ($target_entity_type->get('entity_revision_parent_type_field') && ($is_target_type_enabled || $entity->getEntityType()->get('entity_revision_parent_type_field'))) {
             $embeddable_fields[$field_name] = $field_definition;
           }
         }
@@ -278,8 +387,18 @@ class ContentEntitySource extends SourcePluginBase implements SourcePreviewInter
       return FALSE;
     }
 
+    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
+    if ($entity_revision = $this->getPendingRevisionWithCompositeReferenceField($job_item)) {
+      $title = $entity_revision->hasLinkTemplate('latest-version') ? $entity_revision->toLink(NULL, 'latest-version')->toString() : $entity_revision->label();
+      $job_item->addMessage('This translation cannot be accepted as there is a pending revision in the default translation. You must publish %title first before saving this translation.', [
+        '%title' => $title,
+      ], 'error');
+      return FALSE;
+    }
+
     $data = $job_item->getData();
-    $this->doSaveTranslations($entity, $data, $target_langcode);
+
+    $this->doSaveTranslations($entity, $data, $target_langcode, $job_item);
     return TRUE;
   }
 
@@ -356,19 +475,25 @@ class ContentEntitySource extends SourcePluginBase implements SourcePreviewInter
    *   The translation data for the fields.
    * @param string $target_langcode
    *   The target language.
+   * @param \Drupal\tmgmt\JobItemInterface $item
+   *   The job item.
+   * @param bool $save
+   *   (optional) Whether to save the translation or not.
    *
    * @throws \Exception
    *   Thrown when a field or field offset is missing.
    */
-  protected function doSaveTranslations(ContentEntityInterface $entity, array $data, $target_langcode) {
-    // If the translation for this language does not exist yet, initialize it.
+  protected function doSaveTranslations(ContentEntityInterface $entity, array $data, $target_langcode, JobItemInterface $item, $save = TRUE) {
+   // If the translation for this language does not exist yet, initialize it.
     if (!$entity->hasTranslation($target_langcode)) {
       $entity->addTranslation($target_langcode, $entity->toArray());
     }
 
     $translation = $entity->getTranslation($target_langcode);
     $manager = \Drupal::service('content_translation.manager');
-    $manager->getTranslationMetadata($translation)->setSource($entity->language()->getId());
+    if ($manager->isEnabled($translation->getEntityTypeId(), $translation->bundle())) {
+      $manager->getTranslationMetadata($translation)->setSource($entity->language()->getId());
+    }
 
     foreach (Element::children($data) as $field_name) {
       $field_data = $data[$field_name];
@@ -389,20 +514,96 @@ class ContentEntitySource extends SourcePluginBase implements SourcePreviewInter
         continue;
       }
 
-      $field = $translation->get($field_name);
+      $field = clone $translation->get($field_name);
+      $target_type = $field->getFieldDefinition()->getFieldStorageDefinition()->getSetting('target_type');
+      $is_target_type_translatable = $manager->isEnabled($target_type);
+      // In case the target type is not translatable, the referenced entity will
+      // be duplicated. As a consequence, remove all the field items from the
+      // translation, update the field value to use the field object from the
+      // source language.
+      if (!$is_target_type_translatable) {
+        $field = clone $entity->get($field_name);
+
+        if (!$translation->get($field_name)->isEmpty()) {
+          $translation->set($field_name, NULL);
+        }
+      }
+
       foreach (Element::children($data[$field_name]) as $delta) {
         $field_item = $data[$field_name][$delta];
         foreach (Element::children($field_item) as $property) {
-          if ($target_entity = $this->findReferencedEntity($field, $field_item, $delta, $property)) {
-            // If the field is an embeddable reference and the property is a
-            // content entity, process it recursively.
-            $this->doSaveTranslations($target_entity, $field_item[$property], $target_langcode);
+          // Find the referenced entity. In case we are dealing with
+          // untranslatable target types, the source entity will be returned.
+          if ($target_entity = $this->findReferencedEntity($field, $field_item, $delta, $property, $is_target_type_translatable)) {
+            if ($is_target_type_translatable) {
+              // If the field is an embeddable reference and the property is a
+              // content entity, process it recursively.
+              $this->doSaveTranslations($target_entity, $field_item[$property], $target_langcode, $item);
+            }
+            else {
+              $duplicate = $this->createTranslationDuplicate($target_entity, $target_langcode);
+              // Do not save the duplicate as it's going to be saved with the
+              // main entity.
+              $this->doSaveTranslations($duplicate, $field_item[$property], $target_langcode, $item, FALSE);
+              $translation->get($field_name)->set($delta, $duplicate);
+            }
           }
         }
       }
     }
 
-    $translation->save();
+    if (isset($data['#moderation_state'][0]) && static::isModeratedEntity($translation)) {
+      // If the entity is moderated, set the moderation state for translation.
+      $translation->set('moderation_state', $data['#moderation_state'][0]);
+    }
+    // Otherwise, try to set a published status.
+    elseif (isset($data['#published'][0]) && $translation instanceof EntityPublishedInterface) {
+      $translation->setPublished($data['#published'][0]);
+    }
+
+    if ($entity->getEntityType()->isRevisionable()) {
+      /** @var \Drupal\Core\Entity\TranslatableRevisionableStorageInterface $storage */
+      $storage = \Drupal::entityTypeManager()->getStorage($entity->getEntityTypeId());
+
+      if ($storage instanceof TranslatableRevisionableStorageInterface) {
+        // Always create a new revision of the translation.
+        $translation = $storage->createRevision($translation, $translation->isDefaultRevision());
+
+        if ($entity instanceof RevisionLogInterface) {
+          $translation->setRevisionLogMessage($this->t('Created by translation job <a href=":url">@label</a>.', [
+            ':url' => $item->getJob()->toUrl()->toString(),
+            '@label' => $item->label(),
+          ]));
+        }
+      }
+    }
+
+    if ($save) {
+      $translation->save();
+    }
+  }
+
+  /**
+   * Creates a translation duplicate of the given entity.
+   *
+   * @param \Drupal\Core\Entity\ContentEntityInterface $target_entity
+   *   The target entity to clone.
+   * @param string $langcode
+   *   Language code for all the clone entities created.
+   *
+   * @return \Drupal\Core\Entity\ContentEntityInterface
+   *   New entity object with the data from the original entity. Not
+   *   saved. No sub-entities are cloned.
+   */
+  protected function createTranslationDuplicate(ContentEntityInterface $target_entity, $langcode) {
+    $duplicate = $target_entity->createDuplicate();
+
+    // Change the original language.
+    if ($duplicate->getEntityType()->hasKey('langcode')) {
+      $duplicate->set($duplicate->getEntityType()->getKey('langcode'), $langcode);
+    }
+
+    return $duplicate;
   }
 
   /**
@@ -464,8 +665,7 @@ class ContentEntitySource extends SourcePluginBase implements SourcePreviewInter
    */
   public function shouldCreateContinuousItem(Job $job, $plugin, $item_type, $item_id) {
     $continuous_settings = $job->getContinuousSettings();
-    $entity_type_manager = \Drupal::entityTypeManager();
-    $entity = $entity_type_manager->getStorage($item_type)->load($item_id);
+    $entity = static::load($item_type, $item_id, $job->getSourceLangcode());
     $translation_manager = \Drupal::service('content_translation.manager');
     $translation = $entity->hasTranslation($job->getTargetLangcode()) ? $entity->getTranslation($job->getTargetLangcode()) : NULL;
     $metadata = isset($translation) ? $translation_manager->getTranslationMetadata($translation) : NULL;
@@ -532,16 +732,23 @@ class ContentEntitySource extends SourcePluginBase implements SourcePreviewInter
    * @param array $field_item
    * @param $delta
    * @param $property
+   * @param bool $is_target_type_translatable
+   *   (optional) Whether the target entity type is translatable.
    *
    * @return \Drupal\Core\Entity\ContentEntityInterface|null
    */
-  protected function findReferencedEntity(FieldItemListInterface $field, array $field_item, $delta, $property) {
-
-    // If an id is provided, loop over the field item deltas until we find the matching entity.
+  protected function findReferencedEntity(FieldItemListInterface $field, array $field_item, $delta, $property, $is_target_type_translatable = TRUE) {
+    // If an id is provided, loop over the field item deltas until we find the
+    // matching entity. In case of untranslatable target types return the
+    // source target entity as it will be duplicated.
     if (isset($field_item[$property]['#id'])) {
-      foreach ($field as $item) {
-        if ($item->$property instanceof ContentEntityInterface && $item->$property->id() == $field_item[$property]['#id']) {
-          return $item->$property;
+      foreach ($field as $item_delta => $item) {
+        if ($item->$property instanceof ContentEntityInterface) {
+          /** @var ContentEntityInterface $referenced_entity */
+          $referenced_entity = $item->$property;
+          if ($referenced_entity->id() == $field_item[$property]['#id'] || ($item_delta === $delta && !$is_target_type_translatable)) {
+            return $referenced_entity;
+          }
         }
       }
 
@@ -551,6 +758,44 @@ class ContentEntitySource extends SourcePluginBase implements SourcePreviewInter
     elseif ($field->offsetExists($delta) && $field->offsetGet($delta)->$property instanceof ContentEntityInterface) {
       return $field->offsetGet($delta)->$property;
     }
+  }
+
+  /**
+   * Returns the source revision if it is a pending revision with an ERR field.
+   *
+   * @param \Drupal\tmgmt\JobItemInterface $job_item
+   *
+   * @return \Drupal\Core\Entity\ContentEntityInterface|null
+   *   The source revision entity if it is a pending revision with an ERR field.
+   */
+  public function getPendingRevisionWithCompositeReferenceField(JobItemInterface $job_item) {
+    // Get the latest revision of the default translation.
+    /** \Drupal\Core\Entity\ContentEntityInterface|null $entity */
+    $entity = static::load($job_item->getItemType(), $job_item->getItemId());
+    if (!$entity) {
+      return NULL;
+    }
+
+    // If the given revision is not the default revision, check if there is at
+    // least one untranslatable composite entity reference revisions field and
+    // fail the validation.
+    if (!$entity->isDefaultRevision()) {
+      foreach ($entity->getFieldDefinitions() as $definition) {
+        if (in_array($definition->getType(), ['entity_reference', 'entity_reference_revisions']) && !$definition->isTranslatable()) {
+          $target_type_id = $definition->getSetting('target_type');
+          $entity_type_manager = \Drupal::entityTypeManager();
+          if (!$entity_type_manager->hasDefinition($target_type_id)) {
+            continue;
+          }
+          // Check if the target entity type is considered a composite.
+          if ($entity_type_manager->getDefinition($target_type_id)->get('entity_revision_parent_type_field')) {
+            return $entity;
+          }
+        }
+      }
+    }
+
+    return NULL;
   }
 
 }

@@ -36,6 +36,10 @@ function terms_of_use_form_user_register_form_alter(&$form, &$form_state) {
   $node = '';
   if (isset($nid)) {
     $node = \Drupal::entityTypeManager()->getStorage('node')->load($nid);
+    $language = \Drupal::languageManager()->getCurrentLanguage();
+    if ($node->hasTranslation($language->getId())) {
+      $node = $node->getTranslation($language->getId());
+    }
   }
   $data = '';
 

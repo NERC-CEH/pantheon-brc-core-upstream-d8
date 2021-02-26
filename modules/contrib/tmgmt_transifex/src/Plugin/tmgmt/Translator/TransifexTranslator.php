@@ -178,7 +178,13 @@ class TransifexTranslator extends TranslatorPluginBase implements ContainerFacto
         $tx = new TransifexApi($translator);
         foreach ($job->getItems() as $tjiid => $job_item) {
             $target_resource = Helpers::slugForItem($job_item);
-            $this->updateJobWithTranslations($translator, $target_resource, $language, false);
+            if ($this->shouldManualUpdateTranslations(
+                $translator, $target_resource, $language
+            )){
+                $this->updateJobWithTranslations(
+                    $translator, $target_resource, $language, false
+                );
+            }
         }
     }
 
@@ -224,6 +230,21 @@ class TransifexTranslator extends TranslatorPluginBase implements ContainerFacto
                 }
             }
             $job->submitted($job_count . ' translation job(s) have been submitted or updated to Transifex.');
+
+            # See if we need to accept translations immediately
+            if ($this->shouldManualUpdateTranslations(
+                $translator, $slug, $job->getTargetLanguage()->getId()
+            )) {
+                drupal_set_message(
+                    'Job ' . $slug . ' -> ' . $job->getRemoteTargetLanguage() . ' already has translations, fetching'
+                );
+                $this->updateJobWithTranslations(
+                    $translator,
+                    $slug,
+                    $job->getTargetLanguage()->getId(),
+                    false
+                );
+            }
         } catch (TMGMTException $e) {
             \Drupal::logger('tmgmt_transifex')->error($e);
             $job->rejected('Job has been rejected with following error: @error', array('@error' => $e->getMessage()), 'error');
@@ -242,6 +263,77 @@ class TransifexTranslator extends TranslatorPluginBase implements ContainerFacto
     }
 
     /**
+    * Check if the incoming webhook should trigger updates in the tmgmt job.
+    * This is depended both on the type of the webhook and the settings on the
+    * tmgmt_transifex plugin level
+    *
+    * @param TranslatorInterface $translator
+    * @param array $webhook The action that triggered the update
+    *
+    * @return boolean
+    */
+    public function shouldWebhookUpdateTranslations($translator, $webhook)
+    {
+        $event = $webhook['event'];
+        if (!$translator->getSetting('onlyreviewed') && $event == 'translation_completed') {
+            return true;
+        }
+
+        if (!$translator->getSetting('onlyreviewed') && $event == 'translation_completed_updated') {
+            return true;
+        }
+
+        if ($translator->getSetting('onlyreviewed') && $event == 'review_completed') {
+            return $webhook['is_final'];
+        }
+
+        if ($translator->getSetting('onlyreviewed') && $event == 'proofread_completed') {
+            return $webhook['is_final'];
+        }
+
+        return false;
+    }
+
+    /**
+    * Check if the manual sync should trigger updates in the tmgmt job.
+    * This is depended both on the resource/language stats and the 
+    * settings on the tmgmt_transifex plugin level
+    *
+    * @param TranslatorInterface $translator
+    * @param string $resource Resource's slug
+    * @param string $language Language's code
+    *
+    * @return boolean
+    */
+    public function shouldManualUpdateTranslations($translator, $resource, $language)
+    {
+        $tx = new TransifexApi($translator);
+        $stats = $tx->getStats($resource, $language);
+        if (!$stats) {
+            drupal_set_message('Missing resource with slug: ' . $resource);
+            return false;
+        }
+        if (
+          $stats->untranslated_entities == 0 &&
+          $stats->translated_entities != 0 &&
+          !$translator->getSetting('onlyreviewed')
+        ) {
+            return true;
+        }
+        if ($stats->reviewed_percentage == '100%' && $translator->getSetting('onlyreviewed')) {
+            return true;
+        }
+
+        if ($translator->getSetting('onlyreviewed')) {
+            drupal_set_message('Resource with slug: ' . $resource . ' missing review.');
+        } else {
+            drupal_set_message('Resource with slug: ' . $resource . ' missing translations.');
+        }
+
+        return false;
+    }
+
+    /**
     * Check if there are any translations in Transifex, then update the tmgmt job.
     *
     * @param TranslatorInterface $translator
@@ -254,44 +346,37 @@ class TransifexTranslator extends TranslatorPluginBase implements ContainerFacto
     public function updateJobWithTranslations($translator, $resource, $language, $clean)
     {
         $tx = new TransifexApi($translator);
-        $stats = $tx->getStats($resource, $language);
-        if (!$stats) {
-            drupal_set_message('Missing resource with slug: ' . $resource);
-            return [];
-        }
-        if ($stats->untranslated_entities !== 0 && !$translator->getSetting('onlyreviewed')) {
-            drupal_set_message('Resource with slug: ' . $resource . ' missing translations.');
-            return [];
-        }
-        if ($stats->reviewed_percentage !== '100%' && $translator->getSetting('onlyreviewed')) {
-            drupal_set_message('Resource with slug: ' . $resource . ' missing review.');
-            return [];
-        }
         $translations = $tx->getRemoteTranslations($translator, $resource, $language);
         // Transifex slug has the format 'txdrupal_nodeId_itemType'. We need to extract the nodeId
         // to match it with the appropriate node.
         $nodeInfo = Helpers::nodeInfoFromSlug($resource);
         $tx_resource = $tx->getResource($resource);
+
+        // categories: ['tjid:1', 'tjid:2', 'other']
         $categories = $tx_resource->categories;
-        if (!$categories) {
-            $categories = array();
-        }
+        if (!$categories) { $categories = array(); }
+
         foreach ($categories as $category) {
-            preg_match('/tjid:(.*)/', $category, $tjids);
-            array_shift($tjids);
-            foreach ($tjids as $tjid) {
-                $job = Job::load(intval($tjid));
-                if ($job && $job->getTargetLanguage()->getId() == $language) {
-                    \Drupal::logger('tmgmt_transifex')->info('Applying ' . $language . ' translations for job with id: ' . $tjid);
-                    foreach ($job->getItems() as $tjiid => $job_item) {
-                        // Check if node id and node item type match
-                        if ($job_item->getItemId() == $nodeInfo['nodeId'] &&
-                            $job_item->getItemType() == $nodeInfo['nodeItemType']) {
-                            $job->addTranslatedData(array($tjiid => $translations));
+            // match: ['tjid:1', '1']
+            preg_match('/^tjid:(\d+)$/', $category, $match);
+            if (count($match) != 2) { continue; }
+            $tjid = $match[1];
+
+            $job = Job::load(intval($tjid));
+            if ($job && $job->getTargetLanguage()->getId() == $language) {
+                \Drupal::logger('tmgmt_transifex')->info('Applying ' . $language . ' translations for job with id: ' . $tjid);
+                foreach ($job->getItems() as $tjiid => $job_item) {
+                    // Check if node id and node item type match
+                    if ($job_item->getItemId() == $nodeInfo['nodeId'] &&
+                        $job_item->getItemType() == $nodeInfo['nodeItemType']) {
+                        if (!$job_item->isActive() && !$job_item->isNeedsReview()) {
+                            $job->submitted();
+                            $job_item->active();
                         }
+                        $job->addTranslatedData(array($tjiid => $translations));
                     }
-                    unset($categories[array_search($tjid, $categories)]);
                 }
+                unset($categories[array_search('tjid:' . $tjid, $categories)]);
             }
         }
         if ($clean) {

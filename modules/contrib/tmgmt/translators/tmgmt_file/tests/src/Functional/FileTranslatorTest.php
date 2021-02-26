@@ -303,6 +303,7 @@ class FileTranslatorTest extends TMGMTTestBase {
       'another_item' => array(
         '#text' => 'Text of another item @id.',
         '#label' => 'Label of another item @id.',
+        '#max_length' => '100',
       ),
     ));
 
@@ -346,6 +347,16 @@ class FileTranslatorTest extends TMGMTTestBase {
           $transunit->target = $xml->file['target-language'] . '_' . (string) $transunit->source;
           // Store the text to allow assertions later on.
           $translated_text[(string) $group['id']][(string) $transunit['id']] = (string) $transunit->target;
+          // Check that the character limit is in the target.
+          $attributes = $transunit->attributes();
+          if ($transunit->attributes()['id'] == '1][another_item') {
+            $this->assertEquals('100', $attributes['maxwidth']);
+            $this->assertEquals('char', $attributes['size-unit']);
+          }
+          if ($transunit->attributes()['id'] == '1][dummy][deep_nesting') {
+            $this->assertFalse(isset($attributes['maxwidth']));
+            $this->assertFalse(isset($attributes['size-unit']));
+          }
         }
       }
     }

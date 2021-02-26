@@ -468,6 +468,8 @@ class ContentTmgmtEntitySourceUiTest extends TMGMTTestBase {
       'skip comment approval',
       'edit own comments',
       'access comments',
+      'administer comments',
+      'bypass node access',
     ));
     $this->loginAsTranslator($permissions, TRUE);
 
@@ -526,6 +528,37 @@ class ContentTmgmtEntitySourceUiTest extends TMGMTTestBase {
     $this->clickLink('es: ' . $comment->getSubject());
     $this->drupalGet('es/node/' . $comment->id());
     $this->assertText('es: ' . $comment->get('comment_body')->value);
+
+    // Disable auto-accept.
+    $default_translator
+      ->setAutoAccept(FALSE)
+      ->save();
+
+    // Request translation to Italian.
+    $edit = [
+      'languages[it]' => TRUE,
+    ];
+    $this->drupalPostForm('comment/' . $comment->id() . '/translations', $edit, 'Request translation');
+    $this->drupalPostForm(NULL, [], 'Submit to provider');
+    $this->clickLink('reviewed');
+    $this->assertText('Translation publish status');
+    $this->assertFieldChecked('edit-status-published', 'Target publish status field is checked.');
+    // Do not publish the Italian translation.
+    $edit = [
+      'status[published]' => FALSE,
+    ];
+    $this->drupalPostForm(NULL, $edit, 'Save as completed');
+    $this->drupalGet('it/comment/' . $comment->id());
+    $this->assertText('it: ' . $comment->getSubject());
+    // Original entity and other translations are not affected.
+    $this->drupalGet('comment/' . $comment->id());
+    $this->assertResponse(200);
+    $this->assertText($comment->getSubject());
+    $this->drupalGet('de/comment/' . $comment->id());
+    $this->assertResponse(200);
+    $this->drupalLogout();
+    $this->drupalGet('it/comment/' . $comment->id());
+    $this->assertResponse(403);
   }
 
   /**
@@ -692,7 +725,7 @@ class ContentTmgmtEntitySourceUiTest extends TMGMTTestBase {
     // The node about translatable fields should be shown exactly once.
     $this->assertUniqueText('Note: This is a translatable field, embedding this will add a translation on the existing reference.');
 
-    // String fields, field 2 and 4 as well as the node type aund uid reference
+    // String fields, field 2 and 4 as well as the node type und uid reference
     // should not show up.
     $this->assertNoField('embedded_fields[node][title]');
     $this->assertNoField('embedded_fields[node][uid]');

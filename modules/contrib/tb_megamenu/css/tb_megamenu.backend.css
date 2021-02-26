@@ -348,7 +348,8 @@
   position: absolute;
   top: -7px;
   left: 50%;
-  margin-left: -110px;
+  width: 50%;
+  margin-left: -25%;
 }
 
 /* Megamenu Responsive */

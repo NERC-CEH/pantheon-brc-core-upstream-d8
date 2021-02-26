@@ -7,6 +7,8 @@ use Drupal\tmgmt\Entity\Job;
 use Drupal\tmgmt\Entity\JobItem;
 use Drupal\tmgmt\Entity\RemoteMapping;
 use Drupal\tmgmt\Entity\Translator;
+use Drupal\tmgmt\JobInterface;
+use Drupal\tmgmt\JobItemInterface;
 
 /**
  * Basic crud operations for jobs and translators
@@ -231,6 +233,24 @@ class CrudTest extends TMGMTKernelTestBase {
     // Test the second item label length - it must not exceed the
     // TMGMT_JOB_LABEL_MAX_LENGTH.
     $this->assertTrue(Job::LABEL_MAX_LENGTH >= strlen($items[$item2->id()]->label()));
+
+    $translator = Translator::load('test_translator');
+    $translator->setAutoAccept(TRUE)->save();
+    $job = tmgmt_job_create('en', 'de');
+    $job->translator = 'test_translator';
+    $job->save();
+    $job_item = tmgmt_job_item_create('test_source', 'test_type', 1, ['tjid' => $job->id()]);
+    $job_item->save();
+    // Add translated data to the job item.
+    $translation['dummy']['deep_nesting']['#text'] = 'Invalid translation that will cause an exception';
+    $job_item->addTranslatedData($translation);
+    // If it was set to Auto Accept but there was an error, the Job Item should
+    // be set as Needs Review.
+    $this->assertEquals(JobItemInterface::STATE_REVIEW, $job_item->getState());
+    // There should be a message if auto accept has failed.
+    $messages = $job->getMessages();
+    $last_message = end($messages);
+    $this->assertEquals('Failed to automatically accept translation, error: The translation cannot be saved.', $last_message->getMessage());
   }
 
   /**
@@ -373,6 +393,22 @@ class CrudTest extends TMGMTKernelTestBase {
     $this->assertEqual(count($messages), 4);
     $last_message = end($messages);
     $this->assertEqual($last_message->message->value, 'Translation for already reviewed @key received and stored as a new revision. Revert to it if you wish to use it.');
+
+    // Add a new job item.
+    $new_item = $job->addItem('test_source', 'test_with_long_label', 6);
+    $translation['dummy']['deep_nesting']['#text'] = 'translated 1';
+    $new_item->addTranslatedData($translation);
+    $messages = $job->getMessages();
+    $this->assertCount(5, $messages);
+    $last_message = end($messages);
+
+    // Assert that the job and job item are loaded correctly.
+    $message_job = $last_message->getJob();
+    $this->assertInstanceOf(JobInterface::class, $message_job);
+    $this->assertEquals($job->id(), $message_job->id());
+    $message_job_item = $last_message->getJobItem();
+    $this->assertInstanceOf(JobItemInterface::class, $message_job_item);
+    $this->assertEquals($new_item->id(), $message_job_item->id());
   }
 
   /**

@@ -2,12 +2,12 @@
 
 namespace Drupal\Tests\tmgmt_content\Functional;
 
+use Drupal\field\Entity\FieldConfig;
 use Drupal\node\Entity\Node;
+use Drupal\Tests\field\Traits\EntityReferenceTestTrait;
+use Drupal\Tests\tmgmt\Functional\TmgmtEntityTestTrait;
 use Drupal\Tests\tmgmt\Functional\TMGMTTestBase;
 use Drupal\tmgmt_composite_test\Entity\EntityTestComposite;
-use Drupal\field\Entity\FieldConfig;
-use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\Tests\tmgmt\Functional\TmgmtEntityTestTrait;
 
 /**
  * Tests always embedded entity reference fields.
@@ -16,6 +16,7 @@ use Drupal\Tests\tmgmt\Functional\TmgmtEntityTestTrait;
  */
 class ContentEntitySourceTranslatableEntityTest extends TMGMTTestBase {
   use TmgmtEntityTestTrait;
+  use EntityReferenceTestTrait;
 
   /**
    * Modules to enable.
@@ -59,30 +60,18 @@ class ContentEntitySourceTranslatableEntityTest extends TMGMTTestBase {
     $xpath = '//*[@id="edit-content"]';
     $embedded_entity = '<label for="edit-always-embedded">Always embedded</label>';
     $embedded_node = '<span class="fieldset-legend">Content</span>';
+    $this->assertNoText('Authored by (User)');
     $this->assertNotContains($embedded_entity, $this->xpath($xpath)[0]->getOuterHtml());
     $this->assertNotContains($embedded_node, $this->xpath($xpath)[0]->getOuterHtml());
 
     // Create the reference field to the composite entity test.
-    $field_storage = FieldStorageConfig::create(array(
-      'field_name' => 'entity_test_composite',
-      'entity_type' => 'node',
-      'type' => 'entity_reference',
-      'settings' => array(
-        'target_type' => 'entity_test_composite'
-      ),
-    ));
-    $field_storage->save();
-    $field = FieldConfig::create(array(
-      'field_storage' => $field_storage,
-      'bundle' => 'article',
-      'translatable' => FALSE,
-    ));
-    $field->save();
+    $this->createEntityReferenceField('node', 'article', 'entity_test_composite', 'entity_test_composite', 'entity_test_composite');
+    FieldConfig::loadByName('node', 'article', 'entity_test_composite')->setTranslatable(FALSE)->save();
 
     // Assert there IS the entity_test_composite as entity embedded now.
     $this->drupalGet('/admin/tmgmt/settings');
+    $this->assertText('Content: entity_test_composite');
     $this->assertContains($embedded_entity, $this->xpath($xpath)[0]->getOuterHtml());
-    $this->assertNotContains($embedded_node, $this->xpath($xpath)[0]->getOuterHtml());
 
     // Create the composite entity test.
     $composite = EntityTestComposite::create(array(
@@ -126,9 +115,26 @@ class ContentEntitySourceTranslatableEntityTest extends TMGMTTestBase {
     // Load existing node and test translating
     $node = Node::load($node->id());
     $translation = $node->getTranslation('de');
-    $composite = EntityTestComposite::load($translation->entity_test_composite->target_id);
+    // The IDs of the composite entities did not change.
+    $this->assertEquals($node->get('entity_test_composite')->target_id, $translation->get('entity_test_composite')->target_id);
+    $composite = EntityTestComposite::load($translation->get('entity_test_composite')->target_id);
     $composite = $composite->getTranslation('de');
     $this->assertEqual('de(de-ch): composite name', $composite->label());
+  }
+
+  /**
+   * Tests UI of the embedded entities with untranslatable target types.
+   */
+  public function testTranslatableEntityReferencesUntranslatableTarget() {
+    // Disable entity translations for entity_test_composite.
+    \Drupal::service('content_translation.manager')->setEnabled('entity_test_composite', 'entity_test_composite', FALSE);
+    // Create the translatable reference field to the composite entity test.
+    $this->createEntityReferenceField('node', 'article', 'entity_test_t_composite', 'entity_test_t_composite', 'entity_test_composite');
+
+    // Assert there is the entity_test_composite as entity embedded now.
+    $this->drupalGet('/admin/tmgmt/settings');
+    $this->assertFieldByName('embedded_fields[node][entity_test_t_composite]');
+    $this->assertText('Note: This is a translatable field to an untranslatable target. A copy of the target will be created when translating.');
   }
 }
 

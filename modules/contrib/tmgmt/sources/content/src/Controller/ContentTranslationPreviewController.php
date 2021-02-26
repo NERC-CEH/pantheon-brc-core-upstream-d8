@@ -7,6 +7,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\tmgmt\JobItemInterface;
 use Drupal\Core\Render\Element;
+use Drupal\tmgmt_content\Plugin\tmgmt\Source\ContentEntitySource;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -54,9 +55,7 @@ class ContentTranslationPreviewController extends ControllerBase {
    */
   public function preview(JobItemInterface $tmgmt_job_item, $view_mode) {
     // Load entity.
-    $entity = $this->entityTypeManager
-      ->getStorage($tmgmt_job_item->getItemType())
-      ->load($tmgmt_job_item->getItemId());
+    $entity = ContentEntitySource::load($tmgmt_job_item->getItemType(), $tmgmt_job_item->getItemId(), $tmgmt_job_item->getJob()->getSourceLangcode());
 
     // We cannot show the preview for non-existing entities.
     if (!$entity) {
@@ -66,6 +65,8 @@ class ContentTranslationPreviewController extends ControllerBase {
     $target_langcode = $tmgmt_job_item->getJob()->getTargetLangcode();
     // Populate preview with target translation data.
     $preview = $this->makePreview($entity, $data, $target_langcode);
+    // Set the entity into preview mode.
+    $preview->in_preview = TRUE;
     // Build view for entity.
     $page = $this->entityTypeManager
       ->getViewBuilder($entity->getEntityTypeId())
@@ -89,10 +90,9 @@ class ContentTranslationPreviewController extends ControllerBase {
    */
   public function title(JobItemInterface $tmgmt_job_item) {
     $target_language = $tmgmt_job_item->getJob()->getTargetLanguage()->getName();
-    $title = $this->entityTypeManager
-      ->getStorage($tmgmt_job_item->getItemType())
-      ->load($tmgmt_job_item->getItemId())
-      ->label();
+    $entity = ContentEntitySource::load($tmgmt_job_item->getItemType(), $tmgmt_job_item->getItemId(), $tmgmt_job_item->getJob()->getSourceLangcode());
+    $title = $entity->label();
+
     return t("Preview of @title for @target_language", [
       '@title' => $title,
       '@target_language' => $target_language,

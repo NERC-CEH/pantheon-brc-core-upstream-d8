@@ -2,12 +2,12 @@
 
 namespace Drupal\field_defaults\Tests;
 
-use Drupal\simpletest\WebTestBase;
+use Drupal\Tests\BrowserTestBase;
 
 /**
  * Class FieldDefaultsTestBase.
  */
-class FieldDefaultsTestBase extends WebTestBase {
+class FieldDefaultsTestBase extends BrowserTestBase {
 
   /**
    * The administrator account.
@@ -54,7 +54,7 @@ class FieldDefaultsTestBase extends WebTestBase {
       'administer field defaults',
     ];
     $this->administratorAccount = $this->drupalCreateUser($permissions);
-    parent::drupalLogin($this->administratorAccount);
+    $this->drupalLogin($this->administratorAccount);
 
     // Create some dummy content.
     for ($i = 0; $i < 20; $i++) {

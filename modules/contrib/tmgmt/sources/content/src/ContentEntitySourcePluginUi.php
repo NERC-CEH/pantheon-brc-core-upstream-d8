@@ -2,10 +2,15 @@
 
 namespace Drupal\tmgmt_content;
 
+use Drupal\content_translation\ContentTranslationManager;
 use Drupal\Core\Database\Query\Condition;
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityPublishedInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\tmgmt\JobItemInterface;
 use Drupal\tmgmt\SourcePluginUiBase;
+use Drupal\tmgmt_content\Plugin\tmgmt\Source\ContentEntitySource;
 
 /**
  * Content entity source plugin UI.
@@ -131,10 +136,13 @@ class ContentEntitySourcePluginUi extends SourcePluginUiBase {
    * @return array
    */
   public function overviewRow(ContentEntityInterface $entity, array $bundles) {
-    $label = $entity->label() ?: $this->t('@type: @id', array(
-      '@type' => $entity->getEntityTypeId(),
-      '@id' => $entity->id(),
-    ));
+    $entity_label = $entity->label();
+
+    $storage = \Drupal::entityTypeManager()->getStorage($entity->getEntityTypeId());
+    $use_latest_revisions = $entity->getEntityType()->isRevisionable() && ContentTranslationManager::isPendingRevisionSupportEnabled($entity->getEntityTypeId(), $entity->bundle());
+
+    // Get the default revision.
+    $default_revision = $use_latest_revisions ? $storage->load($entity->id()) : $entity;
 
     // Get existing translations and current job items for the entity
     // to determine translation statuses
@@ -144,7 +152,6 @@ class ContentEntitySourcePluginUi extends SourcePluginUiBase {
 
     $row = array(
       'id' => $entity->id(),
-      'title' => $entity->hasLinkTemplate('canonical') ? $entity->toLink($label, 'canonical')->toString() : ($entity->label() ?: $entity->id()),
     );
 
     if (count($bundles) > 1) {
@@ -154,6 +161,29 @@ class ContentEntitySourcePluginUi extends SourcePluginUiBase {
     // Load entity translation specific data.
     $manager = \Drupal::service('content_translation.manager');
     foreach (\Drupal::languageManager()->getLanguages() as $langcode => $language) {
+      // @see Drupal\content_translation\Controller\ContentTranslationController::overview()
+      // If the entity type is revisionable, we may have pending revisions
+      // with translations not available yet in the default revision. Thus we
+      // need to load the latest translation-affecting revision for each
+      // language to be sure we are listing all available translations.
+      if ($use_latest_revisions) {
+        $entity = $default_revision;
+        $latest_revision_id = $storage->getLatestTranslationAffectedRevisionId($entity->id(), $langcode);
+        if ($latest_revision_id) {
+          /** @var \Drupal\Core\Entity\ContentEntityInterface $latest_revision */
+          $latest_revision = $storage->loadRevision($latest_revision_id);
+          // Make sure we do not list removed translations, i.e. translations
+          // that have been part of a default revision but no longer are.
+          if (!$latest_revision->wasDefaultRevision() || $default_revision->hasTranslation($langcode)) {
+            $entity = $latest_revision;
+            // Update the label if we are dealing with the source language.
+            if ($langcode === $source_lang) {
+              $entity_label = $entity->label();
+            }
+          }
+        }
+        $translations = $entity->getTranslationLanguages();
+      }
 
       $translation_status = 'current';
 
@@ -185,6 +215,12 @@ class ContentEntitySourcePluginUi extends SourcePluginUiBase {
         'class' => array('langstatus-' . $langcode),
       ];
     }
+
+    $label = $entity_label ?: $this->t('@type: @id', [
+      '@type' => $entity->getEntityTypeId(),
+      '@id' => $entity->id(),
+    ]);
+    $row['title'] = $entity->hasLinkTemplate('canonical') ? $entity->toLink($label, 'canonical')->toString() : ($entity_label ?: $entity->id());
     return $row;
   }
 
@@ -260,7 +296,7 @@ class ContentEntitySourcePluginUi extends SourcePluginUiBase {
       batch_set($batch);
     }
     else {
-      $entities = \Drupal::entityTypeManager()->getStorage($item_type)->loadMultiple(array_filter($form_state->getValue('items')));
+      $entities = ContentEntitySource::loadMultiple($item_type, array_filter($form_state->getValue('items')));
       $job_items = 0;
       // Loop through entities and add them to continuous jobs.
       foreach ($entities as $entity) {
@@ -391,7 +427,10 @@ class ContentEntitySourcePluginUi extends SourcePluginUiBase {
     $query->addField('e', $id_key);
 
     $langcode_table_alias = 'e';
-    if ($data_table = $entity_type->getDataTable()) {
+    // @todo: Discuss if search should work on latest, default or all revisions.
+    //   See https://www.drupal.org/project/tmgmt/issues/2984554.
+    $data_table = $entity_type->isRevisionable() ? $entity_type->getRevisionDataTable() : $entity_type->getDataTable();
+    if ($data_table) {
       $langcode_table_alias = $query->innerJoin($data_table, 'data_table', '%alias.' . $id_key . ' = e.' . $id_key . ' AND %alias.default_langcode = 1');
     }
 
@@ -510,6 +549,160 @@ class ContentEntitySourcePluginUi extends SourcePluginUiBase {
     elseif (count($entities) < $limit) {
       $context['finished'] = 1;
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function reviewForm(array $form, FormStateInterface $form_state, JobItemInterface $item) {
+    $form = parent::reviewForm($form, $form_state, $item);
+
+    // Only proceed to display the content moderation form if the job item is
+    // either active or reviewable.
+    if (!$item->isNeedsReview() && !$item->isActive()) {
+      return $form;
+    }
+
+    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
+    $entity = ContentEntitySource::load($item->getItemType(), $item->getItemId());
+
+    if (!$form_state->isRebuilding() && $entity) {
+      // In case the original entity is moderated, allow users to update the
+      // content moderation state of the translation.
+      if (ContentEntitySource::isModeratedEntity($entity)) {
+        $form['moderation_state'] = $this->buildContentModerationElement($item, $entity);
+      }
+      // For non-moderated publishable entities, build a publish state form.
+      elseif ($entity instanceof EntityPublishedInterface) {
+        $form['status'] = $this->buildPublishStateElement($item, $entity);
+      }
+    }
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function reviewFormSubmit(array $form, FormStateInterface $form_state, JobItemInterface $item) {
+    // At this point, we don't need to check whether an entity is moderated or
+    // publishable. Instead, we look for a specific key that may be set.
+    if ($form_state->hasValue(['moderation_state', 'new_state'])) {
+      // We are using a special #moderation_state key to carry the information
+      // about the new moderation state value.
+      // See \Drupal\tmgmt_content\Plugin\tmgmt\Source\ContentEntitySource::doSaveTranslations()
+      $moderation_state = (array) $form_state->getValue(['moderation_state', 'new_state']);
+      $item->updateData(['#moderation_state'], $moderation_state, TRUE);
+    }
+    elseif ($form_state->hasValue(['status', 'published'])) {
+      $published = (array) (bool) $form_state->getValue(['status', 'published']);
+      $item->updateData(['#published'], $published, TRUE);
+    }
+
+    parent::reviewFormSubmit($form, $form_state, $item);
+  }
+
+  /**
+   * Build a publish state element.
+   *
+   * @param \Drupal\tmgmt\JobItemInterface $item
+   *   The job item.
+   * @param \Drupal\Core\Entity\EntityPublishedInterface $entity
+   *   The source publishable entity.
+   *
+   * @return array
+   *   A publish state form element.
+   */
+  protected function buildPublishStateElement(JobItemInterface $item, EntityPublishedInterface $entity) {
+    $element = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Translation publish status'),
+      '#tree' => TRUE,
+    ];
+    $published = $item->getData(['#published'], 0);
+    $default_value = isset($published[0]) ? $published[0] : $entity->isPublished();
+
+    $published_title = $this->t('Published');
+    $published_field = $entity->getEntityType()->getKey('published');
+    if ($entity instanceof FieldableEntityInterface && $entity->hasField($published_field) && !$entity->get($published_field)->getFieldDefinition()->isTranslatable()) {
+      $published_title = $this->t('Published (all languages)');
+    }
+
+    $element['published'] = [
+      '#type' => 'checkbox',
+      '#default_value' => $default_value,
+      '#title' => $published_title,
+    ];
+
+    return $element;
+  }
+
+  /**
+   * Build a content moderation elemenet for the translation.
+   *
+   * @param \Drupal\tmgmt\JobItemInterface $item
+   *   The job item.
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
+   *   The source moderated entity.
+   *
+   * @return array
+   *   A content moderation form element.
+   */
+  protected function buildContentModerationElement(JobItemInterface $item, ContentEntityInterface $entity) {
+    $element = [];
+
+    /** @var \Drupal\content_moderation\ModerationInformationInterface $moderation_info */
+    $moderation_info = \Drupal::service('content_moderation.moderation_information');
+    $workflow = $moderation_info->getWorkflowForEntity($entity);
+    $moderation_validator = \Drupal::service('content_moderation.state_transition_validation');
+
+    // Extract the current moderation state stored within the special key.
+    $moderation_state = $item->getData(['#moderation_state'], 0);
+    $current_state = isset($moderation_state[0]) ? $moderation_state[0] : $entity->get('moderation_state')->value;
+    $default = $workflow->getTypePlugin()->getState($current_state);
+
+    // Get a list of valid transitions.
+    /** @var \Drupal\workflows\Transition[] $transitions */
+    $transitions = $moderation_validator->getValidTransitions($entity, \Drupal::currentUser());
+
+    $transition_labels = [];
+    $default_value = NULL;
+    foreach ($transitions as $transition) {
+      $transition_to_state = $transition->to();
+      $transition_labels[$transition_to_state->id()] = $transition_to_state->label();
+      if ($default->id() === $transition_to_state->id()) {
+        $default_value = $default->id();
+      }
+    }
+
+    // See \Drupal\content_moderation\Plugin\Field\FieldWidget\ModerationStateWidget::formElement()
+    $element += [
+      '#type' => 'container',
+      '#tree' => TRUE,
+      'current' => [
+        '#type' => 'item',
+        '#title' => $this->t('Current source state'),
+        '#markup' => $default->label(),
+        '#wrapper_attributes' => [
+          'class' => ['container-inline'],
+        ],
+      ],
+      'new_state' => [
+        '#type' => 'select',
+        '#title' => $this->t('Translation state'),
+        '#options' => $transition_labels,
+        '#default_value' => $default_value,
+        '#access' => !empty($transition_labels),
+        '#wrapper_attributes' => [
+          'class' => ['container-inline'],
+        ],
+      ],
+    ];
+
+    $element['#theme'] = ['entity_moderation_form'];
+    $element['#attached']['library'][] = 'content_moderation/content_moderation';
+
+    return $element;
   }
 
 }

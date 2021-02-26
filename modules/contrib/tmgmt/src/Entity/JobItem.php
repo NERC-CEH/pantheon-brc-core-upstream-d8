@@ -472,7 +472,12 @@ class JobItem extends ContentEntityBase implements JobItemInterface {
     $return = $this->setState(static::STATE_REVIEW, $message, $variables, $type);
     // Auto accept the translation if the translator is configured for it.
     if ($this->getTranslator()->isAutoAccept() && !$this->isAborted()) {
-      $this->acceptTranslation();
+      try {
+        $this->acceptTranslation();
+      }
+      catch (\Exception $e) {
+        $this->addMessage('Failed to automatically accept translation, error: @error', ['@error' => $e->getMessage()], 'error');
+      }
     }
     return $return;
   }
@@ -484,12 +489,14 @@ class JobItem extends ContentEntityBase implements JobItemInterface {
     if (!isset($message)) {
       $source_url = $this->getSourceUrl();
       try {
+        // @todo: Make sure we use the latest revision.
+        //   Fix in https://www.drupal.org/project/tmgmt/issues/2979126.
         $translation = \Drupal::entityTypeManager()->getStorage($this->getItemType())->load($this->getItemId());
       }
       catch (PluginNotFoundException $e) {
         $translation = NULL;
       }
-      if (isset($translation)) {
+      if (isset($translation) && $translation->hasTranslation($this->getJob()->getTargetLangcode())) {
         $translation = $translation->getTranslation($this->getJob()->getTargetLangcode());
         try {
           $translation_url = $translation->toUrl();
@@ -498,7 +505,7 @@ class JobItem extends ContentEntityBase implements JobItemInterface {
           $translation_url = NULL;
         }
         $message = $source_url && $translation_url ? 'The translation for <a href=":source_url">@source</a> has been accepted as <a href=":target_url">@target</a>.' : 'The translation for @source has been accepted as @target.';
-        $variables = $translation_url ? array(
+        $variables = $source_url && $translation_url ? array(
           ':source_url' => $source_url->toString(),
           '@source' => ($this->getSourceLabel()),
           ':target_url' => $translation_url->toString(),

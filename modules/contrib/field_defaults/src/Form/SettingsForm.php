@@ -6,19 +6,33 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Messenger\Messenger;
 
 /**
  * Class SettingsForm.
  */
 class SettingsForm extends FormBase {
 
+  /**
+   * Config Factory.
+   *
+   * @var Drupal\Core\Config\ConfigFactoryInterface
+   */
   protected $configFactory;
+
+  /**
+   * Messenger Service.
+   *
+   * @var Drupal\Core\Messenger\Messenger
+   */
+  protected $messenger;
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(ConfigFactoryInterface $configFactory) {
+  public function __construct(ConfigFactoryInterface $configFactory, Messenger $messenger) {
     $this->configFactory = $configFactory;
+    $this->messenger = $messenger;
   }
 
   /**
@@ -28,7 +42,8 @@ class SettingsForm extends FormBase {
     // Instantiates this form class.
     return new static(
     // Load the service required to construct this class.
-      $container->get('config.factory')
+      $container->get('config.factory'),
+      $container->get('messenger')
     );
   }
 
@@ -68,7 +83,7 @@ class SettingsForm extends FormBase {
     $config->set('update_date', $form_state->getValue('update_date'));
     $settings = $config->save();
     if ($settings) {
-      drupal_set_message($this->t('Settings saved'));
+      $this->messenger()->addMessage($this->t('Settings saved'));
     }
   }
 

@@ -35,16 +35,26 @@ class TBMegaMenuAdminController extends ControllerBase {
   protected $renderer;
 
   /**
+   * The menu builder service.
+   *
+   * @var \Drupal\tb_megamenu\TBMegaMenuBuilder
+   */
+  private $menuBuilder;
+
+  /**
    * Constructs a TBMegaMenuAdminController object.
    *
    * @param \Drupal\Core\Menu\MenuLinkTree $menu_tree
    *   The Menu Link Tree service.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
+   * @param \Drupal\tb_megamenu\TBMegaMenuBuilder $menu_builder
+   *   The menu builder service.
    */
-  public function __construct(MenuLinkTree $menu_tree, RendererInterface $renderer) {
+  public function __construct(MenuLinkTree $menu_tree, RendererInterface $renderer, TBMegaMenuBuilder $menu_builder) {
     $this->menuTree = $menu_tree;
     $this->renderer = $renderer;
+    $this->menuBuilder = $menu_builder;
   }
 
   /**
@@ -52,9 +62,10 @@ class TBMegaMenuAdminController extends ControllerBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-        $container->get('menu.link_tree'),
-        $container->get('renderer')
-        );
+      $container->get('menu.link_tree'),
+      $container->get('renderer'),
+      $container->get('tb_megamenu.menu_builder')
+    );
   }
 
   /**
@@ -78,83 +89,258 @@ class TBMegaMenuAdminController extends ControllerBase {
       $data = Json::decode($request->getContent());
       $action = $data['action'];
     }
+    // Assemble the appropriate Ajax response for the current action.
     switch ($action) {
       case 'load':
-        $menu_name = isset($data['menu_name']) ? $data['menu_name'] : NULL;
-        $theme = isset($data['theme']) ? $data['theme'] : NULL;
-        if ($menu_name && $theme) {
-          $renderable_array = TBMegaMenuBuilder::renderBlock($menu_name, $theme);
-          $result = $this->renderer
-            ->render($renderable_array)
-            ->__toString();
-        }
+        $result = self::loadMenuConfig($data);
         break;
 
       case 'save':
-        $menu_config = isset($data['menu_config']) ? $data['menu_config'] : NULL;
-        $block_config = isset($data['block_config']) ? $data['block_config'] : NULL;
-        $menu_name = isset($data['menu_name']) ? $data['menu_name'] : NULL;
-        $theme = isset($data['theme']) ? $data['theme'] : NULL;
-        if ($menu_config && $menu_name && $block_config && $theme) {
-          // This is parameter to load menu_tree with the enabled links.
-          $menu_tree_parameters = (new MenuTreeParameters)->onlyEnabledLinks();
-          // Load menu items with condition.
-          $menu_items = $this->menuTree->load($menu_name, $menu_tree_parameters);
-          // Sync mega menu before store.
-          TBMegaMenuBuilder::syncConfigAll($menu_items, $menu_config, 'backend');
-          TBMegaMenuBuilder::syncOrderMenus($menu_config);
-
-          $config = MegaMenuConfig::loadMenu($menu_name, $theme);
-          if ($config === NULL) {
-            $msg = $this->t("Cannot create a new config object in save!");
-            $this->messenger()->addStatus($msg);
-            $result = $msg;
-            break;
-          }
-          $config->setBlockConfig($block_config);
-          $config->setMenuConfig($menu_config);
-          $rc = $config->save();
-          if ($rc == 1 || $rc == 2) {
-            $result = $this->t("Saved config sucessfully!");
-          }
-          else {
-            $result = $this->t("Error saving config!");
-          }
-        }
-        else {
-          $problem = ($menu_name ? '' : "menu_name ") . ($theme ? '' : "theme_name ") .
-            ($block_config ? '' : "block_config ") . ($menu_config ? '' : "menu_config");
-          $msg = $this->t(
-            "Error Saving TB MegaMenu configuration: Post was missing the following information: @problem",
-            ['@problem' => $problem]);
-          $this->messenger()->addStatus($msg);
-          $result = $msg;
-        }
+        $result = self::saveMenuConfig($data);
         break;
 
       case 'load_block':
-        $block_id = isset($data['block_id']) ? $data['block_id'] : NULL;
-        $id = isset($data['id']) ? $data['id'] : NULL;
-        $showblocktitle = isset($data['showblocktitle']) ? $data['showblocktitle'] : NULL;
-        if ($block_id && $id) {
-          $render = [
-            '#theme' => 'tb_megamenu_block',
-            '#block_id' => $block_id,
-            '#section' => 'backend',
-            '#showblocktitle' => $showblocktitle,
-          ];
-          $content = $this->renderer
-            ->render($render)
-            ->__toString();
-          $result = Json::encode(['content' => $content, 'id' => $id]);
-        }
+        $result = self::loadMenuBlock($data);
         break;
 
       default:
         break;
     }
 
-    return new Response($result);
+    // Return the response message and status code.
+    $response = new Response($result['message']);
+    $response->setStatusCode($result['code']);
+    return $response;
+  }
+
+  /**
+   * Loads a menu configuration.
+   *
+   * @param array $data
+   *   A decoded JSON object used to load the configuration.
+   *
+   * @return array
+   *   The message and status code indicating the result of the load attempt.
+   */
+  public function loadMenuConfig(array $data) {
+    $menu_name = self::getMenuName($data);
+    $theme = self::getTheme($data);
+    $code = 200;
+
+    // Attempt to load the menu config.
+    if ($menu_name && $theme) {
+      $renderable_array = $this->menuBuilder->renderBlock($menu_name, $theme);
+      $result = $this->renderer
+        ->render($renderable_array)
+        ->__toString();
+    }
+    // Display an error if the config can't be loaded.
+    else {
+      $result = self::saveError('load_config');
+      $code = 500;
+    }
+
+    return [
+      'message' => $result,
+      'code' => $code,
+    ];
+  }
+
+  /**
+   * Saves a menu configuration.
+   *
+   * @param array $data
+   *   A decoded JSON object used to save the configuration.
+   *
+   * @return array
+   *   The message and status code indicating the result of the save attempt.
+   */
+  public function saveMenuConfig(array $data) {
+    $menu_config = self::getMenuConfig($data);
+    $block_config = self::getBlockConfig($data);
+    $menu_name = self::getMenuName($data);
+    $theme = self::getTheme($data);
+    $code = 200;
+
+    // Ensure the config can be loaded before proceeding.
+    $config = MegaMenuConfig::loadMenu($menu_name, $theme);
+    if ($config === NULL) {
+      return [
+        'message' => self::saveError('load_menu'),
+        'code' => 500,
+      ];
+    }
+
+    if ($menu_config && $menu_name && $block_config && $theme) {
+      // This is parameter to load menu_tree with the enabled links.
+      $menu_tree_parameters = (new MenuTreeParameters)->onlyEnabledLinks();
+      // Load menu items with condition.
+      $menu_items = $this->menuTree->load($menu_name, $menu_tree_parameters);
+      // Sync mega menu before store.
+      $this->menuBuilder->syncConfigAll($menu_items, $menu_config, 'backend');
+      $this->menuBuilder->syncOrderMenus($menu_config);
+      $config->setBlockConfig($block_config);
+      $config->setMenuConfig($menu_config);
+      // Save the config and return a success message.
+      $saved_config = $config->save();
+      if ($saved_config == 1 || $saved_config == 2) {
+        $result = $this->t("Saved config sucessfully!");
+      }
+      else {
+        $result = self::saveError('unknown');
+        $code = 500;
+      }
+    }
+    // Display an error when required values are missing.
+    else {
+      $result = self::saveError('missing_info', $menu_name, $theme, $block_config, $menu_config);
+      $code = 500;
+    }
+
+    return [
+      'message' => $result,
+      'code' => $code,
+    ];
+  }
+
+  /**
+   * Displays and logs an error when config can't be saved.
+   *
+   * @param string $event
+   *   The event that triggered the error.
+   * @param string $menu_name
+   *   The machine name for the current menu.
+   * @param string $theme
+   *   The machine name for the current theme.
+   * @param array $block_config
+   *   The configuration for the current block.
+   * @param array $menu_config
+   *   The configuration for the current menu.
+   *
+   * @return string
+   *   An error message displayed to the user.
+   */
+  public function saveError(string $event, string $menu_name = NULL, string $theme = NULL, array $block_config = NULL, array $menu_config = NULL) {
+    $msg = $this->t("TB MegaMenu error:");
+
+    switch ($event) {
+      case 'load_menu':
+        $msg .= ' ' . $this->t("could not load the requested menu.");
+        break;
+
+      case 'load_config':
+        $msg .= ' ' . $this->t("could not (re)load the requested menu configuration.");
+        break;
+
+      case 'load_block':
+        $msg .= ' ' . $this->t("could not load the requested menu block.");
+        break;
+
+      case 'missing_info':
+        $problem = ($menu_name ? '' : "menu_name ") . ($theme ? '' : "theme_name ") .
+        ($block_config ? '' : "block_config ") . ($menu_config ? '' : "menu_config");
+        $msg .= ' ' . $this->t(
+          "Post was missing the following information: @problem",
+          ['@problem' => $problem]);
+        break;
+
+      default:
+        $msg .= ' ' . $this->t("an unknown error occurred.");
+    }
+
+    return $msg;
+  }
+
+  /**
+   * Loads a menu block.
+   *
+   * @param array $data
+   *   A decoded JSON object used to load the block.
+   *
+   * @return array
+   *   The message and status code indicating the result of the load attempt.
+   */
+  public function loadMenuBlock(array $data) {
+    $block_id = isset($data['block_id']) ? $data['block_id'] : NULL;
+    $id = isset($data['id']) ? $data['id'] : NULL;
+    $showblocktitle = isset($data['showblocktitle']) ? $data['showblocktitle'] : NULL;
+    $code = 200;
+
+    // Attempt to render the specified block.
+    if ($block_id && $id) {
+      $render = [
+        '#theme' => 'tb_megamenu_block',
+        '#block_id' => $block_id,
+        '#section' => 'backend',
+        '#showblocktitle' => $showblocktitle,
+      ];
+      $content = $this->renderer
+        ->render($render)
+        ->__toString();
+      $result = Json::encode(['content' => $content, 'id' => $id]);
+    }
+    // Display an error if the block can't be loaded.
+    else {
+      $result = self::saveError('load_block');
+      $code = 500;
+    }
+
+    return [
+      'message' => $result,
+      'code' => $code,
+    ];
+  }
+
+  /**
+   * Get the machine name of a menu.
+   *
+   * @param array $data
+   *   A decoded JSON object used to load the configuration.
+   *
+   * @return mixed
+   *   A string or null.
+   */
+  public function getMenuName(array $data) {
+    return isset($data['menu_name']) ? $data['menu_name'] : NULL;
+  }
+
+  /**
+   * Get the machine name of a theme.
+   *
+   * @param array $data
+   *   A decoded JSON object used to load the configuration.
+   *
+   * @return mixed
+   *   An string or null.
+   */
+  public function getTheme(array $data) {
+    return isset($data['theme']) ? $data['theme'] : NULL;
+  }
+
+  /**
+   * Get an existing menu configuration.
+   *
+   * @param array $data
+   *   A decoded JSON object used to load the configuration.
+   *
+   * @return mixed
+   *   An array or null.
+   */
+  public function getMenuConfig(array $data) {
+    return isset($data['menu_config']) ? $data['menu_config'] : NULL;
+  }
+
+  /**
+   * Get an existing block configuration.
+   *
+   * @param array $data
+   *   A decoded JSON object used to load the configuration.
+   *
+   * @return mixed
+   *   An array or null.
+   */
+  public function getBlockConfig(array $data) {
+    return isset($data['block_config']) ? $data['block_config'] : NULL;
   }
 
   /**

@@ -141,7 +141,7 @@ class ContentEntitySuggestionsTest extends TMGMTKernelTestBase {
     ]);
     $different_language_node->save();
 
-    // Create a node with two translatable and two non-translatable references.
+    // Create a node with two translatable and two untranslatable references.
     $node = Node::create([
       'title' => $this->randomMachineName(),
       'type' => $type->id(),

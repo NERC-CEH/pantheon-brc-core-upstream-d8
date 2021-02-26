@@ -66,13 +66,19 @@ class TermsOfUseSettingsForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('terms_of_use.settings');
+    if (!empty($config->get('terms_of_use_node'))) {
+      $default_node = $this->entityTypeManager->getStorage('node')->load($config->get('terms_of_use_node'));
+    }
+    else {
+      $default_node = '';
+    }
     $form['terms_of_use'] = [
       '#type' => 'fieldset',
     ];
     $form['terms_of_use']['terms_of_use_node'] = [
       '#type' => 'entity_autocomplete',
       '#target_type' => 'node',
-      '#default_value' => $this->entityTypeManager->getStorage('node')->load($config->get('terms_of_use_node')),
+      '#default_value' => $default_node,
       '#title' => $this->t('Title of the post where your Terms of Use are published'),
       '#description' => $this->t('Node <em>title</em> of the page or story (or blog entry or book page) where your Terms of Use are published.'),
       '#required' => TRUE,

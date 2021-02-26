@@ -11,7 +11,7 @@ use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\taxonomy\VocabularyInterface;
 
-@trigger_error('The ' . __NAMESPACE__ . '\EntityTestBase is deprecated. Instead, use Drupal\tmgmt\Tests\EntityTestBase. See https://www.drupal.org/node/2971931.', E_USER_DEPRECATED);
+@trigger_error('The ' . __NAMESPACE__ . '\EntityTestBase is deprecated. Instead, use \Drupal\Tests\tmgmt\Functional\TmgmtEntityTestTrait. See https://www.drupal.org/node/2971931.', E_USER_DEPRECATED);
 
 /**
  * Utility test case class with helper methods to create entities and their

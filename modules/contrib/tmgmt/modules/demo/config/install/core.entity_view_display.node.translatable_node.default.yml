@@ -1,6 +1,9 @@
 langcode: en
 status: true
 dependencies:
+  enforced:
+    module:
+      - tmgmt_demo
   config:
     - field.field.node.translatable_node.body
     - node.type.translatable_node

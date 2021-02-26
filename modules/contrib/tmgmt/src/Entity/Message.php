@@ -110,7 +110,7 @@ class Message extends ContentEntityBase implements MessageInterface {
    * {@inheritdoc}
    */
   public function getJobItem() {
-    return Job::load($this->get('tjid')->target_id);
+    return JobItem::load($this->get('tjiid')->target_id);
   }
 
   /**

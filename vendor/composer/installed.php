@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => 'b08b2ee57ceff1fc141d7edd0b02cc59d3bf77a4',
+    'reference' => '875066a87d215751ef3fefe95755ddab31e14236',
     'name' => 'drupal/legacy-project',
   ),
   'versions' => 
@@ -1170,12 +1170,12 @@
     ),
     'drupal/field_defaults' => 
     array (
-      'pretty_version' => '1.1.0',
-      'version' => '1.1.0.0',
+      'pretty_version' => '1.3.0',
+      'version' => '1.3.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.1',
+      'reference' => '8.x-1.3',
     ),
     'drupal/field_display_label' => 
     array (
@@ -1188,12 +1188,12 @@
     ),
     'drupal/field_formatter_class' => 
     array (
-      'pretty_version' => '1.4.0',
-      'version' => '1.4.0.0',
+      'pretty_version' => '1.5.0',
+      'version' => '1.5.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.4',
+      'reference' => '8.x-1.5',
     ),
     'drupal/field_group' => 
     array (
@@ -1346,12 +1346,12 @@
     ),
     'drupal/insert_view_adv' => 
     array (
-      'pretty_version' => '1.0.0-beta1',
-      'version' => '1.0.0.0-beta1',
+      'pretty_version' => '1.0.0-beta2',
+      'version' => '1.0.0.0-beta2',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.0-beta1',
+      'reference' => '8.x-1.0-beta2',
     ),
     'drupal/job_scheduler' => 
     array (
@@ -1469,7 +1469,7 @@
       'aliases' => 
       array (
       ),
-      'reference' => 'b08b2ee57ceff1fc141d7edd0b02cc59d3bf77a4',
+      'reference' => '875066a87d215751ef3fefe95755ddab31e14236',
     ),
     'drupal/libraries' => 
     array (
@@ -1804,12 +1804,12 @@
     ),
     'drupal/responsive_tables_filter' => 
     array (
-      'pretty_version' => '1.6.0',
-      'version' => '1.6.0.0',
+      'pretty_version' => '1.7.0',
+      'version' => '1.7.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.6',
+      'reference' => '8.x-1.7',
     ),
     'drupal/rest' => 
     array (
@@ -1854,12 +1854,12 @@
     ),
     'drupal/search_api' => 
     array (
-      'pretty_version' => '1.18.0',
-      'version' => '1.18.0.0',
+      'pretty_version' => '1.19.0',
+      'version' => '1.19.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.18',
+      'reference' => '8.x-1.19',
     ),
     'drupal/search_api_solr' => 
     array (
@@ -2030,12 +2030,12 @@
     ),
     'drupal/tb_megamenu' => 
     array (
-      'pretty_version' => '1.0.0-beta2',
-      'version' => '1.0.0.0-beta2',
+      'pretty_version' => '1.0.0-rc3',
+      'version' => '1.0.0.0-RC3',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.0-beta2',
+      'reference' => '8.x-1.0-rc3',
     ),
     'drupal/telephone' => 
     array (
@@ -2046,12 +2046,12 @@
     ),
     'drupal/terms_of_use' => 
     array (
-      'pretty_version' => '2.1.0',
-      'version' => '2.1.0.0',
+      'pretty_version' => '2.2.0',
+      'version' => '2.2.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-2.1',
+      'reference' => '8.x-2.2',
     ),
     'drupal/text' => 
     array (
@@ -2062,21 +2062,21 @@
     ),
     'drupal/tmgmt' => 
     array (
-      'pretty_version' => '1.11.0',
-      'version' => '1.11.0.0',
+      'pretty_version' => '1.12.0',
+      'version' => '1.12.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.11',
+      'reference' => '8.x-1.12',
     ),
     'drupal/tmgmt_transifex' => 
     array (
-      'pretty_version' => '1.2.0',
-      'version' => '1.2.0.0',
+      'pretty_version' => '1.4.0',
+      'version' => '1.4.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.2',
+      'reference' => '8.x-1.4',
     ),
     'drupal/token' => 
     array (
@@ -2246,12 +2246,12 @@
     ),
     'drupal/webform' => 
     array (
-      'pretty_version' => '6.0.0',
-      'version' => '6.0.0.0',
+      'pretty_version' => '6.0.1',
+      'version' => '6.0.1.0',
       'aliases' => 
       array (
       ),
-      'reference' => '6.0.0',
+      'reference' => '6.0.1',
     ),
     'drupal/webform_views' => 
     array (

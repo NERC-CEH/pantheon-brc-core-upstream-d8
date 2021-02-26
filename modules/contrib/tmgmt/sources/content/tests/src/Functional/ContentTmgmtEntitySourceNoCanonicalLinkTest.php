@@ -72,6 +72,10 @@ class ContentTmgmtEntitySourceNoCanonicalLinkTest extends TMGMTTestBase {
 
     // Review and save the entity translation.
     $this->clickLink('reviewed');
+    // Non-publishable and non-moderated entities do not have publish status
+    // form element.
+    $this->assertNoText('Translation publish status');
+    $this->assertNoField('edit-moderation-state-new-state');
     $this->drupalPostForm(NULL, NULL, 'Save as completed');
     $this->assertTitle($entity->label() . ' (English to German, Finished) | Drupal');
     $this->assertText('The translation for name english has been accepted as de(de-ch): name english.');

@@ -2,83 +2,114 @@
 
 namespace Drupal\tb_megamenu;
 
+use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Menu\MenuTreeParameters;
+use Drupal\Core\Menu\MenuLinkTree;
+use Drupal\Core\Menu\MenuTreeStorage;
+use Drupal\Core\Path\PathMatcher;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\tb_megamenu\Entity\MegaMenuConfig;
 
 /**
- * Handler for creating, editing, and displaying Mega Menus.
+ * Defines a TBMegaMenuBuilder.
  */
-class TBMegaMenuBuilder {
+class TBMegaMenuBuilder implements TBMegaMenuBuilderInterface {
+
+  use StringTranslationTrait;
 
   /**
-   * Get the configuration of blocks.
+   * The logger service.
    *
-   * @param string $menu_name
-   *   Menu Machine name.
-   * @param string $theme
-   *   Theme machine name.
-   *
-   * @return array
-   *   The block config array
+   * @var \Psr\Log\LoggerInterface
    */
-  public static function getBlockConfig($menu_name, $theme) {
+  private $logger;
+
+  /**
+   * The menu link service.
+   *
+   * @var \Drupal\Core\Menu\MenuLinkTree
+   */
+  private $menuTree;
+
+  /**
+   * The entity manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManager
+   */
+  private $entityTypeManager;
+
+  /**
+   * The path matcher service.
+   *
+   * @var \Drupal\Core\Path\PathMatcher
+   */
+  private $pathMatcher;
+
+  /**
+   * The menu tree storage service.
+   *
+   * @var \Drupal\Core\Menu\MenuTreeStorage
+   */
+  private $menuStorage;
+
+  /**
+   * Constructs a TBMegaMenuBuilder.
+   *
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
+   *   The logger factory service.
+   * @param \Drupal\Core\Menu\MenuLinkTree $menu_tree
+   *   The menu link service.
+   * @param \Drupal\Core\Entity\EntityTypeManager $entity_manager
+   *   The entity manager service.
+   * @param \Drupal\Core\Path\PathMatcher $path_matcher
+   *   The path matcher service.
+   * @param \Drupal\Core\Menu\MenuTreeStorage $menu_storage
+   *   The menu tree storage service.
+   */
+  public function __construct(LoggerChannelFactoryInterface $logger_factory, MenuLinkTree $menu_tree, EntityTypeManager $entity_manager, PathMatcher $path_matcher, MenuTreeStorage $menu_storage) {
+    $this->logger = $logger_factory->get('tb_megamenu');
+    $this->menuTree = $menu_tree;
+    $this->entityTypeManager = $entity_manager;
+    $this->pathMatcher = $path_matcher;
+    $this->menuStorage = $menu_storage;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getBlockConfig(string $menu_name, string $theme) {
     $menu = self::getMenus($menu_name, $theme);
     return ($menu) ? $menu->getBlockConfig() : [];
   }
 
   /**
-   * Get menus that belongs TB mega menu.
-   *
-   * @param string $menu_name
-   *   The menu machine name.
-   * @param string $theme
-   *   The theme machine name.
-   *
-   * @return \Drupal\tb_megamenu\MegaMenuConfigInterface|null
-   *   The configuration entity for this menu or NULL if not found.
+   * {@inheritdoc}
    */
-  public static function getMenus($menu_name, $theme) {
+  public function getMenus(string $menu_name, string $theme) {
     $config = MegaMenuConfig::loadMenu($menu_name, $theme);
     if ($config === NULL) {
-      \Drupal::logger('tb_megamenu')->warning(
-        t("Could not find TB Megamenu configuration for menu: @menu, theme: @theme", [
-          '@menu' => $menu_name,
-          '@theme' => $theme,
-        ]
-      ));
+      $this->logger->warning("Could not find TB Megamenu configuration for menu: @menu, theme: @theme", [
+        '@menu' => $menu_name,
+        '@theme' => $theme,
+      ]);
     }
     return $config;
   }
 
   /**
-   * Find a menu item.
-   *
-   * @param string $menu_name
-   *   Menu machine name.
-   * @param string $plugin_id
-   *   The menu item plugin id.
-   *
-   * @return \Drupal\Core\Menu\MenuLinkTreeElement
-   *   The menu item element.
+   * {@inheritdoc}
    */
-  public static function getMenuItem($menu_name, $plugin_id) {
-    $tree = \Drupal::menuTree()->load($menu_name, (new MenuTreeParameters())->onlyEnabledLinks());
+  public function getMenuItem(string $menu_name, string $plugin_id) {
+    $tree = $this->menuTree->load($menu_name, (new MenuTreeParameters())->onlyEnabledLinks());
     $item = self::findMenuItem($tree, $plugin_id);
     return $item;
   }
 
   /**
-   * Search by menu item.
-   *
-   * @param mixed $tree
-   *   The menu tree.
-   * @param mixed $plugin_id
-   *   The item plugin id.
-   *
-   * @return \Drupal\Core\Menu\MenuLinkTreeElement
-   *   The menu link element.
+   * {@inheritdoc}
    */
-  public static function findMenuItem($tree, $plugin_id) {
+  public function findMenuItem(array $tree, string $plugin_id) {
     foreach ($tree as $menu_plugin_id => $item) {
       if ($menu_plugin_id == $plugin_id) {
         return $item;
@@ -91,43 +122,24 @@ class TBMegaMenuBuilder {
   }
 
   /**
-   * Load blocks by block_id.
-   *
-   * @param string $block_id
-   *   The block id.
-   *
-   * @return \Drupal\Core\Entity\EntityInterface|null
-   *   The block entity.
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * {@inheritdoc}
    */
-  public static function loadEntityBlock($block_id) {
-    return \Drupal::entityTypeManager()->getStorage('block')->load($block_id);
+  public function loadEntityBlock(string $block_id) {
+    return $this->entityTypeManager->getStorage('block')->load($block_id);
   }
 
   /**
-   * Get configuration of menu.
-   *
-   * @param string $menu_name
-   *   The menu machine name.
-   * @param string $theme
-   *   The theme machine name.
-   *
-   * @return array|\stdClass
-   *   The menu configuration info.
+   * {@inheritdoc}
    */
-  public static function getMenuConfig($menu_name, $theme) {
+  public function getMenuConfig(string $menu_name, string $theme) {
     $menu = self::getMenus($menu_name, $theme);
     return isset($menu) ? $menu->getMenuConfig() : [];
   }
 
   /**
-   * Create the default attributes for the configuration of block.
-   *
-   * @param array $block_config
-   *   The block config array to fill with default values.
+   * {@inheritdoc}
    */
-  public static function editBlockConfig(array &$block_config) {
+  public function editBlockConfig(array &$block_config) {
     $block_config += [
       'animation' => 'none',
       'style' => '',
@@ -141,12 +153,9 @@ class TBMegaMenuBuilder {
   }
 
   /**
-   * Set the default values to configuration in Sub TB Megamenu if it's empty.
-   *
-   * @param array $submenu_config
-   *   The array to fill with default values.
+   * {@inheritdoc}
    */
-  public static function editSubMenuConfig(array &$submenu_config) {
+  public function editSubMenuConfig(array &$submenu_config) {
     $submenu_config += [
       'width' => '',
       'class' => '',
@@ -155,12 +164,9 @@ class TBMegaMenuBuilder {
   }
 
   /**
-   * Set the default values to configuration in TB Megamenu item if it's empty.
-   *
-   * @param array $item_config
-   *   The array to fill with default values.
+   * {@inheritdoc}
    */
-  public static function editItemConfig(array &$item_config) {
+  public function editItemConfig(array &$item_config) {
     $attributes = [
       'xicon' => '',
       'class' => '',
@@ -178,12 +184,9 @@ class TBMegaMenuBuilder {
   }
 
   /**
-   * Set the default values to configuration in columns if it's empty.
-   *
-   * @param array $col_config
-   *   The array to fill with default values.
+   * {@inheritdoc}
    */
-  public static function editColumnConfig(array &$col_config) {
+  public function editColumnConfig(array &$col_config) {
     $attributes = [
       'width' => 12,
       'class' => '',
@@ -198,36 +201,22 @@ class TBMegaMenuBuilder {
   }
 
   /**
-   * Create block which using tb_megamenu.
-   *
-   * @param string $menu_name
-   *   The menu machine name.
-   * @param string $theme
-   *   The theme machine name.
-   *
-   * @return array
-   *   The render array.
+   * {@inheritdoc}
    */
-  public static function renderBlock($menu_name, $theme) {
+  public function renderBlock(string $menu_name, string $theme) {
     return [
       '#theme' => 'tb_megamenu',
       '#menu_name' => $menu_name,
       '#block_theme' => $theme,
       '#section' => 'backend',
-      '#post_render' => ['\Drupal\tb_megamenu\Controller\TBMegaMenuController::tb_megamenu_attach_number_columns'],
+      '#post_render' => ['\Drupal\tb_megamenu\Controller\TBMegaMenuController::tbMegamenuAttachNumberColumns'],
     ];
   }
 
   /**
-   * Get Id of column.
-   *
-   * @param int $number_columns
-   *   The number of columns.
-   *
-   * @return string
-   *   The column id.
+   * {@inheritdoc}
    */
-  public static function getIdColumn($number_columns) {
+  public function getIdColumn(int $number_columns) {
     $value = &drupal_static('column');
     if (!isset($value)) {
       $value = 1;
@@ -239,21 +228,13 @@ class TBMegaMenuBuilder {
   }
 
   /**
-   * Get all of blocks in system without blocks which belong to TB Mega Menu.
-   *
-   * In array, each element includes key which is plugin_id and value which is
-   * label of block.
-   *
-   * @staticvar array $_blocks_array
-   *
-   * @return \Drupal\Core\Entity\EntityTypeInterface[]
-   *   An array of block entities or an empty array if none found.
+   * {@inheritdoc}
    */
-  public static function getAllBlocks($theme) {
+  public function getAllBlocks(string $theme) {
     static $_blocks_array = [];
     if (empty($_blocks_array)) {
       // Get storage handler of block.
-      $block_storage = \Drupal::entityTypeManager()->getStorage('block');
+      $block_storage = $this->entityTypeManager->getStorage('block');
       // Get the enabled block in the default theme.
       $entity_ids = $block_storage->getQuery()->condition('theme', $theme)->execute();
       $entities = $block_storage->loadMultiple($entity_ids);
@@ -269,52 +250,37 @@ class TBMegaMenuBuilder {
   }
 
   /**
-   * Create options for animation.
-   *
-   * @param array $block_config
-   *   The block configuration.
-   *
-   * @return array
-   *   The default block configuration.
+   * {@inheritdoc}
    */
-  public static function createAnimationOptions(array $block_config) {
+  public function createAnimationOptions(array $block_config) {
     return [
-      'none' => t('None'),
-      'fading' => t('Fading'),
-      'slide' => t('Slide'),
-      'zoom' => t('Zoom'),
-      'elastic' => t('Elastic'),
+      'none' => $this->t('None'),
+      'fading' => $this->t('Fading'),
+      'slide' => $this->t('Slide'),
+      'zoom' => $this->t('Zoom'),
+      'elastic' => $this->t('Elastic'),
     ];
   }
 
   /**
-   * Create options for styles.
-   *
-   * @param array $block_config
-   *   The block configuration.
-   *
-   * @return array
-   *   The options array.
+   * {@inheritdoc}
    */
-  public static function createStyleOptions(array $block_config) {
+  public function createStyleOptions(array $block_config) {
     return [
-      '' => t('Default'),
-      'black' => t('Black'),
-      'blue' => t('Blue'),
-      'green' => t('Green'),
+      '' => $this->t('Default'),
+      'black' => $this->t('Black'),
+      'blue' => $this->t('Blue'),
+      'green' => $this->t('Green'),
     ];
   }
 
   /**
-   * Builds the page trail for marking active items.
-   *
-   * @param \Drupal\Core\Menu\MenuLinkTreeElement[] $menu_items
-   *   The menu items to use.
+   * {@inheritdoc}
    */
-  public static function buildPageTrail(array $menu_items) {
+  public function buildPageTrail(array $menu_items) {
     $trail = [];
     foreach ($menu_items as $pluginId => $item) {
-      $is_front = \Drupal::service('path.matcher')->isFrontPage();
+      $is_front = $this->pathMatcher->isFrontPage();
       $route_name = $item->link->getPluginDefinition()['route_name'];
       if ($item->inActiveTrail || ($route_name == '<front>' && $is_front)) {
         $trail[$pluginId] = $item;
@@ -328,16 +294,9 @@ class TBMegaMenuBuilder {
   }
 
   /**
-   * Add item config values to menu config array.
-   *
-   * @param array $menu_items
-   *   The menu tree for this config.
-   * @param array $menu_config
-   *   The menu configuration.
-   * @param string $section
-   *   The menu section.
+   * {@inheritdoc}
    */
-  public static function syncConfigAll(array $menu_items, array &$menu_config, $section) {
+  public function syncConfigAll(array $menu_items, array &$menu_config, string $section) {
     foreach ($menu_items as $id => $menu_item) {
       $item_config = isset($menu_config[$id]) ? $menu_config[$id] : [];
       if ($menu_item->hasChildren || $item_config) {
@@ -349,120 +308,150 @@ class TBMegaMenuBuilder {
   }
 
   /**
-   * Populate the item_config values.
-   *
-   * @param array $items
-   *   Menu items.
-   * @param array $item_config
-   *   The item config array to populate.
-   * @param string $section
-   *   The menu section.
+   * {@inheritdoc}
    */
-  public static function syncConfig(array $items, array &$item_config, $section) {
+  public function syncConfig(array $items, array &$item_config, string $section) {
     if (empty($item_config['rows_content'])) {
       $item_config['rows_content'][0][0] = [
         'col_content' => [],
         'col_config' => [],
       ];
-
-      foreach ($items as $plugin_id => $item) {
-        if ($item->link->isEnabled()) {
-          $item_config['rows_content'][0][0]['col_content'][] = [
-            'type' => 'menu_item',
-            'plugin_id' => $plugin_id,
-            'tb_item_config' => [],
-            'weight' => $item->link->getWeight(),
-          ];
-        }
-      }
+      // Add menu items to the configuration.
+      self::addColContent($items, $item_config);
+      // If the item in the first posision is empty, unset it.
       if (empty($item_config['rows_content'][0][0]['col_content'])) {
         unset($item_config['rows_content'][0]);
       }
     }
     else {
       $hash = [];
-      foreach ($item_config['rows_content'] as $i => $row) {
-        foreach ($row as $j => $col) {
-          foreach ($col['col_content'] as $k => $tb_item) {
+      foreach ($item_config['rows_content'] as $row_delta => $row) {
+        foreach ($row as $col_delta => $col) {
+          foreach ($col['col_content'] as $item_delta => $tb_item) {
+            // Add a menu item to the config.
             if ($tb_item['type'] == 'menu_item') {
-              $hash[$tb_item['plugin_id']] = [
-                'row' => $i,
-                'col' => $j,
-              ];
-              $existed = FALSE;
-              foreach ($items as $plugin_id => $item) {
-                if ($item->link->isEnabled() && $tb_item['plugin_id'] == $plugin_id) {
-                  $item_config['rows_content'][$i][$j]['col_content'][$k]['weight'] = $item->link->getWeight();
-                  $existed = TRUE;
-                  break;
-                }
-              }
-              if (!$existed) {
-                unset($item_config['rows_content'][$i][$j]['col_content'][$k]);
-                if (empty($item_config['rows_content'][$i][$j]['col_content'])) {
-                  unset($item_config['rows_content'][$i][$j]);
-                }
-                if (empty($item_config['rows_content'][$i])) {
-                  unset($item_config['rows_content'][$i]);
-                }
-              }
+              self::syncMenuItem($hash, $tb_item, $row_delta, $col_delta, $item_delta, $items, $item_config);
             }
+            // Add a block to the config.
             elseif ($tb_item['type'] == 'block' && !empty($tb_item['block_id'])) {
-              if (!self::isBlockContentEmpty($tb_item['block_id'], $section)) {
-                unset($item_config['rows_content'][$i][$j]['col_content'][$k]);
-                if (empty($item_config['rows_content'][$i][$j]['col_content'])) {
-                  unset($item_config['rows_content'][$i][$j]);
-                }
-                if (empty($item_config['rows_content'][$i])) {
-                  unset($item_config['rows_content'][$i]);
-                }
-              }
+              self::syncBlock($tb_item, $row_delta, $col_delta, $item_delta, $section, $item_config);
             }
+            // Remove an invalid column from the config.
             else {
-              if (empty($tb_item)) {
-                unset($item_config['rows_content'][$i][$j]['col_content'][$k]);
-              }
-              \Drupal::logger('tb_megamenu')->warning('Unknown / invalid column content: <pre>@content</pre>', [
-                '@content' => print_r($tb_item, TRUE),
-              ]);
+              self::removeColumn($tb_item, $row_delta, $col_delta, $item_delta, $item_config);
             }
           }
         }
       }
-      $row = -1;
-      $col = -1;
-      foreach ($items as $plugin_id => $item) {
-        if ($item->link->isEnabled()) {
-          if (isset($hash[$plugin_id])) {
-            $row = $hash[$plugin_id]['row'];
-            $col = $hash[$plugin_id]['col'];
-            continue;
-          }
-          if ($row > -1) {
-            self::insertTbMenuItem($item_config, $row, $col, $item);
-          }
-          else {
-            $row = $col = 0;
-            while (isset($item_config['rows_content'][$row][$col]['col_content'][0]['type']) &&
-            $item_config['rows_content'][$row][$col]['col_content'][0]['type'] == 'block') {
+      // Add all enabled links to the configuration.
+      self::insertEnabledLinks($items, $hash, $item_config);
+    }
+  }
 
-              $row++;
-            }
-            self::insertTbMenuItem($item_config, $row, $col, $item);
-            $item_config['rows_content'][$row][$col]['col_config'] = [];
+  /**
+   * {@inheritdoc}
+   */
+  public function addColContent(array $items, array &$item_config) {
+    foreach ($items as $plugin_id => $item) {
+      if ($item->link->isEnabled()) {
+        $item_config['rows_content'][0][0]['col_content'][] = [
+          'type' => 'menu_item',
+          'plugin_id' => $plugin_id,
+          'tb_item_config' => [],
+          'weight' => $item->link->getWeight(),
+        ];
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function syncMenuItem(array &$hash, array $tb_item, $row_delta, $col_delta, $item_delta, array $items, array &$item_config) {
+    $hash[$tb_item['plugin_id']] = [
+      'row' => $row_delta,
+      'col' => $col_delta,
+    ];
+    $existed = FALSE;
+    foreach ($items as $plugin_id => $item) {
+      if ($item->link->isEnabled() && $tb_item['plugin_id'] == $plugin_id) {
+        $item_config['rows_content'][$row_delta][$col_delta]['col_content'][$item_delta]['weight'] = $item->link->getWeight();
+        $existed = TRUE;
+        break;
+      }
+    }
+    if (!$existed) {
+      unset($item_config['rows_content'][$row_delta][$col_delta]['col_content'][$item_delta]);
+      if (empty($item_config['rows_content'][$row_delta][$col_delta]['col_content'])) {
+        unset($item_config['rows_content'][$row_delta][$col_delta]);
+      }
+      if (empty($item_config['rows_content'][$row_delta])) {
+        unset($item_config['rows_content'][$row_delta]);
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function syncBlock(array $tb_item, $row_delta, $col_delta, $item_delta, string $section, array &$item_config) {
+    if (!self::isBlockContentEmpty($tb_item['block_id'], $section)) {
+      unset($item_config['rows_content'][$row_delta][$col_delta]['col_content'][$item_delta]);
+      if (empty($item_config['rows_content'][$row_delta][$col_delta]['col_content'])) {
+        unset($item_config['rows_content'][$row_delta][$col_delta]);
+      }
+      if (empty($item_config['rows_content'][$row_delta])) {
+        unset($item_config['rows_content'][$row_delta]);
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function removeColumn(array $tb_item, $row_delta, $col_delta, $item_delta, array &$item_config) {
+    if (empty($tb_item)) {
+      unset($item_config['rows_content'][$row_delta][$col_delta]['col_content'][$item_delta]);
+    }
+    $this->logger->warning("Unknown / invalid column content: <pre>@content</pre>", [
+      '@content' => print_r($tb_item, TRUE),
+    ]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function insertEnabledLinks(array $items, array $hash, array &$item_config) {
+    $row = -1;
+    $col = -1;
+    foreach ($items as $plugin_id => $item) {
+      if ($item->link->isEnabled()) {
+        if (isset($hash[$plugin_id])) {
+          $row = $hash[$plugin_id]['row'];
+          $col = $hash[$plugin_id]['col'];
+          continue;
+        }
+        if ($row > -1) {
+          self::insertTbMenuItem($item_config, $row, $col, $item);
+        }
+        else {
+          $row = $col = 0;
+          while (isset($item_config['rows_content'][$row][$col]['col_content'][0]['type']) &&
+          $item_config['rows_content'][$row][$col]['col_content'][0]['type'] == 'block') {
+
+            $row++;
           }
+          self::insertTbMenuItem($item_config, $row, $col, $item);
+          $item_config['rows_content'][$row][$col]['col_config'] = [];
         }
       }
     }
   }
 
   /**
-   * Sync order of menu items between menu and tb_megamenus.
-   *
-   * @param array $menu_config
-   *   The menu configuration.
+   * {@inheritdoc}
    */
-  public static function syncOrderMenus(array &$menu_config) {
+  public function syncOrderMenus(array &$menu_config) {
     foreach ($menu_config as $mlid => $config) {
       foreach ($config['rows_content'] as $rows_id => $row) {
         $item_sorted = [];
@@ -474,15 +463,9 @@ class TBMegaMenuBuilder {
             }
           }
         }
-        // Sort menu by weight.
-        ksort($item_sorted);
-        $new_list = [];
-        foreach($item_sorted as $weight_group) {
-          foreach ($weight_group as $item) {
-            $new_list[] = $item;
-          }
-        }
-        $item_sorted = $new_list;
+        // Sort menu items by weight.
+        $item_sorted = self::sortByWeight($item_sorted);
+        // Update $menu_config to reflect new sort order.
         foreach ($row as $rid => $col) {
           foreach ($col['col_content'] as $menu_item_id => $menu_item) {
             if ($menu_item['type'] == 'menu_item') {
@@ -495,17 +478,24 @@ class TBMegaMenuBuilder {
   }
 
   /**
-   * Test if a block has content or not.
-   *
-   * @param mixed $block_id
-   *   The block id.
-   * @param mixed $section
-   *   The menu section.
-   *
-   * @return bool
-   *   True if empty.
+   * {@inheritdoc}
    */
-  public static function isBlockContentEmpty($block_id, $section) {
+  public function sortByWeight(array $item_sorted) {
+    ksort($item_sorted);
+    $new_list = [];
+    foreach ($item_sorted as $weight_group) {
+      foreach ($weight_group as $item) {
+        $new_list[] = $item;
+      }
+    }
+
+    return $new_list;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isBlockContentEmpty(string $block_id, string $section) {
     $entity_block = self::loadEntityBlock($block_id);
     if ($entity_block && ($entity_block->getPlugin()->build() || $section == 'backend')) {
       return TRUE;
@@ -514,31 +504,22 @@ class TBMegaMenuBuilder {
   }
 
   /**
-   * Insert a menu item into the item config array.
-   *
-   * @param array $item_config
-   *   The item config array.
-   * @param string $row
-   *   The row to insert at.
-   * @param string $col
-   *   The column to insert at.
-   * @param mixed $item
-   *   The menu item to insert.
+   * {@inheritdoc}
    */
-  public static function insertTbMenuItem(array &$item_config, $row, $col, $item) {
-    $i = 0;
+  public function insertTbMenuItem(array &$item_config, $row, $col, object $item) {
+    $idx = 0;
     $col_content = isset($item_config['rows_content'][$row][$col]['col_content']) ? array_values($item_config['rows_content'][$row][$col]['col_content']) : [];
     current($col_content);
     foreach ($col_content as $value) {
       if (!empty($value['weight']) && $value['weight'] < $item->link->getWeight()) {
         next($col_content);
-        $i = key($col_content);
+        $idx = key($col_content);
       }
     }
-    for ($j = count($col_content); $j > $i; $j--) {
-      $col_content[$j] = $col_content[$j - 1];
+    for ($col = count($col_content); $col > $idx; $col--) {
+      $col_content[$col] = $col_content[$col - 1];
     }
-    $col_content[$i] = [
+    $col_content[$idx] = [
       'plugin_id' => $item->link->getPluginId(),
       'type' => 'menu_item',
       'weight' => $item->link->getWeight(),

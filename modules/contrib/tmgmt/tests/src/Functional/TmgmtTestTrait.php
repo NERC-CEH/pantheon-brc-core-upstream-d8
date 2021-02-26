@@ -190,4 +190,16 @@ trait TmgmtTestTrait {
     $this->drupalGet($url_target);
   }
 
+  /**
+   * Asserts text in the page with an xpath expression.
+   *
+   * @param string $xpath
+   *   The XPath expression.
+   * @param string $text
+   *   The text to compare.
+   */
+  protected function assertTextByXpath($xpath, $text) {
+    $this->assertEqual((string) $this->xpath($xpath)[0]->getText(), $text);
+  }
+
 }
