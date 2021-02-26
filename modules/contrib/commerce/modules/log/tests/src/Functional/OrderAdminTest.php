@@ -2,16 +2,17 @@
 
 namespace Drupal\Tests\commerce_log\Functional;
 
+use Drupal\commerce_order\Entity\Order;
 use Drupal\Component\Utility\Html;
 use Drupal\Tests\commerce_order\Functional\OrderBrowserTestBase;
 
 /**
- * Tests adding order comments.
+ * Tests the order admin.
  *
  * @group commerce
  * @group commerce_log
  */
-class OrderCommentsTest extends OrderBrowserTestBase {
+class OrderAdminTest extends OrderBrowserTestBase {
 
   /**
    * {@inheritdoc}
@@ -66,6 +67,24 @@ class OrderCommentsTest extends OrderBrowserTestBase {
 
     $this->assertSession()->pageTextNotContains($test_filtered_comment);
     $this->assertSession()->pageTextContains(Html::escape($test_filtered_comment));
+  }
+
+  /**
+   * Tests creating an order.
+   */
+  public function testCreateOrder() {
+    // Create an order through the add form.
+    $this->drupalGet('/admin/commerce/orders');
+    $this->getSession()->getPage()->clickLink('Create a new order');
+    $user = $this->loggedInUser->getAccountName() . ' (' . $this->loggedInUser->id() . ')';
+    $edit = [
+      'customer_type' => 'existing',
+      'uid' => $user,
+    ];
+    $this->submitForm($edit, t('Create'));
+    $order = Order::load(1);
+    $this->drupalGet($order->toUrl('canonical'));
+    $this->assertSession()->pageTextContains('Order created through the order add form.');
   }
 
 }

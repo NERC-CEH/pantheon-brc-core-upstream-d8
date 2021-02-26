@@ -219,3 +219,17 @@ function commerce_order_post_update_13() {
 
   return $message;
 }
+
+/**
+ * Revert the 'commerce_order_item_table' view to hide orphaned order items.
+ */
+function commerce_order_post_update_14() {
+  /** @var \Drupal\commerce\Config\ConfigUpdaterInterface $config_updater */
+  $config_updater = \Drupal::service('commerce.config_updater');
+  $result = $config_updater->revert([
+    'views.view.commerce_order_item_table',
+  ]);
+  $message = implode('<br>', $result->getFailed());
+
+  return $message;
+}

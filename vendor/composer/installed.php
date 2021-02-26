@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => '875066a87d215751ef3fefe95755ddab31e14236',
+    'reference' => 'fd3e26436991fe168777391ab396597324499d44',
     'name' => 'drupal/legacy-project',
   ),
   'versions' => 
@@ -614,17 +614,17 @@
     ),
     'drupal/commerce' => 
     array (
-      'pretty_version' => '2.23.0',
-      'version' => '2.23.0.0',
+      'pretty_version' => '2.24.0',
+      'version' => '2.24.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-2.23',
+      'reference' => '8.x-2.24',
     ),
     'drupal/commerce_cart' => 
     array (
-      'pretty_version' => '2.21.0',
-      'version' => '2.21.0.0',
+      'pretty_version' => '2.24.0',
+      'version' => '2.24.0.0',
       'aliases' => 
       array (
       ),
@@ -632,8 +632,8 @@
     ),
     'drupal/commerce_number_pattern' => 
     array (
-      'pretty_version' => '2.21.0',
-      'version' => '2.21.0.0',
+      'pretty_version' => '2.24.0',
+      'version' => '2.24.0.0',
       'aliases' => 
       array (
       ),
@@ -641,8 +641,8 @@
     ),
     'drupal/commerce_order' => 
     array (
-      'pretty_version' => '2.21.0',
-      'version' => '2.21.0.0',
+      'pretty_version' => '2.24.0',
+      'version' => '2.24.0.0',
       'aliases' => 
       array (
       ),
@@ -650,8 +650,8 @@
     ),
     'drupal/commerce_payment' => 
     array (
-      'pretty_version' => '2.21.0',
-      'version' => '2.21.0.0',
+      'pretty_version' => '2.24.0',
+      'version' => '2.24.0.0',
       'aliases' => 
       array (
       ),
@@ -668,8 +668,8 @@
     ),
     'drupal/commerce_price' => 
     array (
-      'pretty_version' => '2.21.0',
-      'version' => '2.21.0.0',
+      'pretty_version' => '2.24.0',
+      'version' => '2.24.0.0',
       'aliases' => 
       array (
       ),
@@ -677,8 +677,8 @@
     ),
     'drupal/commerce_product' => 
     array (
-      'pretty_version' => '2.21.0',
-      'version' => '2.21.0.0',
+      'pretty_version' => '2.24.0',
+      'version' => '2.24.0.0',
       'aliases' => 
       array (
       ),
@@ -695,8 +695,8 @@
     ),
     'drupal/commerce_store' => 
     array (
-      'pretty_version' => '2.21.0',
-      'version' => '2.21.0.0',
+      'pretty_version' => '2.24.0',
+      'version' => '2.24.0.0',
       'aliases' => 
       array (
       ),
@@ -704,8 +704,8 @@
     ),
     'drupal/commerce_tax' => 
     array (
-      'pretty_version' => '2.21.0',
-      'version' => '2.21.0.0',
+      'pretty_version' => '2.24.0',
+      'version' => '2.24.0.0',
       'aliases' => 
       array (
       ),
@@ -1469,7 +1469,7 @@
       'aliases' => 
       array (
       ),
-      'reference' => '875066a87d215751ef3fefe95755ddab31e14236',
+      'reference' => 'fd3e26436991fe168777391ab396597324499d44',
     ),
     'drupal/libraries' => 
     array (
