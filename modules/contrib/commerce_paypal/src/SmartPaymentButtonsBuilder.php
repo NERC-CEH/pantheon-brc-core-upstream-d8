@@ -47,10 +47,15 @@ class SmartPaymentButtonsBuilder implements SmartPaymentButtonsBuilderInterface 
     // Note that we're not making use of the payment return route since it
     // cannot be called from the cart page because of the checkout step
     // validation.
+    $return_url_options = [
+      'query' => [
+        'skip_payment_creation' => 1,
+      ],
+    ];
     $return_url = Url::fromRoute('commerce_paypal.checkout.approve', [
       'commerce_order' => $order->id(),
       'commerce_payment_gateway' => $payment_gateway->id(),
-    ]);
+    ], $return_url_options);
     $options = [
       'query' => [
         'client-id' => $config['client_id'],

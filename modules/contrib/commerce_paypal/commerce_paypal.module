@@ -89,7 +89,8 @@ function commerce_paypal_form_commerce_checkout_flow_alter(&$form, FormStateInte
     foreach ($form['payment_information']['#payment_options'] as $key => $payment_option) {
       /** @var \Drupal\commerce_payment\Entity\PaymentGatewayInterface $payment_gateway */
       $payment_gateway = PaymentGateway::load($payment_option->getPaymentGatewayId());
-      if ($payment_gateway->getPlugin() instanceof CheckoutInterface) {
+      $plugin = $payment_gateway->getPlugin();
+      if ($plugin instanceof CheckoutInterface && $plugin->getPaymentSolution() === 'smart_payment_buttons') {
         $paypal_checkout_options_count++;
 
         // This will ensure we only keep the first paypal checkout option found.
@@ -127,10 +128,6 @@ function commerce_paypal_form_commerce_checkout_flow_alter(&$form, FormStateInte
   // Put back the "go back" link.
   if (isset($form['actions']['next']['#suffix'])) {
     $form['paypal_smart_payment_buttons']['#suffix'] = $form['actions']['next']['#suffix'];
-  }
-  // The payment_information pane on the review page is useless in our case.
-  if (isset($form['review']['payment_information'])) {
-    $form['review']['payment_information']['#access'] = FALSE;
   }
 }
 

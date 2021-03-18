@@ -34,7 +34,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * @CommercePaymentGateway(
  *   id = "paypal_checkout",
- *   label = @Translation("PayPal Commerce Platform (Preferred)"),
+ *   label = @Translation("PayPal Checkout (Preferred)"),
  *   display_label = @Translation("PayPal"),
  *   modes = {
  *     "test" = @Translation("Sandbox"),
@@ -51,6 +51,8 @@ use Symfony\Component\HttpFoundation\Response;
  *   payment_type = "paypal_checkout",
  *   requires_billing_information = FALSE,
  * )
+ *
+ * @see https://developer.paypal.com/docs/business/checkout/
  */
 class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
 
@@ -257,7 +259,6 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
         'jcb' => $this->t('JCB'),
         'elo' => $this->t('Elo'),
         'hiper' => $this->t('Hiper'),
-        'unionpay' => $this->t('Union Pay'),
       ],
       '#default_value' => $this->configuration['disable_card'],
     ];
@@ -661,8 +662,8 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
   public function onReturn(OrderInterface $order, Request $request) {
     try {
       $sdk = $this->checkoutSdkFactory->get($this->configuration);
-      $request = $sdk->getOrder($order->getData('paypal_order_id'));
-      $paypal_order = Json::decode($request->getBody());
+      $paypal_request = $sdk->getOrder($order->getData('paypal_order_id'));
+      $paypal_order = Json::decode($paypal_request->getBody());
     }
     catch (BadResponseException $exception) {
       throw new PaymentGatewayException('Could not load the order from PayPal.');
@@ -725,6 +726,20 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
       // defines for the "shortcut" flow.
       $order->set('checkout_flow', 'paypal_checkout');
       $order->set('checkout_step', NULL);
+    }
+    // For the "mark" flow, create the payment right away (if not configured
+    // to be skipped).
+    if ($flow === 'mark' && !$request->query->has('skip_payment_creation')) {
+      $payment_storage = $this->entityTypeManager->getStorage('commerce_payment');
+      /** @var \Drupal\commerce_payment\Entity\PaymentInterface $payment */
+      $payment = $payment_storage->create([
+        'state' => 'new',
+        'amount' => $order->getBalance(),
+        'payment_gateway' => $this->parentEntity->id(),
+        'payment_method' => $payment_method->id(),
+        'order_id' => $order->id(),
+      ]);
+      $this->createPayment($payment);
     }
   }
 

@@ -30,7 +30,7 @@ private static $installed = array (
     'aliases' => 
     array (
     ),
-    'reference' => '88d2cbd2c84bb53d491544519c687f0f14ddf8b1',
+    'reference' => 'dd27b36ab9711a44c4a1b9426ca2da528b94fdd5',
     'name' => 'drupal/legacy-project',
   ),
   'versions' => 
@@ -595,12 +595,12 @@ private static $installed = array (
     ),
     'drupal/colorbox' => 
     array (
-      'pretty_version' => '1.6.0',
-      'version' => '1.6.0.0',
+      'pretty_version' => '1.7.0',
+      'version' => '1.7.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.6',
+      'reference' => '8.x-1.7',
     ),
     'drupal/colorbox_inline' => 
     array (
@@ -683,12 +683,12 @@ private static $installed = array (
     ),
     'drupal/commerce_paypal' => 
     array (
-      'pretty_version' => '1.0.0-rc2',
-      'version' => '1.0.0.0-RC2',
+      'pretty_version' => '1.0.0-rc3',
+      'version' => '1.0.0.0-RC3',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.0-rc2',
+      'reference' => '8.x-1.0-rc3',
     ),
     'drupal/commerce_price' => 
     array (
@@ -1049,21 +1049,21 @@ private static $installed = array (
     ),
     'drupal/devel_entity_updates' => 
     array (
-      'pretty_version' => '3.0.0',
-      'version' => '3.0.0.0',
+      'pretty_version' => '3.0.1',
+      'version' => '3.0.1.0',
       'aliases' => 
       array (
       ),
-      'reference' => '3.0.0',
+      'reference' => '3.0.1',
     ),
     'drupal/ds' => 
     array (
-      'pretty_version' => '3.10.0',
-      'version' => '3.10.0.0',
+      'pretty_version' => '3.12.0',
+      'version' => '3.12.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-3.10',
+      'reference' => '8.x-3.12',
     ),
     'drupal/dynamic_page_cache' => 
     array (
@@ -1142,12 +1142,12 @@ private static $installed = array (
     ),
     'drupal/entity_reference_revisions' => 
     array (
-      'pretty_version' => '1.8.0',
-      'version' => '1.8.0.0',
+      'pretty_version' => '1.9.0',
+      'version' => '1.9.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.8',
+      'reference' => '8.x-1.9',
     ),
     'drupal/entity_update' => 
     array (
@@ -1203,12 +1203,12 @@ private static $installed = array (
     ),
     'drupal/field_display_label' => 
     array (
-      'pretty_version' => '1.1.0',
-      'version' => '1.1.0.0',
+      'pretty_version' => '1.2.0',
+      'version' => '1.2.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.1',
+      'reference' => '8.x-1.2',
     ),
     'drupal/field_formatter_class' => 
     array (
@@ -1267,12 +1267,12 @@ private static $installed = array (
     ),
     'drupal/fontawesome' => 
     array (
-      'pretty_version' => '2.17.0',
-      'version' => '2.17.0.0',
+      'pretty_version' => '2.18.0',
+      'version' => '2.18.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-2.17',
+      'reference' => '8.x-2.18',
     ),
     'drupal/forum' => 
     array (
@@ -1493,7 +1493,7 @@ private static $installed = array (
       'aliases' => 
       array (
       ),
-      'reference' => '88d2cbd2c84bb53d491544519c687f0f14ddf8b1',
+      'reference' => 'dd27b36ab9711a44c4a1b9426ca2da528b94fdd5',
     ),
     'drupal/libraries' => 
     array (
@@ -1637,12 +1637,12 @@ private static $installed = array (
     ),
     'drupal/module_filter' => 
     array (
-      'pretty_version' => '3.1.0',
-      'version' => '3.1.0.0',
+      'pretty_version' => '3.2.0',
+      'version' => '3.2.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-3.1',
+      'reference' => '8.x-3.2',
     ),
     'drupal/ng_lightbox' => 
     array (
@@ -1967,12 +1967,12 @@ private static $installed = array (
     ),
     'drupal/social_media_links' => 
     array (
-      'pretty_version' => '2.7.0',
-      'version' => '2.7.0.0',
+      'pretty_version' => '2.8.0',
+      'version' => '2.8.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-2.7',
+      'reference' => '8.x-2.8',
     ),
     'drupal/spamicide' => 
     array (
@@ -2270,12 +2270,12 @@ private static $installed = array (
     ),
     'drupal/webform' => 
     array (
-      'pretty_version' => '6.0.1',
-      'version' => '6.0.1.0',
+      'pretty_version' => '6.0.2',
+      'version' => '6.0.2.0',
       'aliases' => 
       array (
       ),
-      'reference' => '6.0.1',
+      'reference' => '6.0.2',
     ),
     'drupal/webform_views' => 
     array (
@@ -2288,12 +2288,12 @@ private static $installed = array (
     ),
     'drupal/weight' => 
     array (
-      'pretty_version' => '3.2.0',
-      'version' => '3.2.0.0',
+      'pretty_version' => '3.3.0',
+      'version' => '3.3.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-3.2',
+      'reference' => '8.x-3.3',
     ),
     'drupal/workflows' => 
     array (
