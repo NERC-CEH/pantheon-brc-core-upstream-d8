@@ -10,7 +10,6 @@ CONTENTS OF THIS FILE
 
 INTRODUCTION
 ------------
-
 This module handles a very simple functionality, decide whatever to exclude a
 node title from full node page or node teasers.
 
@@ -21,21 +20,20 @@ This module also provides the option to hide all titles of a certain Content
 type. From the administrative interface you can select a content type to hide
 title for.
 
+
 REQUIREMENTS
 ------------
-
-This module requires Display Suite module.
+This module requires no modules outside of Drupal core.
 
 
 INSTALLATION
 ------------
+Install the Exclude Node Title as you would normally install a contributed
+Drupal module. Visit https://www.drupal.org/node/1897420 for further information.
 
-Install the Add another as you would normally install a contributed Drupal
-module. Visit https://www.drupal.org/node/1897420 for further information.
 
 CONFIGURATION
 --------------
-
 Let's say you create a content type called: Lightbox content, and in your
 layout lightbox content will have titles set on title attribute of the link,
 rather than inline on your page, so you would like to exclude title from
@@ -51,7 +49,6 @@ manually make different hacks, hard to track from the administration interface.
 
 MAINTAINERS
 -----------
-
  * Neslee Canil Pinto: https://www.drupal.org/u/neslee-canil-pinto
  * Yonas Yanfa: https://www.drupal.org/u/fizk
  * Gabriel Ungureanu: https://www.drupal.org/u/gabrielu

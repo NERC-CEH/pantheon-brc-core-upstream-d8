@@ -12,7 +12,9 @@ use Symfony\Component\Routing\Route;
 class EntityTypeParamConverter implements ParamConverterInterface {
 
   /**
-   * @var EntityTypeManagerInterface
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
 

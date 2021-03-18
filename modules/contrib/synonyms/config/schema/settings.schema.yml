@@ -1,0 +1,10 @@
+synonyms.settings:
+  type: config_entity
+  label: 'Synonyms settings'
+  mapping:
+    wording_type:
+      type: string
+      label: 'Wording type'
+    wording_type_label:
+      type: string
+      label: 'Wording type label'

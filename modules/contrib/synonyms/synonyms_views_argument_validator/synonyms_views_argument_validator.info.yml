@@ -1,0 +1,13 @@
+name: Synonyms Views Argument Validator
+description: Provides Synonyms friendly argument validator for core Views module.
+package: Synonyms
+type: module
+core_version_requirement: ^8.8 || ^9
+dependencies:
+  - synonyms:synonyms
+  - drupal:views
+
+# Information added by Drupal.org packaging script on 2021-02-13
+version: '2.0.0-alpha1'
+project: 'synonyms'
+datestamp: 1613253011

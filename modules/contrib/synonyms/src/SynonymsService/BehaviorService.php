@@ -3,11 +3,9 @@
 namespace Drupal\synonyms\SynonymsService;
 
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Drupal\Core\Entity\EntityStorageInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\synonyms\Entity\Synonym;
-use Drupal\synonyms\SynonymsService\Behavior\SynonymsBehaviorInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\synonyms\BehaviorInterface\BehaviorInterface;
+use Drupal\synonyms\BehaviorInterface\WidgetInterface;
 
 /**
  * Collect all known synonyms behavior services.
@@ -18,126 +16,93 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class BehaviorService implements ContainerInjectionInterface {
 
   /**
+   * Collected behavior services.
+   *
    * @var array
    */
   protected $behaviorServices;
 
   /**
-   * @var EntityTypeManagerInterface
+   * Collected widget services.
+   *
+   * @var array
    */
-  protected $entityTypeManager;
+  protected $widgetServices;
 
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+  /**
+   * BehaviorService constructor.
+   */
+  public function __construct() {
     $this->behaviorServices = [];
-
-    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('entity_type.manager')
-    );
+    return new static();
   }
 
   /**
    * Add a new discovered behavior service.
    *
-   * @param SynonymsBehaviorInterface $behavior_service
+   * @param \Drupal\synonyms\BehaviorInterface\BehaviorInterface $behavior_service
    *   Behavior service object that was discovered and should be added into the
-   *   list of known ones
+   *   list of known ones.
    * @param string $id
-   *   Service ID that corresponds to this behavior service
+   *   Service ID that corresponds to this behavior service.
    */
-  public function addBehaviorService(SynonymsBehaviorInterface $behavior_service, $id) {
-    if (!isset($this->behaviorServices[$id])) {
-      $this->behaviorServices[$id] = [
-        'service' => $behavior_service,
-        'required_interfaces' => [],
-      ];
+  public function addBehaviorService(BehaviorInterface $behavior_service, $id) {
+    // It is more convenient to use machine readable IDs as array keys here.
+    $machine_id = $behavior_service->getId();
+    // Behavior services collector.
+    if (!isset($this->behaviorServices[$machine_id])) {
+      $this->behaviorServices[$machine_id] = $behavior_service;
     }
-    $this->behaviorServices[$id]['required_interfaces'] = $behavior_service->getRequiredInterfaces();
+    // Widget services collector.
+    if ($behavior_service instanceof WidgetInterface && !isset($this->widgetServices[$machine_id])) {
+      $this->widgetServices[$machine_id] = $behavior_service;
+    }
   }
 
   /**
-   * Array of known synonyms behavior service.
+   * Array of known behavior services.
    *
    * @return array
+   *   The return value
    */
   public function getBehaviorServices() {
     return $this->behaviorServices;
   }
 
   /**
-   * Get a synonyms behavior service.
-   *
-   * @param string $behavior_service_id
-   *   ID of the service to retrieve
+   * Array of known widget services.
    *
    * @return array
-   *   Array of information about the behavior service. The array will have the
-   *   following structure:
-   *   - service: (SynonymsBehaviorInterface) Initiated behavior service
-   *   - required_interfaces: (array) Array of PHP interfaces it requires
+   *   The return value
    */
-  public function getBehaviorService($behavior_service_id) {
-    return isset($this->behaviorServices[$behavior_service_id]) ? $this->behaviorServices[$behavior_service_id] : NULL;
+  public function getWidgetServices() {
+    return $this->widgetServices;
   }
 
   /**
-   * Get a list of behavior services that require a given interface.
+   * Checks if the service is enabled.
    *
-   * @param string $interface
-   *   Full name of the interface
-   *
-   * @return array
-   *   The return structure of this method is identical of the return structure
-   *   of static::getBehaviorServices()
-   */
-  public function getBehaviorServicesWithInterface($interface) {
-    $return = [];
-
-    foreach ($this->getBehaviorServices() as $service_id => $service) {
-      if (in_array($interface, $service['required_interfaces'])) {
-        $return[$service_id] = $service;
-      }
-    }
-
-    return $return;
-  }
-
-  /**
-   * Get a list of enabled synonym providers for a requested synonyms behavior.
-   *
-   * @param string $synonyms_behavior
-   *   ID of the synonyms behavior services whose enabled providers should be
-   *   returned
    * @param string $entity_type
-   *   Entity type for which to conduct the search
-   * @param string|array $bundle
-   *   Single bundle or an array of them for which to conduct the search. If
-   *   null is given, then no restrictions are applied on bundle level
+   *   Entity type for which to do the check.
+   * @param string $bundle
+   *   Bundle for which to do the check.
+   * @param string $service_id
+   *   ID of the synonyms behavior service for check.
    *
-   * @return Synonym[]
+   * @return bool
+   *   Returns TRUE if this service is enabled for given
+   *   entity type and bundle and FALSE if it is not.
    */
-  public function getSynonymConfigEntities($synonyms_behavior, $entity_type, $bundle) {
-    $entities = [];
+  public function serviceIsEnabled($entity_type, $bundle, $service_id) {
+    $status = \Drupal::config('synonyms.behavior.' . $entity_type . '.' . $bundle . '.' . $service_id)->get('status');
 
-    if (is_scalar($bundle) && !is_null($bundle)) {
-      $bundle = [$bundle];
-    }
-
-    foreach ($this->entityTypeManager->getStorage('synonym')->loadMultiple() as $entity) {
-      $provider_instance = $entity->getProviderPluginInstance();
-      $provider_definition = $provider_instance->getPluginDefinition();
-      if ($provider_definition['synonyms_behavior_service'] == $synonyms_behavior && $provider_definition['controlled_entity_type'] == $entity_type && (!is_array($bundle) || in_array($provider_definition['controlled_bundle'], $bundle))) {
-        $entities[] = $entity;
-      }
-    }
-
-    return $entities;
+    return !empty($status);
   }
 
 }

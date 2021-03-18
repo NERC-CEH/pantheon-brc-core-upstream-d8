@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => 'dd27b36ab9711a44c4a1b9426ca2da528b94fdd5',
+    'reference' => 'b699a59ba2dbe28c381c73e9e3b88641b0589da3',
     'name' => 'drupal/legacy-project',
   ),
   'versions' => 
@@ -1145,12 +1145,12 @@
     ),
     'drupal/exclude_node_title' => 
     array (
-      'pretty_version' => '1.1.0',
-      'version' => '1.1.0.0',
+      'pretty_version' => '1.2.0',
+      'version' => '1.2.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.1',
+      'reference' => '8.x-1.2',
     ),
     'drupal/feeds' => 
     array (
@@ -1382,12 +1382,12 @@
     ),
     'drupal/jquery_ui_datepicker' => 
     array (
-      'pretty_version' => '1.0.0',
-      'version' => '1.0.0.0',
+      'pretty_version' => '1.1.0',
+      'version' => '1.1.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.0',
+      'reference' => '8.x-1.1',
     ),
     'drupal/jquery_ui_draggable' => 
     array (
@@ -1469,7 +1469,7 @@
       'aliases' => 
       array (
       ),
-      'reference' => 'dd27b36ab9711a44c4a1b9426ca2da528b94fdd5',
+      'reference' => 'b699a59ba2dbe28c381c73e9e3b88641b0589da3',
     ),
     'drupal/libraries' => 
     array (
@@ -2006,6 +2006,15 @@
       array (
       ),
       'reference' => '8.x-1.4',
+    ),
+    'drupal/synonyms' => 
+    array (
+      'pretty_version' => '2.0.0-alpha1',
+      'version' => '2.0.0.0-alpha1',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '2.0.0-alpha1',
     ),
     'drupal/syslog' => 
     array (

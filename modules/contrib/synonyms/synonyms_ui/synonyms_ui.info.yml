@@ -1,0 +1,13 @@
+name: Synonyms UI
+description: Provides a user interface for the Synonyms module.
+package: Synonyms
+type: module
+core_version_requirement: ^8.8 || ^9
+configure: synonyms.overview
+dependencies:
+  - synonyms:synonyms
+
+# Information added by Drupal.org packaging script on 2021-02-13
+version: '2.0.0-alpha1'
+project: 'synonyms'
+datestamp: 1613253011

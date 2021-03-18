@@ -1,0 +1,10 @@
+synonyms.entity_autocomplete:
+  path: '/synonyms_autocomplete/entity/autocomplete/{target_type}/{token}'
+  options:
+    parameters:
+      target_type:
+        type: synonyms_entity_type
+  defaults:
+    _controller: 'Drupal\synonyms_autocomplete\Controller\EntityAutocomplete::autocomplete'
+  requirements:
+    _permission: 'access synonyms entity autocomplete'

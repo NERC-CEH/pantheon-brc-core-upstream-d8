@@ -1,0 +1,7 @@
+synonyms_autocomplete.widget:
+  type: config_entity
+  label: 'Widget configuration'
+  mapping:
+    default_wording:
+      type: string
+      label: 'Default wording for this widget'

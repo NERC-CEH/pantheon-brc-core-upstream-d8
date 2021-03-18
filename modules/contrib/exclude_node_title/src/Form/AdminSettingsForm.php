@@ -104,6 +104,17 @@ class AdminSettingsForm extends ConfigFormBase {
       '#disabled' => !\Drupal::moduleHandler()->moduleExists('search'),
     ];
 
+    $form['render_type'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Type of rendering'),
+      '#options' => [
+        'remove' => $this->t('Remove text'),
+        'hidden' => $this->t('Hidden class'),
+      ],
+      '#description' => $this->t('Remove text will remove all text within the title. This may leave the HTML tag. Hidden class will add a <code>.hidden</code> class to the HTML tag where appropriate.'),
+      '#default_value' => $this->excludeNodeTitleManager->getRenderType(),
+    ];
+
     $form['content_type'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Exclude title by content types'),
@@ -184,6 +195,7 @@ class AdminSettingsForm extends ConfigFormBase {
 
     $config
       ->set('search', $values['exclude_node_title_search'])
+      ->set('type', $values['render_type'])
       ->save();
 
     parent::submitForm($form, $form_state);

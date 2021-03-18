@@ -14,9 +14,3 @@ synonyms.synonym.*:
     provider_configuration:
       type: synonyms.provider.[%parent.base_provider_plugin]
       label: 'Configuration of provider plugin'
-    behavior:
-      type: string
-      label: 'Controlled behavior service'
-    behavior_configuration:
-      type: synonyms.[%parent.behavior]
-      label: 'Configuration of behavior service'

@@ -1,0 +1,79 @@
+<?php
+
+/**
+ * @file
+ * Integrates Synonyms with core Search module.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\synonyms\SynonymInterface;
+
+/**
+ * Implements hook_entity_view().
+ */
+function synonyms_search_entity_view(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
+  \Drupal::service('synonyms.behavior.search')->entityView($build, $entity, $display, $view_mode);
+}
+
+/**
+ * Implements hook_entity_update().
+ */
+function synonyms_search_entity_update(EntityInterface $entity) {
+  if ($entity instanceof ContentEntityInterface) {
+    \Drupal::service('synonyms.behavior.search')->entityMarkForReindex($entity);
+  }
+}
+
+/**
+ * Implements hook_entity_delete().
+ */
+function synonyms_search_entity_delete(EntityInterface $entity) {
+  if ($entity instanceof ContentEntityInterface) {
+    \Drupal::service('synonyms.behavior.search')->entityMarkForReindex($entity);
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert().
+ */
+function synonyms_search_synonym_insert(EntityInterface $entity) {
+  synonyms_search_synonym_reindex($entity);
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update().
+ */
+function synonyms_search_synonym_update(EntityInterface $entity) {
+  synonyms_search_synonym_reindex($entity);
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete().
+ */
+function synonyms_search_synonym_delete(EntityInterface $entity) {
+  synonyms_search_synonym_reindex($entity);
+}
+
+/**
+ * Mark all search index dependent on a given synonym config for reindexing.
+ *
+ * @param \Drupal\synonyms\SynonymInterface $synonym
+ *   Synonym config whose dependent search index should be marked
+ *   for reindexing.
+ */
+function synonyms_search_synonym_reindex(SynonymInterface $synonym) {
+  $entity_type = \Drupal::entityTypeManager()->getDefinition($synonym->getProviderPluginInstance()->getPluginDefinition()['controlled_entity_type']);
+  if ($entity_type->id() == 'user' || $entity_type->hasKey('label')) {
+    $bundle = $synonym->getProviderPluginInstance()->getPluginDefinition()['controlled_bundle'];
+    $query = \Drupal::entityQuery($entity_type->id());
+
+    // User entity type does not declare its label, while it does have one.
+    $label_column = $entity_type->id() == 'user' ? 'name' : $entity_type->getKey('label');
+
+    $query->condition($label_column, $bundle);
+    $result = $query->execute();
+    \Drupal::service('synonyms.behavior.search')->entityMarkForReindexMultiple(array_values($result), $entity_type->id());
+  }
+}

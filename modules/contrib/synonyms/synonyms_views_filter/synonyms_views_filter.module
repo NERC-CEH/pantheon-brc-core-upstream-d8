@@ -1,0 +1,32 @@
+<?php
+
+/**
+ * @file
+ * Integrates Synonyms with core Views module.
+ */
+
+use Drupal\Core\Entity\ContentEntityTypeInterface;
+
+/**
+ * Implements hook_views_data().
+ */
+function synonyms_views_filter_views_data() {
+  $data = [];
+
+  foreach (\Drupal::entityTypeManager()->getDefinitions() as $entity_type) {
+    if ($entity_type instanceof ContentEntityTypeInterface && $entity_type->getBaseTable() && $entity_type->getKey('id')) {
+      $data[$entity_type->getBaseTable()]['synonyms'] = [
+        'title' => t('Synonyms of @entity_type', [
+          '@entity_type' => $entity_type->getSingularLabel(),
+        ]),
+        'filter' => [
+          'id' => 'synonyms_entity',
+          'real field' => $entity_type->getKey('id'),
+          'entity_type' => $entity_type->id(),
+        ],
+      ];
+    }
+  }
+
+  return $data;
+}

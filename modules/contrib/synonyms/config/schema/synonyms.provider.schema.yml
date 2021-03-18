@@ -1,14 +1,7 @@
-synonyms.provider.field:
+synonyms.provider.*:
   type: mapping
-  label: 'Settings of field synonyms provider'
+  label: 'Base settings of a synonyms provider'
   mapping:
-
-synonyms.provider.base_field:
-  type: mapping
-  label: 'Settings of base field synonyms provider'
-  mapping:
-
-synonyms.provider.entityreference_field:
-  type: mapping
-  label: 'Settings of entity reference field synonyms provider'
-  mapping:
+    wording:
+      type: string
+      label: 'Wording for this provider'

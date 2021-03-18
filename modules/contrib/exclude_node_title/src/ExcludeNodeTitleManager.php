@@ -126,6 +126,27 @@ class ExcludeNodeTitleManager implements ExcludeNodeTitleManagerInterface {
   /**
    * {@inheritdoc}
    */
+  public function getRenderType() {
+    return $this->settingsConfig->get('type');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isRenderHidden() {
+    return $this->getRenderType() === 'hidden';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isRenderRemove() {
+    return $this->getRenderType() === 'remove';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function isSearchExcluded() {
     return !empty($this->settingsConfig->get('search'));
   }
@@ -210,18 +231,38 @@ class ExcludeNodeTitleManager implements ExcludeNodeTitleManagerInterface {
 
         default:
           if (!empty($vars['title'])) {
-            $vars['title'] = new HtmlEscapedText('');
+            if ($this->isRenderHidden()) {
+              $vars['title_attributes']['class'][] = 'hidden';
+            }
+            elseif ($this->isRenderRemove()) {
+              $vars['title'] = new HtmlEscapedText('');
+            }
           }
           if (!empty($vars['page']) && is_array($vars['page'])) {
-            $vars['page']['#title'] = new HtmlEscapedText('');
+            if ($this->isRenderHidden()) {
+              $vars['page']['#attributes']['class'][] = 'hidden';
+            }
+            elseif ($this->isRenderRemove()) {
+              $vars['page']['#title'] = new HtmlEscapedText('');
+            }
           }
           if (!empty($vars['elements']) && is_array($vars['elements'])) {
-            $vars['elements']['#title'] = new HtmlEscapedText('');
+            if ($this->isRenderHidden()) {
+              $vars['elements']['#attributes']['class'][] = 'hidden';
+            }
+            elseif ($this->isRenderRemove()) {
+              $vars['elements']['#title'] = new HtmlEscapedText('');
+            }
           }
           if (!empty($vars['label']) && is_array($vars['elements'])) {
-            $vars['label']['#title'] = new HtmlEscapedText('');
-            $vars['label']['#markup'] = new HtmlEscapedText('');
-            $vars['label'][0]['#context']['value'] = '';
+            if ($this->isRenderHidden()) {
+              $vars['label']['#attributes']['class'][] = 'hidden';
+            }
+            elseif ($this->isRenderRemove()) {
+              $vars['label']['#title'] = new HtmlEscapedText('');
+              $vars['label']['#markup'] = new HtmlEscapedText('');
+              $vars['label'][0]['#context']['value'] = '';
+            }
           }
           break;
 

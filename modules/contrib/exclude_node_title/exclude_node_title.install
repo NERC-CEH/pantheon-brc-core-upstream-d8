@@ -58,3 +58,13 @@ function exclude_node_title_update_8001() {
     ->clear('exclude_node_title_content_type_modes')
     ->save();
 }
+
+/**
+ * Defaults render type to 'remove' for retroactivity.
+ */
+function exclude_node_title_update_8002() {
+  \Drupal::configFactory()
+    ->getEditable('exclude_node_title.settings')
+    ->set('type', 'remove')
+    ->save();
+}

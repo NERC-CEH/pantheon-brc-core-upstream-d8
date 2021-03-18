@@ -10,7 +10,9 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 class FieldTypeToSynonyms {
 
   /**
-   * @var ModuleHandlerInterface
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
    */
   protected $moduleHandler;
 

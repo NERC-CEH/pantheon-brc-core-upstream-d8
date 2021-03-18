@@ -1,0 +1,5 @@
+services:
+  synonyms.behavior.select:
+    class: Drupal\synonyms_select\SynonymsService\Behavior\SelectService
+    tags:
+      - { name: synonyms_behavior }
