@@ -173,8 +173,8 @@ class TransifexTranslator extends TranslatorPluginBase implements ContainerFacto
     */
     public function checkForTranslations(JobInterface $job)
     {
-        $language = $job->getTargetLanguage()->getId();
         $translator = $job->getTranslator();
+        $language = $translator->mapToRemoteLanguage($job->getTargetLanguage()->getId());
         $tx = new TransifexApi($translator);
         foreach ($job->getItems() as $tjiid => $job_item) {
             $target_resource = Helpers::slugForItem($job_item);
@@ -296,7 +296,7 @@ class TransifexTranslator extends TranslatorPluginBase implements ContainerFacto
 
     /**
     * Check if the manual sync should trigger updates in the tmgmt job.
-    * This is depended both on the resource/language stats and the 
+    * This is depended both on the resource/language stats and the
     * settings on the tmgmt_transifex plugin level
     *
     * @param TranslatorInterface $translator
@@ -363,7 +363,7 @@ class TransifexTranslator extends TranslatorPluginBase implements ContainerFacto
             $tjid = $match[1];
 
             $job = Job::load(intval($tjid));
-            if ($job && $job->getTargetLanguage()->getId() == $language) {
+            if ($job && $translator->mapToRemoteLanguage($job->getTargetLanguage()->getId()) == $language) {
                 \Drupal::logger('tmgmt_transifex')->info('Applying ' . $language . ' translations for job with id: ' . $tjid);
                 foreach ($job->getItems() as $tjiid => $job_item) {
                     // Check if node id and node item type match
