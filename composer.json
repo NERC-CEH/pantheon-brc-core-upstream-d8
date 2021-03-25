@@ -61,6 +61,7 @@
         "drupal/ctools": "^3.4",
         "drupal/devel": "^4.1",
         "drupal/devel_entity_updates": "^3.0",
+        "drupal/disable_user_login_and_registration": "^1.1",
         "drupal/ds": "^3.12",
         "drupal/editor_advanced_link": "^1.8",
         "drupal/email_registration": "^1.1",
