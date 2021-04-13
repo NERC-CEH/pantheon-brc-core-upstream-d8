@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => 'dea9f3a23355b3d6290d52a1f251d255ebe5fa90',
+    'reference' => 'ee1ef6c232ea8cb32bfbb848edfd9d62a18c2766',
     'name' => 'drupal/legacy-project',
   ),
   'versions' => 
@@ -440,6 +440,15 @@
       array (
         0 => '8.9.13',
       ),
+    ),
+    'drupal/block_classes' => 
+    array (
+      'pretty_version' => '1.0.1',
+      'version' => '1.0.1.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '1.0.1',
     ),
     'drupal/block_content' => 
     array (
@@ -1478,7 +1487,7 @@
       'aliases' => 
       array (
       ),
-      'reference' => 'dea9f3a23355b3d6290d52a1f251d255ebe5fa90',
+      'reference' => 'ee1ef6c232ea8cb32bfbb848edfd9d62a18c2766',
     ),
     'drupal/libraries' => 
     array (
