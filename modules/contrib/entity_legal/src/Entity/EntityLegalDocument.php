@@ -153,8 +153,15 @@ class EntityLegalDocument extends ConfigEntityBundleBase implements EntityLegalD
       return FALSE;
     }
     $id = reset($ids);
+    $published_version = $storage->load($id);
 
-    return $storage->load($id);
+    $current_langcode = \Drupal::languageManager()->getCurrentLanguage()->getId();
+
+    if ($published_version->hasTranslation($current_langcode)) {
+      $published_version = $published_version->getTranslation($current_langcode);
+    }
+
+    return $published_version;
   }
 
   /**
@@ -296,15 +303,15 @@ class EntityLegalDocument extends ConfigEntityBundleBase implements EntityLegalD
   public function save() {
     $status = parent::save();
 
-    if ($status == SAVED_NEW) {
+    if ($status == SAVED_NEW && !\Drupal::isConfigSyncing()) {
       // Add or remove the body field, as needed.
       $field = FieldConfig::loadByName('entity_legal_document_version', $this->id(), 'entity_legal_document_text');
       if (empty($field)) {
         FieldConfig::create([
           'field_storage' => FieldStorageConfig::loadByName('entity_legal_document_version', 'entity_legal_document_text'),
-          'bundle'        => $this->id(),
-          'label'         => 'Document text',
-          'settings'      => ['display_summary' => FALSE],
+          'bundle' => $this->id(),
+          'label' => 'Document text',
+          'settings' => ['display_summary' => FALSE],
         ])->save();
 
         // Assign widget settings for the 'default' form mode.
@@ -318,7 +325,7 @@ class EntityLegalDocument extends ConfigEntityBundleBase implements EntityLegalD
         \Drupal::service('entity_display.repository')->getViewDisplay('entity_legal_document_version', $this->id(), 'default')
           ->setComponent('entity_legal_document_text', [
             'label' => 'hidden',
-            'type'  => 'text_default',
+            'type' => 'text_default',
           ])
           ->save();
       }

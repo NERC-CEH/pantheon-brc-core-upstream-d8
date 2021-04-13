@@ -12,92 +12,92 @@ use Drupal\Core\Render\BubbleableMetadata;
  */
 function entity_legal_token_info() {
   $types[ENTITY_LEGAL_DOCUMENT_ENTITY_NAME] = [
-    'name'        => t('Legal document'),
+    'name' => t('Legal document'),
     'description' => t('Tokens related to the "Legal document" entities.'),
-    'needs-data'  => 'entity_legal_document',
+    'needs-data' => 'entity_legal_document',
   ];
 
   $types[ENTITY_LEGAL_DOCUMENT_VERSION_ENTITY_NAME] = [
-    'name'        => t('Legal document version'),
+    'name' => t('Legal document version'),
     'description' => t('Tokens related to the "Legal document version" entities.'),
-    'needs-data'  => 'entity_legal_document_version',
+    'needs-data' => 'entity_legal_document_version',
   ];
 
   $types[ENTITY_LEGAL_DOCUMENT_ACCEPTANCE_ENTITY_NAME] = [
-    'name'        => t('Legal document acceptance'),
+    'name' => t('Legal document acceptance'),
     'description' => t('Tokens related to the "Legal document acceptance" entities.'),
-    'needs-data'  => 'entity_legal_document_acceptance',
+    'needs-data' => 'entity_legal_document_acceptance',
   ];
 
   // Legal document related tokens.
   $document['label'] = [
-    'name'        => t('Label'),
+    'name' => t('Label'),
     'description' => t('The human readable label.'),
   ];
 
   $document['published-version'] = [
-    'name'        => t('Published version'),
+    'name' => t('Published version'),
     'description' => t('The current published version.'),
-    'type'        => ENTITY_LEGAL_DOCUMENT_VERSION_ENTITY_NAME,
+    'type' => ENTITY_LEGAL_DOCUMENT_VERSION_ENTITY_NAME,
   ];
 
   $document['url'] = [
-    'name'        => t('URL'),
+    'name' => t('URL'),
     'description' => t('The URL of the legal document.'),
   ];
 
   // Legal document version related tokens.
   $document_version['acceptance-label'] = [
-    'name'        => t('Acceptance label'),
+    'name' => t('Acceptance label'),
     'description' => t('The acceptance label.'),
   ];
 
   $document_version['changed'] = [
-    'name'        => t('Date changed'),
+    'name' => t('Date changed'),
     'description' => t('The date the legal document version was changed.'),
-    'type'        => 'date',
+    'type' => 'date',
   ];
 
   $document_version['created'] = [
-    'name'        => t('Date created'),
+    'name' => t('Date created'),
     'description' => t('The date the legal document version was created.'),
-    'type'        => 'date',
+    'type' => 'date',
   ];
 
   $document_version['label'] = [
-    'name'        => t('Label'),
+    'name' => t('Label'),
     'description' => t('The human readable label.'),
   ];
 
   // Legal document acceptance related tokens.
   $document_acceptance['acceptance-date'] = [
-    'name'        => t('Date accepted'),
+    'name' => t('Date accepted'),
     'description' => t('The date the legal document was accepted.'),
-    'type'        => 'date',
+    'type' => 'date',
   ];
 
   $document_acceptance['aid'] = [
-    'name'        => t('Legal document acceptance ID'),
+    'name' => t('Legal document acceptance ID'),
     'description' => t('The document acceptance ID.'),
   ];
 
   $document_acceptance['author'] = [
-    'name'        => t('Author'),
+    'name' => t('Author'),
     'description' => t('The author of the document acceptance.'),
-    'type'        => 'user',
+    'type' => 'user',
   ];
 
   $document_acceptance['document-version'] = [
-    'name'        => t('Document version'),
+    'name' => t('Document version'),
     'description' => t('The document version accepted.'),
-    'type'        => ENTITY_LEGAL_DOCUMENT_VERSION_ENTITY_NAME,
+    'type' => ENTITY_LEGAL_DOCUMENT_VERSION_ENTITY_NAME,
   ];
 
   return [
-    'types'  => $types,
+    'types' => $types,
     'tokens' => [
-      ENTITY_LEGAL_DOCUMENT_ENTITY_NAME            => $document,
-      ENTITY_LEGAL_DOCUMENT_VERSION_ENTITY_NAME    => $document_version,
+      ENTITY_LEGAL_DOCUMENT_ENTITY_NAME => $document,
+      ENTITY_LEGAL_DOCUMENT_VERSION_ENTITY_NAME => $document_version,
       ENTITY_LEGAL_DOCUMENT_ACCEPTANCE_ENTITY_NAME => $document_acceptance,
     ],
   ];

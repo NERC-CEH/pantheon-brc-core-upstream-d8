@@ -68,16 +68,16 @@ class EntityLegalDocumentAcceptanceForm extends FormBase {
     $has_agreed = $this->document->userHasAgreed();
 
     $form['agree'] = [
-      '#title'         => $this->document->getAcceptanceLabel(),
-      '#type'          => 'checkbox',
-      '#required'      => TRUE,
+      '#title' => $this->document->getAcceptanceLabel(),
+      '#type' => 'checkbox',
+      '#required' => TRUE,
       '#default_value' => $has_agreed,
-      '#disabled'      => $has_agreed,
+      '#disabled' => $has_agreed,
     ];
 
     $form['submit'] = [
-      '#value'  => t('Submit'),
-      '#type'   => 'submit',
+      '#value' => t('Submit'),
+      '#type' => 'submit',
       '#access' => !$has_agreed,
     ];
 

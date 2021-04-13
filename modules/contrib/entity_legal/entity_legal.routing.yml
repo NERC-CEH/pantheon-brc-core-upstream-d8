@@ -47,7 +47,7 @@ entity.entity_legal_document_version.add_form:
     _permission: 'administer entity legal'
 
 entity.entity_legal_document_version.edit_form:
-  path: '/admin/structure/legal/manage/{entity_legal_document}/manage/{entity_legal_document_version}'
+  path: '/admin/structure/legal/document/{entity_legal_document_version}/edit'
   defaults:
     _entity_form: 'entity_legal_document_version.default'
     _title_callback: 'Drupal\entity_legal\Controller\EntityLegalController::documentVersionEditFormTitle'
@@ -55,7 +55,7 @@ entity.entity_legal_document_version.edit_form:
     _entity_access: 'entity_legal_document_version.update'
 
 entity.entity_legal_document_version.canonical:
-  path: '/legal/document/{entity_legal_document}/{entity_legal_document_version}'
+  path: '/admin/structure/legal/document/{entity_legal_document_version}'
   defaults:
     _controller: '\Drupal\entity_legal\Controller\EntityLegalController::documentPage'
     _title_callback: 'Drupal\entity_legal\Controller\EntityLegalController::documentPageTitle'

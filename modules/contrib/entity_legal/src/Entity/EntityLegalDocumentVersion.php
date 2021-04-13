@@ -21,8 +21,10 @@ use Drupal\entity_legal\EntityLegalDocumentVersionInterface;
  *     "view_builder" = "Drupal\entity_legal\EntityLegalDocumentVersionViewBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",
  *     "form" = {
- *       "default" = "Drupal\entity_legal\Form\EntityLegalDocumentVersionForm"
- *     }
+ *       "default" = "Drupal\entity_legal\Form\EntityLegalDocumentVersionForm",
+ *       "edit" = "Drupal\entity_legal\Form\EntityLegalDocumentVersionForm"
+ *     },
+ *     "translation" = "Drupal\entity_legal\EntityLegalDocumentVersionTranslationHandler"
  *   },
  *   admin_permission = "administer entity legal",
  *   base_table = "entity_legal_document_version",
@@ -37,9 +39,12 @@ use Drupal\entity_legal\EntityLegalDocumentVersionInterface;
  *     "bundle" = "document_name"
  *   },
  *   links = {
- *     "canonical" = "/legal/document/{entity_legal_document}/{entity_legal_document_version}",
+ *     "canonical" = "/admin/structure/legal/document/{entity_legal_document_version}",
+ *     "edit-form" = "/admin/structure/legal/document/{entity_legal_document_version}/edit",
  *   },
  *   bundle_entity_type = "entity_legal_document",
+ *   field_ui_base_route = "entity.entity_legal_document.edit_form",
+ *   render_cache = FALSE,
  * )
  */
 class EntityLegalDocumentVersion extends ContentEntityBase implements EntityLegalDocumentVersionInterface {
@@ -191,6 +196,7 @@ class EntityLegalDocumentVersion extends ContentEntityBase implements EntityLega
 
     if (in_array($rel, [
       'canonical',
+      'edit-form',
       'entity_hierarchy_reorder',
       'token-devel',
       'drupal:content-translation-overview',

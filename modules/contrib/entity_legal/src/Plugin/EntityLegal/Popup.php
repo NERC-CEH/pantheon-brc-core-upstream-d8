@@ -33,7 +33,7 @@ class Popup extends EntityLegalPluginBase {
         $context['attachments']['#attached']['library'][] = 'entity_legal/popup';
         $context['attachments']['#attached']['drupalSettings']['entityLegalPopup'] = [
           [
-            'popupTitle'   => $document->getPublishedVersion()->label(),
+            'popupTitle' => $document->getPublishedVersion()->label(),
             'popupContent' => $renderer->renderPlain($document_markup),
           ],
         ];

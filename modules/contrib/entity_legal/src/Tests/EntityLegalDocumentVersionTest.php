@@ -28,7 +28,7 @@ class EntityLegalDocumentVersionTest extends EntityLegalTestBase {
     /** @var \Drupal\entity_legal\EntityLegalDocumentVersionInterface $version */
     foreach ($versions as $version) {
       $this->assertRaw($version->label(), 'Legal document version found on overview page');
-      $this->assertLinkByHref('/admin/structure/legal/manage/' . $document->id() . '/manage/' . $version->id(), 0, 'Edit link for legal document version appears on overview');
+      $this->assertLinkByHref('/admin/structure/legal/document/' . $version->id() . '/edit', 0, 'Edit link for legal document version appears on overview');
     }
   }
 
@@ -44,9 +44,9 @@ class EntityLegalDocumentVersionTest extends EntityLegalTestBase {
 
     $this->drupalLogin($this->adminUser);
     $this->drupalPostForm('admin/structure/legal/manage/' . $document->id() . '/add', [
-      'label'                                => $test_label,
+      'label' => $test_label,
       'entity_legal_document_text[0][value]' => $document_text,
-      'acceptance_label'                     => $acceptance_label,
+      'acceptance_label' => $acceptance_label,
     ], 'Save');
 
     // Load a reset version of the entity.
@@ -78,7 +78,7 @@ class EntityLegalDocumentVersionTest extends EntityLegalTestBase {
     $version = $this->createDocumentVersion($document);
 
     $this->drupalLogin($this->adminUser);
-    $this->drupalGet('admin/structure/legal/manage/' . $document->id() . '/manage/' . $version->id());
+    $this->drupalGet('admin/structure/legal/document/' . $version->id() . '/edit');
 
     // Test field default values.
     $this->assertFieldByName('label', $version->label(), 'Label is set correctly for version');
@@ -90,10 +90,10 @@ class EntityLegalDocumentVersionTest extends EntityLegalTestBase {
     $new_text = $this->randomMachineName();
     $new_acceptance_label = $this->randomMachineName();
 
-    $this->drupalPostForm('admin/structure/legal/manage/' . $document->id() . '/manage/' . $version->id(), [
-      'label'                                => $new_label,
+    $this->drupalPostForm('admin/structure/legal/document/' . $version->id() . '/edit', [
+      'label' => $new_label,
       'entity_legal_document_text[0][value]' => $new_text,
-      'acceptance_label'                     => $new_acceptance_label,
+      'acceptance_label' => $new_acceptance_label,
     ], 'Save');
 
     /** @var \Drupal\entity_legal\EntityLegalDocumentVersionInterface $version */

@@ -39,11 +39,11 @@ class EntityLegalDocumentTest extends EntityLegalTestBase {
 
     $this->drupalLogin($this->adminUser);
     $this->drupalPostForm('admin/structure/legal/add', [
-      'label'                                    => $test_label,
-      'id'                                       => $test_id,
-      'settings[new_users][require]'             => 1,
-      'settings[new_users][require_method]'      => 'form_inline',
-      'settings[existing_users][require]'        => 1,
+      'label' => $test_label,
+      'id' => $test_id,
+      'settings[new_users][require]' => 1,
+      'settings[new_users][require_method]' => 'form_inline',
+      'settings[existing_users][require]' => 1,
       'settings[existing_users][require_method]' => 'redirect',
     ], 'Save');
 
@@ -68,7 +68,7 @@ class EntityLegalDocumentTest extends EntityLegalTestBase {
    */
   public function testEditForm() {
     $document = $this->createDocument(TRUE, TRUE, [
-      'new_users'      => [
+      'new_users' => [
         'require_method' => 'form_inline',
       ],
       'existing_users' => [
@@ -89,10 +89,10 @@ class EntityLegalDocumentTest extends EntityLegalTestBase {
     // Test that changing values saves correctly.
     $new_label = $this->randomMachineName();
     $this->drupalPostForm('admin/structure/legal/manage/' . $document->id(), [
-      'label'                                    => $new_label,
-      'settings[new_users][require]'             => FALSE,
-      'settings[new_users][require_method]'      => 'form_link',
-      'settings[existing_users][require]'        => FALSE,
+      'label' => $new_label,
+      'settings[new_users][require]' => FALSE,
+      'settings[new_users][require_method]' => 'form_link',
+      'settings[existing_users][require]' => FALSE,
       'settings[existing_users][require_method]' => 'popup',
     ], 'Save');
 

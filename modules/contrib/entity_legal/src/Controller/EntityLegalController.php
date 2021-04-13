@@ -145,15 +145,13 @@ class EntityLegalController extends ControllerBase {
   /**
    * Page title callback for the Entity Legal Document Version edit form.
    *
-   * @param string $entity_legal_document
-   *   The entity legal document id.
    * @param \Drupal\entity_legal\EntityLegalDocumentVersionInterface $entity_legal_document_version
    *   The Entity Legal Document version entity.
    *
    * @return string
    *   The page title.
    */
-  public function documentVersionEditFormTitle($entity_legal_document, EntityLegalDocumentVersionInterface $entity_legal_document_version) {
+  public function documentVersionEditFormTitle(EntityLegalDocumentVersionInterface $entity_legal_document_version) {
     return $this->t('Edit %label', ['%label' => $entity_legal_document_version->label()]);
   }
 

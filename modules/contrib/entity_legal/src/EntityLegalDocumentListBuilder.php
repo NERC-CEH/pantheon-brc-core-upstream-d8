@@ -17,7 +17,7 @@ class EntityLegalDocumentListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['label'] = t('Label');
+    $header['label'] = $this->t('Label');
     return $header + parent::buildHeader();
   }
 
@@ -30,7 +30,7 @@ class EntityLegalDocumentListBuilder extends ConfigEntityListBuilder {
     ])->toString();
     $row['label'] = $this->t('@label <small>(Machine name: @id)</small>', [
       '@label' => $label,
-      '@id'    => $entity->id(),
+      '@id' => $entity->id(),
     ]);
     return $row + parent::buildRow($entity);
   }

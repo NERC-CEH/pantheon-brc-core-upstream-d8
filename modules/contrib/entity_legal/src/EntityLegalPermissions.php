@@ -26,14 +26,14 @@ class EntityLegalPermissions {
     /** @var \Drupal\entity_legal\Entity\EntityLegalDocument $document */
     foreach (EntityLegalDocument::loadMultiple() as $document) {
       $perms[$document->getPermissionView()] = [
-        'title'       => $this->t('View "@name"', [
+        'title' => $this->t('View "@name"', [
           '@name' => $document->id(),
         ]),
         'description' => $this->t('Allow users to view the legal document.'),
       ];
 
       $perms[$document->getPermissionExistingUser()] = [
-        'title'       => $this->t('Re-accept "@name"', [
+        'title' => $this->t('Re-accept "@name"', [
           '@name' => $document->id(),
         ]),
         'description' => $this->t('Existing user roles that must re-accept the legal document.'),

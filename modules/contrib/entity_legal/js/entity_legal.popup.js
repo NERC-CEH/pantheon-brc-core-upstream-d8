@@ -24,11 +24,11 @@
           draggable: false,
           title: value.popupTitle,
           width: '80%',
-          beforeClose: function(event, ui) {
+          beforeClose: function (event, ui) {
             // Prevent closing of modal window.
             return false;
           },
-          open: function(event, ui) {
+          open: function (event, ui) {
             // Remove close button from titlebar when opening.
             $popup.closest('.ui-dialog').find('.ui-dialog-titlebar-close').remove();
           }

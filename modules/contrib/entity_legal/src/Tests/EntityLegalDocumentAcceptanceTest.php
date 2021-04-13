@@ -36,7 +36,7 @@ class EntityLegalDocumentAcceptanceTest extends EntityLegalTestBase {
     ], 'Submit');
 
     $this->drupalGet($document_url);
-    // @TODO - Assert checkbox is disabled and acceptance date displayed.
+    // @todo Assert checkbox is disabled and acceptance date displayed.
     // $this->assertNoFieldByName('agree', NULL, 'Agree checkbox not found');
     $this->assertNoFieldByName('op', 'Submit', 'Submit button not found');
 
@@ -60,7 +60,7 @@ class EntityLegalDocumentAcceptanceTest extends EntityLegalTestBase {
     ], 'Submit');
 
     $this->drupalGet($document_url);
-    // @TODO - Assert checkbox is disabled and acceptance date displayed.
+    // @todo Assert checkbox is disabled and acceptance date displayed.
     // $this->assertNoFieldByName('agree', NULL, 'Agree checkbox not found');
     $this->assertNoFieldByName('op', 'Submit', 'Submit button not found');
 

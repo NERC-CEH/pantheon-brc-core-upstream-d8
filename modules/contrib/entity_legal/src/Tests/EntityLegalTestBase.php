@@ -2,7 +2,6 @@
 
 namespace Drupal\entity_legal\Tests;
 
-use Drupal\entity_legal\EntityLegalDocumentInterface;
 use Drupal\simpletest\WebTestBase;
 use Drupal\Tests\entity_legal\Traits\EntityLegalTestTrait;
 

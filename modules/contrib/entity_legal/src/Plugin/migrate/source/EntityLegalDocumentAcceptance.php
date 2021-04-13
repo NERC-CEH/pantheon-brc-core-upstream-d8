@@ -26,11 +26,11 @@ class EntityLegalDocumentAcceptance extends FieldableEntity {
    */
   public function fields() {
     return [
-      'aid'                   => $this->t('The entity ID of this agreement.'),
+      'aid' => $this->t('The entity ID of this agreement.'),
       'document_version_name' => $this->t('The name of the document version this acceptance is bound to.'),
-      'uid'                   => $this->t('The author of the acceptance.'),
-      'acceptance_date'       => $this->t('The date the document was accepted.'),
-      'data'                  => $this->t('A dump of user data to help verify acceptances.'),
+      'uid' => $this->t('The author of the acceptance.'),
+      'acceptance_date' => $this->t('The date the document was accepted.'),
+      'data' => $this->t('A dump of user data to help verify acceptances.'),
     ];
   }
 

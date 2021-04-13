@@ -3,12 +3,13 @@
 namespace Drupal\entity_legal;
 
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\Core\Session\AccountInterface;
 
 /**
  * Provides an interface defining a entity legal document version entity.
  */
-interface EntityLegalDocumentVersionInterface extends ContentEntityInterface {
+interface EntityLegalDocumentVersionInterface extends ContentEntityInterface, EntityChangedInterface {
 
   /**
    * Get the acceptances for this entity legal document version.

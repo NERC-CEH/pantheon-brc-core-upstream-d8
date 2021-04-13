@@ -28,10 +28,10 @@ class ProfileForm extends EntityLegalPluginBase {
         $context['form']['#cache']['tags'][] = "entity_legal_document:{$document->id()}";
 
         $context['form']["legal_{$document->id()}"] = [
-          '#type'          => 'checkbox',
-          '#title'         => $document->getAcceptanceLabel(),
+          '#type' => 'checkbox',
+          '#title' => $document->getAcceptanceLabel(),
           '#default_value' => $document->userHasAgreed(),
-          '#required'      => TRUE,
+          '#required' => TRUE,
         ];
 
         $context['form']['#entity_legal'] = $this;
@@ -50,7 +50,7 @@ class ProfileForm extends EntityLegalPluginBase {
         $acceptance = \Drupal::entityTypeManager()
           ->getStorage(ENTITY_LEGAL_DOCUMENT_ACCEPTANCE_ENTITY_NAME)
           ->create([
-            'uid'                   => $form_state->getValue('uid'),
+            'uid' => $form_state->getValue('uid'),
             'document_version_name' => $published_version->id(),
           ]);
         $acceptance->save();

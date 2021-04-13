@@ -34,12 +34,12 @@ function entity_legal_update_8100() {
     $map['versions'][$id] = $document_version->bundle() . '_' . $document_version->getCreatedTime();
     $entity_manager->getStorage(ENTITY_LEGAL_DOCUMENT_VERSION_ENTITY_NAME)
       ->create([
-        'name'                       => $map['versions'][$id],
-        'document_name'              => $document_version->bundle(),
-        'label'                      => $document_version->label(),
-        'acceptance_label'           => $document_version->get('acceptance_label'),
-        'created'                    => $document_version->get('created'),
-        'changed'                    => $document_version->get('changed'),
+        'name' => $map['versions'][$id],
+        'document_name' => $document_version->bundle(),
+        'label' => $document_version->label(),
+        'acceptance_label' => $document_version->get('acceptance_label'),
+        'created' => $document_version->get('created'),
+        'changed' => $document_version->get('changed'),
         'entity_legal_document_text' => $document_version->get('entity_legal_document_text'),
       ])->save();
   }
@@ -50,11 +50,11 @@ function entity_legal_update_8100() {
   foreach ($document_acceptances as $id => $document_acceptance) {
     $entity_manager->getStorage(ENTITY_LEGAL_DOCUMENT_ACCEPTANCE_ENTITY_NAME)
       ->create([
-        'aid'                   => $document_acceptance->id(),
+        'aid' => $document_acceptance->id(),
         'document_version_name' => $map['versions'][$map['acceptances'][$id]],
-        'uid'                   => $document_acceptance->get('uid'),
-        'acceptance_date'       => $document_acceptance->get('acceptance_date'),
-        'data'                  => isset($document_acceptance->getFields()['data']) ? $document_acceptance->get('data') : '',
+        'uid' => $document_acceptance->get('uid'),
+        'acceptance_date' => $document_acceptance->get('acceptance_date'),
+        'data' => isset($document_acceptance->getFields()['data']) ? $document_acceptance->get('data') : '',
       ])->save();
   }
 

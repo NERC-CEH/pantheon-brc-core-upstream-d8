@@ -30,13 +30,13 @@ class EntityLegalDocumentVersion extends FieldableEntity {
    */
   public function fields() {
     return [
-      'name'             => $this->t('The entity ID of this document.'),
-      'document_name'    => $this->t('The name of the document this version is bound to.'),
-      'label'            => $this->t('The title of the document.'),
-      'published'        => $this->t('Published'),
+      'name' => $this->t('The entity ID of this document.'),
+      'document_name' => $this->t('The name of the document this version is bound to.'),
+      'label' => $this->t('The title of the document.'),
+      'published' => $this->t('Published'),
       'acceptance_label' => $this->t('Acceptance label'),
-      'created'          => $this->t('The date the document was created.'),
-      'updated'          => $this->t('The date the document was changed.'),
+      'created' => $this->t('The date the document was created.'),
+      'updated' => $this->t('The date the document was changed.'),
     ];
   }
 

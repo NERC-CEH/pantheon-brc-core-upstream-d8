@@ -4,6 +4,8 @@ namespace Drupal\entity_legal\Form;
 
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Language\LanguageInterface;
+use Drupal\entity_legal\EntityLegalDocumentInterface;
 
 /**
  * Class EntityLegalDocumentVersionForm.
@@ -22,31 +24,65 @@ class EntityLegalDocumentVersionForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
+  public function buildForm(array $form, FormStateInterface $form_state) {
+    // Provide default values if a published version already exists.
+    if ($this->entity && $this->entity->isNew()) {
+      $document = $this->entity->getDocument();
+      if ($document instanceof EntityLegalDocumentInterface) {
+        $published_version = $document->getPublishedVersion();
+        if ($published_version) {
+          $clone = $published_version->createDuplicate();
+          // Unset properties that shouldn't be copied over.
+          $clone->set('name', NULL);
+          $clone->set('created', REQUEST_TIME);
+          $clone->set('changed', REQUEST_TIME);
+          $clone->set('published', FALSE);
+          $this->setEntity($clone);
+        }
+      }
+
+      $form['langcode'] = [
+        '#title' => $this->t('Language'),
+        '#type' => 'language_select',
+        '#access' => TRUE,
+        '#default_value' => $this->entity->language()->getId(),
+        '#languages' => LanguageInterface::STATE_ALL,
+      ];
+    }
+
+    return parent::buildForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function form(array $form, FormStateInterface $form_state) {
+    $form = parent::form($form, $form_state);
+
     $form['label'] = [
-      '#title'         => t('Title'),
-      '#type'          => 'textfield',
+      '#title' => $this->t('Title'),
+      '#type' => 'textfield',
       '#default_value' => $this->entity->label(),
-      '#required'      => TRUE,
+      '#required' => TRUE,
     ];
 
     $form['name'] = [
-      '#type'          => 'machine_name',
-      '#title'         => t('Machine-readable name'),
-      '#required'      => TRUE,
+      '#type' => 'machine_name',
+      '#title' => $this->t('Machine-readable name'),
+      '#required' => TRUE,
       '#default_value' => !$this->entity->isNew() ? $this->entity->id() : $this->entity->getDefaultName($this->entity),
-      '#machine_name'  => [
+      '#machine_name' => [
         'exists' => '\Drupal\entity_legal\Entity\EntityLegalDocumentVersion::load',
       ],
-      '#disabled'      => !$this->entity->isNew(),
-      '#maxlength'     => 64,
+      '#disabled' => !$this->entity->isNew(),
+      '#maxlength' => 64,
     ];
 
     $form['acceptance_label'] = [
-      '#title'       => t('Acceptance label'),
-      '#type'        => 'textfield',
-      '#description' => t('e.g. I agree to the terms and conditions, use tokens to provide a link to the document.'),
-      '#weight'      => 50,
+      '#title' => $this->t('Acceptance label'),
+      '#type' => 'textfield',
+      '#description' => $this->t('e.g. I agree to the terms and conditions, use tokens to provide a link to the document.'),
+      '#weight' => 50,
     ];
 
     if (isset($this->entity->get('acceptance_label')->value)) {
@@ -54,18 +90,18 @@ class EntityLegalDocumentVersionForm extends ContentEntityForm {
     }
     else {
       $form['acceptance_label']['#default_value'] = $this->t('I agree to the <a href="@token_url">@document_label</a> document', [
-        '@token_url'      => '[entity_legal_document:url]',
+        '@token_url' => '[entity_legal_document:url]',
         '@document_label' => $this->entity->getDocument()->label(),
       ])->render();
     }
 
     $form['token_help'] = [
-      '#theme'       => 'token_tree_link',
+      '#theme' => 'token_tree_link',
       '#token_types' => ['entity_legal_document'],
-      '#weight'      => 51,
+      '#weight' => 51,
     ];
 
-    return parent::form($form, $form_state);
+    return $form;
   }
 
   /**

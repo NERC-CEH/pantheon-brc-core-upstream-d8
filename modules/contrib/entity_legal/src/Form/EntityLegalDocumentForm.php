@@ -4,17 +4,20 @@ namespace Drupal\entity_legal\Form;
 
 use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\ContentEntityStorageInterface;
 use Drupal\Core\Entity\EntityForm;
+use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Form\ConfigFormBaseTrait;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Link;
-use Drupal\Core\Path\AliasStorageInterface;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Url;
+use Drupal\path\Plugin\Field\FieldWidget\PathWidget;
+use Drupal\path_alias\PathAliasInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Extension\ModuleHandler;
 
 /**
  * Base form for contact form edit forms.
@@ -26,7 +29,7 @@ class EntityLegalDocumentForm extends EntityForm implements ContainerInjectionIn
   /**
    * The path alias storage.
    *
-   * @var \Drupal\Core\Path\AliasStorageInterface
+   * @var \Drupal\Core\Entity\ContentEntityStorageInterface
    */
   protected $aliasStorage;
 
@@ -61,7 +64,7 @@ class EntityLegalDocumentForm extends EntityForm implements ContainerInjectionIn
   /**
    * {@inheritdoc}
    */
-  public function __construct(AliasStorageInterface $alias_storage, PluginManagerInterface $plugin_manager, AccountProxy $currentUser, ModuleHandler $moduleHandler) {
+  public function __construct(ContentEntityStorageInterface $alias_storage, PluginManagerInterface $plugin_manager, AccountProxy $currentUser, ModuleHandler $moduleHandler) {
     $this->aliasStorage = $alias_storage;
     $this->pluginManager = $plugin_manager;
     $this->currentUser = $currentUser;
@@ -72,8 +75,9 @@ class EntityLegalDocumentForm extends EntityForm implements ContainerInjectionIn
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
+    $etm = $container->get('entity_type.manager');
     return new static(
-      $container->get('path.alias_storage'),
+      $etm->getStorage('path_alias'),
       $container->get('plugin.manager.entity_legal'),
       $container->get('current_user'),
       $container->get('module_handler')
@@ -94,22 +98,22 @@ class EntityLegalDocumentForm extends EntityForm implements ContainerInjectionIn
     $form = parent::form($form, $form_state);
 
     $form['label'] = [
-      '#title'         => $this->t('Administrative label'),
-      '#type'          => 'textfield',
+      '#title' => $this->t('Administrative label'),
+      '#type' => 'textfield',
       '#default_value' => $this->entity->label(),
-      '#required'      => TRUE,
+      '#required' => TRUE,
     ];
 
     $form['id'] = [
-      '#type'          => 'machine_name',
-      '#title'         => t('Machine-readable name'),
-      '#required'      => TRUE,
+      '#type' => 'machine_name',
+      '#title' => $this->t('Machine-readable name'),
+      '#required' => TRUE,
       '#default_value' => $this->entity->id(),
-      '#machine_name'  => [
+      '#machine_name' => [
         'exists' => '\Drupal\entity_legal\Entity\EntityLegalDocument::load',
       ],
-      '#disabled'      => !$this->entity->isNew(),
-      '#maxlength'     => EntityTypeInterface::BUNDLE_MAX_LENGTH,
+      '#disabled' => !$this->entity->isNew(),
+      '#maxlength' => EntityTypeInterface::BUNDLE_MAX_LENGTH,
     ];
 
     if (!in_array($this->operation, ['add', 'clone'])) {
@@ -122,10 +126,10 @@ class EntityLegalDocumentForm extends EntityForm implements ContainerInjectionIn
       }
 
       $header = [
-        'title'      => t('Title'),
-        'created'    => t('Created'),
-        'changed'    => t('Updated'),
-        'operations' => t('Operations'),
+        'title' => $this->t('Title'),
+        'created' => $this->t('Created'),
+        'changed' => $this->t('Updated'),
+        'operations' => $this->t('Operations'),
       ];
       $options = [];
 
@@ -142,65 +146,83 @@ class EntityLegalDocumentForm extends EntityForm implements ContainerInjectionIn
           $route_name = 'entity.entity_legal_document_version.canonical';
           $route_parameters['entity_legal_document_version'] = $version->id();
         }
-        $options[$version->id()] = [
-          'title'      => Link::createFromRoute($version->label(), $route_name, $route_parameters),
-          'created'    => $version->getFormattedDate('created'),
-          'changed'    => $version->getFormattedDate('changed'),
-          'operations' => Link::createFromRoute(t('Edit'), 'entity.entity_legal_document_version.edit_form', [
-            'entity_legal_document'         => $this->entity->id(),
+
+        $links['edit'] = [
+          'title' => $this->t('Edit'),
+          'url' => Url::fromRoute('entity.entity_legal_document_version.edit_form', [
             'entity_legal_document_version' => $version->id(),
           ]),
+        ];
+        if ($version->isTranslatable()) {
+          try {
+            $links['translate'] = [
+              'title' => $this->t('Translate'),
+              'url' => $version->toUrl('drupal:content-translation-overview'),
+            ];
+          }
+          catch (EntityMalformedException $e) {
+          }
+        }
+        $operations = [
+          '#type' => 'operations',
+          '#links' => $links,
+        ];
+        $options[$version->id()] = [
+          'title' => Link::createFromRoute($version->label(), $route_name, $route_parameters),
+          'created' => $version->getFormattedDate('created'),
+          'changed' => $version->getFormattedDate('changed'),
+          'operations' => render($operations),
         ];
       }
 
       // By default just show a simple overview for all entities.
       $form['versions'] = [
-        '#type'        => 'details',
-        '#title'       => t('Current version'),
-        '#description' => t('The current version users must agree to. If requiring existing users to accept, those users will be prompted if they have not accepted this particular version in the past.'),
-        '#open'        => TRUE,
-        '#tree'        => FALSE,
+        '#type' => 'details',
+        '#title' => $this->t('Current version'),
+        '#description' => $this->t('The current version users must agree to. If requiring existing users to accept, those users will be prompted if they have not accepted this particular version in the past.'),
+        '#open' => TRUE,
+        '#tree' => FALSE,
       ];
 
       $form_state->set('published_version', $published_version);
       $form['versions']['published_version'] = [
-        '#type'          => 'tableselect',
-        '#header'        => $header,
-        '#options'       => $options,
-        '#empty'         => t('Create a document version to set up a default'),
-        '#multiple'      => FALSE,
+        '#type' => 'tableselect',
+        '#header' => $header,
+        '#options' => $options,
+        '#empty' => $this->t('Create a document version to set up a default'),
+        '#multiple' => FALSE,
         '#default_value' => $published_version,
       ];
     }
 
     $form['settings'] = [
-      '#type'   => 'vertical_tabs',
+      '#type' => 'vertical_tabs',
       '#weight' => 27,
     ];
 
     $form['new_users'] = [
-      '#title'       => t('New users'),
-      '#description' => t('Visit the <a href=":permissions">permissions</a> page to ensure that users can view the document.', [
+      '#title' => $this->t('New users'),
+      '#description' => $this->t('Visit the <a href=":permissions">permissions</a> page to ensure that users can view the document.', [
         ':permissions' => Url::fromRoute('user.admin_permissions')->toString(),
       ]),
-      '#type'        => 'details',
-      '#group'       => 'settings',
-      '#parents'     => ['settings', 'new_users'],
-      '#tree'        => TRUE,
+      '#type' => 'details',
+      '#group' => 'settings',
+      '#parents' => ['settings', 'new_users'],
+      '#tree' => TRUE,
     ];
 
     $form['new_users']['require'] = [
-      '#title'         => t('Require new users to accept this agreement on signup'),
-      '#type'          => 'checkbox',
+      '#title' => $this->t('Require new users to accept this agreement on signup'),
+      '#type' => 'checkbox',
       '#default_value' => $this->entity->get('require_signup'),
     ];
 
     $form['new_users']['require_method'] = [
-      '#title'         => t('Present to user as'),
-      '#type'          => 'select',
-      '#options'       => $this->getAcceptanceDeliveryMethodOptions('new_users'),
+      '#title' => $this->t('Present to user as'),
+      '#type' => 'select',
+      '#options' => $this->getAcceptanceDeliveryMethodOptions('new_users'),
       '#default_value' => $this->entity->getAcceptanceDeliveryMethod(TRUE),
-      '#states'        => [
+      '#states' => [
         'visible' => [
           ':input[name="settings[new_users][require]"]' => ['checked' => TRUE],
         ],
@@ -208,28 +230,28 @@ class EntityLegalDocumentForm extends EntityForm implements ContainerInjectionIn
     ];
 
     $form['existing_users'] = [
-      '#title'       => t('Existing users'),
-      '#description' => t('Visit the <a href=":permissions">permissions</a> page to configure which existing users these settings apply to.', [
+      '#title' => $this->t('Existing users'),
+      '#description' => $this->t('Visit the <a href=":permissions">permissions</a> page to configure which existing users these settings apply to.', [
         ':permissions' => Url::fromRoute('user.admin_permissions')->toString(),
       ]),
-      '#type'        => 'details',
-      '#group'       => 'settings',
-      '#parents'     => ['settings', 'existing_users'],
-      '#tree'        => TRUE,
+      '#type' => 'details',
+      '#group' => 'settings',
+      '#parents' => ['settings', 'existing_users'],
+      '#tree' => TRUE,
     ];
 
     $form['existing_users']['require'] = [
-      '#title'         => t('Require existing users to accept this agreement'),
-      '#type'          => 'checkbox',
+      '#title' => $this->t('Require existing users to accept this agreement'),
+      '#type' => 'checkbox',
       '#default_value' => $this->entity->get('require_existing'),
     ];
 
     $form['existing_users']['require_method'] = [
-      '#title'         => t('Present to user as'),
-      '#type'          => 'select',
-      '#options'       => $this->getAcceptanceDeliveryMethodOptions('existing_users'),
+      '#title' => $this->t('Present to user as'),
+      '#type' => 'select',
+      '#options' => $this->getAcceptanceDeliveryMethodOptions('existing_users'),
       '#default_value' => $this->entity->getAcceptanceDeliveryMethod(),
-      '#states'        => [
+      '#states' => [
         'visible' => [
           ':input[name="settings[existing_users][require]"]' => ['checked' => TRUE],
         ],
@@ -272,91 +294,186 @@ class EntityLegalDocumentForm extends EntityForm implements ContainerInjectionIn
       return;
     }
 
-    $path = [];
-    if (!$this->entity->isNew()) {
-      $conditions = ['source' => '/' . $this->entity->toUrl()->getInternalPath()];
-      $path = $this->aliasStorage->load($conditions);
-      if ($path === FALSE) {
-        $path = [];
-      }
+    /** @var \Drupal\path_alias\PathAliasInterface $alias */
+    $alias = $this->pathAlias($this->entity->language()->getId());
+    $aliasSource = NULL;
+
+    if (!$alias) {
+      $aliasSource = !$this->entity->isNew() ? '/' . $this->entity->toUrl()->getInternalPath() : NULL;
     }
-    $path += [
-      'pid'    => NULL,
-      'source' => !$this->entity->isNew() ? '/' . $this->entity->toUrl()->getInternalPath() : NULL,
-      'alias'  => '',
-    ];
 
     $form['path'] = [
-      '#type'             => 'details',
-      '#title'            => t('URL path settings'),
-      '#group'            => 'settings',
-      '#attributes'       => [
-        'class' => ['path-form'],
-      ],
-      '#attached'         => [
-        'library' => ['path/drupal.path'],
-      ],
-      '#access'           => $this->currentUser->hasPermission('create url aliases') || $this->currentUser->hasPermission('administer url aliases'),
-      '#weight'           => 5,
-      '#tree'             => TRUE,
-      '#element_validate' => [['\Drupal\path\Plugin\Field\FieldWidget\PathWidget', 'validateFormElement']],
-      '#parents'          => ['path', 0],
+      '#type' => 'details',
+      '#title' => $this->t('URL path settings'),
+      '#group' => 'settings',
+      '#attributes' => ['class' => ['path-form']],
+      '#attached' => ['library' => ['path/drupal.path']],
+      '#access' => $this->hasAccessToPathAliases(),
+      '#weight' => 5,
+      '#tree' => TRUE,
+      '#element_validate' => [PathWidget::class, 'validateFormElement'],
+      '#parents' => ['path', 0],
     ];
 
     $form['path']['langcode'] = [
       '#type' => 'language_select',
-      '#title' => t('Language'),
+      '#title' => $this->t('Language'),
       '#languages' => LanguageInterface::STATE_ALL,
       '#default_value' => $this->entity->language()->getId(),
     ];
 
     $form['path']['alias'] = [
-      '#type'          => 'textfield',
-      '#title'         => t('URL alias'),
-      '#default_value' => $path['alias'],
-      '#maxlength'     => 255,
-      '#description'   => $this->t('The alternative URL for this content. Use a relative path. For example, enter "/about" for the about page.'),
+      '#type' => 'textfield',
+      '#title' => $this->t('URL alias'),
+      '#default_value' => $alias ? $alias->getAlias() : '',
+      '#maxlength' => 255,
+      '#description' => $this->t('The alternative URL for this content. Use a relative path. For example, enter "/about" for the about page.'),
     ];
 
     $form['path']['pid'] = [
-      '#type'  => 'value',
-      '#value' => $path['pid'],
+      '#type' => 'value',
+      '#value' => $alias ? $alias->id() : NULL,
     ];
 
     $form['path']['source'] = [
-      '#type'  => 'value',
-      '#value' => $path['source'],
+      '#type' => 'value',
+      '#value' => $alias ? $alias->getPath() : $aliasSource,
     ];
+  }
+
+  /**
+   *
+   */
+  protected function pathAliasSource(): ?string {
+    if ($this->entity->isNew()) {
+      return NULL;
+    }
+    return '/' . $this->entity->toUrl()->getInternalPath();
+  }
+
+  /**
+   *
+   */
+  protected function pathAlias(string $lang_code): ?PathAliasInterface {
+    $path = $this->pathAliasSource();
+    if (!$path) {
+      return NULL;
+    }
+    /** @var \Drupal\path_alias\PathAliasInterface[] $aliases */
+    $aliases = $this->aliasStorage->loadByProperties([
+      'langcode' => $lang_code,
+      'path' => $path,
+    ]);
+
+    return $aliases ? reset($aliases) : NULL;
+  }
+
+  /**
+   *
+   */
+  protected function hasAccessToPathAliases(): bool {
+    return $this->currentUser->hasPermission('create url aliases')
+      || $this->currentUser->hasPermission('administer url aliases');
   }
 
   /**
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    $this->entity->set('require_signup', $this->entity->get('settings')['new_users']['require']);
-    $this->entity->set('require_existing', $this->entity->get('settings')['existing_users']['require']);
+    $this
+      ->saveDocument($form, $form_state)
+      ->savePathAlias($form, $form_state)
+      ->savePublishedVersion($form, $form_state);
+  }
 
+  /**
+   * @return $this
+   */
+  protected function saveDocument(array $form, FormStateInterface $form_state) {
+    $this->entity
+      ->set(
+        'require_signup',
+        $this->entity->get('settings')['new_users']['require']
+      )
+      ->set(
+        'require_existing',
+        $this->entity->get('settings')['existing_users']['require']
+      );
     $status = $this->entity->save();
     if ($status == SAVED_NEW) {
-      $form_state->setRedirect('entity.entity_legal_document_version.add_form', ['entity_legal_document' => $this->entity->id()]);
+      $form_state->setRedirect(
+        'entity.entity_legal_document_version.add_form',
+        ['entity_legal_document' => $this->entity->id()]);
     }
 
-    if (!empty($form_state->getValues()['path'][0]) && (!empty($form_state->getValues()['path'][0]['alias']) || !empty($form_state->getValues()['path'][0]['pid']))) {
-      $path = $form_state->getValues()['path'][0];
+    $this->messenger()->addStatus($this->t(
+      '@type_label @label has been saved',
+      [
+        '@type_label' => $this->entity->getEntityType()->getLabel(),
+        '@label' => $this->entity->label(),
+      ]
+    ));
 
-      $path['alias'] = trim($path['alias']);
-      if (!$path['source']) {
-        $path['source'] = $this->entity->toUrl()->toString();
-      }
+    return $this;
+  }
 
-      // Delete old alias if user erased it.
-      if (!empty($path['pid']) && empty($path['alias'])) {
-        $this->aliasStorage->delete(['pid' => $path['pid']]);
-      }
+  /**
+   * @return $this
+   */
+  protected function savePathAlias(array $form, FormStateInterface $form_state) {
+    $values = (array) $form_state->getValue(['path', '0'], []);
 
-      else {
-        $this->aliasStorage->save($path['source'], $path['alias'], LanguageInterface::LANGCODE_NOT_SPECIFIED, $path['pid']);
-      }
+    $langCode = $values['langcode'] ?? $this->entity->language()->getId();
+    $path = $this->pathAliasSource();
+    $alias = $this->pathAlias($langCode);
+
+    $messenger = $this->messenger();
+
+    if (!$alias && !empty($values['alias'])) {
+      $alias = $this->aliasStorage->create([
+        'langcode' => $langCode,
+        'path' => $path,
+        'alias' => $values['alias'],
+      ]);
+      $alias->save();
+
+      $messenger->addStatus($this->t('A new URL alias has been created'));
+
+      return $this;
+    }
+
+    if ($alias && empty($values['alias'])) {
+      $alias->delete();
+
+      $messenger->addStatus($this->t(
+        'URL alias %alias has been deleted',
+        ['%alias' => $alias->getAlias()]
+      ));
+
+      return $this;
+    }
+
+    if ($alias && $alias->getAlias() !== $values['alias']) {
+      $alias->setAlias($values['alias'])->save();
+
+      $messenger->addStatus($this->t(
+        'URL alias has ben changed to %alias',
+        ['%alias' => $alias->getAlias()]
+      ));
+
+      return $this;
+    }
+
+    return $this;
+  }
+
+  /**
+   * @return $this
+   */
+  protected function savePublishedVersion(array $form, FormStateInterface $form_state) {
+    $published_version_id = $form_state->getValue('published_version');
+    if (!$published_version_id) {
+      return $this;
     }
 
     // Update the published version.
@@ -366,6 +483,8 @@ class EntityLegalDocumentForm extends EntityForm implements ContainerInjectionIn
       $published_version = $storage->load($form_state->getValue('published_version'));
       $this->entity->setPublishedVersion($published_version);
     }
+
+    return $this;
   }
 
   /**

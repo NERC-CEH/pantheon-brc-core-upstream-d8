@@ -68,16 +68,29 @@ function entity_legal_entity_extra_field_info() {
   foreach ($documents as $document) {
     if ($document->getPublishedVersion()) {
       $extra['user']['user']['form']['legal_' . $document->id()] = [
-        'label'       => $document->getPublishedVersion()->label(),
+        'label' => $document->getPublishedVersion()->label(),
         'description' => t('Checkbox for accepting :link', [
           ':link' => Link::createFromRoute($document->label(), 'entity.entity_legal_document.edit_form'),
         ]),
-        'weight'      => -4,
+        'weight' => -4,
       ];
     }
   }
 
   return $extra;
+}
+
+/**
+ * Implements hook_entity_type_alter().
+ */
+function entity_legal_entity_type_alter(array &$entity_types) {
+  /** @var $entity_types \Drupal\Core\Entity\EntityTypeInterface[] */
+  // Add a translation handler for fields if the language module is enabled.
+  if (\Drupal::moduleHandler()->moduleExists('language')) {
+    $translation = $entity_types['entity_legal_document_version']->get('translation');
+    $translation['entity_legal_document_version'] = TRUE;
+    $entity_types['entity_legal_document_version']->set('translation', $translation);
+  }
 }
 
 /**

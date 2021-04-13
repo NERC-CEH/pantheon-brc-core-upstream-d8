@@ -5385,18 +5385,18 @@
         },
         {
             "name": "drupal/entity_legal",
-            "version": "3.0.0-beta1",
-            "version_normalized": "3.0.0.0-beta1",
+            "version": "3.0.0-beta2",
+            "version_normalized": "3.0.0.0-beta2",
             "source": {
                 "type": "git",
                 "url": "https://git.drupalcode.org/project/entity_legal.git",
-                "reference": "3.0.0-beta1"
+                "reference": "3.0.0-beta2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://ftp.drupal.org/files/projects/entity_legal-3.0.0-beta1.zip",
-                "reference": "3.0.0-beta1",
-                "shasum": "20f749bcae996b0b55bb5245d4d49881282df16f"
+                "url": "https://ftp.drupal.org/files/projects/entity_legal-3.0.0-beta2.zip",
+                "reference": "3.0.0-beta2",
+                "shasum": "6cd0093f473ca68ff2d42cfcc4328b759ad657a2"
             },
             "require": {
                 "drupal/core": "^8 || ^9",
@@ -5405,8 +5405,8 @@
             "type": "drupal-module",
             "extra": {
                 "drupal": {
-                    "version": "3.0.0-beta1",
-                    "datestamp": "1591465086",
+                    "version": "3.0.0-beta2",
+                    "datestamp": "1616108598",
                     "security-coverage": {
                         "status": "not-covered",
                         "message": "Beta releases are not covered by Drupal security advisories."
@@ -5428,6 +5428,10 @@
                     "homepage": "https://www.drupal.org/user/620694"
                 },
                 {
+                    "name": "arthur_lorenz",
+                    "homepage": "https://www.drupal.org/user/3529915"
+                },
+                {
                     "name": "claudiu.cristea",
                     "homepage": "https://www.drupal.org/user/56348"
                 },
@@ -5438,6 +5442,10 @@
                 {
                     "name": "geek-merlin",
                     "homepage": "https://www.drupal.org/user/229048"
+                },
+                {
+                    "name": "leymannx",
+                    "homepage": "https://www.drupal.org/user/2482808"
                 },
                 {
                     "name": "malks",

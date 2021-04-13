@@ -38,7 +38,7 @@ class EntityLegalMethodsTest extends EntityLegalTestBase {
 
     $this->drupalPostForm($document_path, ['agree' => TRUE], 'Submit');
 
-    // @TODO - Assert checkbox is disabled and acceptance date displayed.
+    // @todo Assert checkbox is disabled and acceptance date displayed.
     $this->assertNoText($acceptance_message, 'Document message not found');
 
     $this->createDocumentVersion($document, TRUE);

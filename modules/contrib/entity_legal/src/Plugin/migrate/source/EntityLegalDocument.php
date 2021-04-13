@@ -26,11 +26,11 @@ class EntityLegalDocument extends DrupalSqlBase {
    */
   public function fields() {
     return [
-      'name'              => $this->t('The legal document ID.'),
-      'label'             => $this->t('The human-readable label of the legal document.'),
-      'require_signup'    => $this->t('Require new users to accept this document on signup.'),
-      'require_existing'  => $this->t('Require existing users to accept this document.'),
-      'settings'          => $this->t('An array of additional data related to the legal document.'),
+      'name' => $this->t('The legal document ID.'),
+      'label' => $this->t('The human-readable label of the legal document.'),
+      'require_signup' => $this->t('Require new users to accept this document on signup.'),
+      'require_existing' => $this->t('Require existing users to accept this document.'),
+      'settings' => $this->t('An array of additional data related to the legal document.'),
     ];
   }
 

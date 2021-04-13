@@ -2,7 +2,6 @@
 
 namespace Drupal\entity_legal\Plugin\EntityLegal;
 
-use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RedirectDestinationTrait;
@@ -189,7 +188,7 @@ class Redirect extends EntityLegalPluginBase implements ContainerFactoryPluginIn
     // @see \Drupal\user\Controller\UserController::resetPassLogin()
     // @see \Drupal\user\AccountForm::form()
     $session_key = "pass_reset_{$this->currentUser->id()}";
-    if (!isset($_SESSION[$session_key]) || !Crypt::hashEquals($_SESSION[$session_key], $pass_reset_token)) {
+    if (!isset($_SESSION[$session_key]) || !hash_equals($_SESSION[$session_key], $pass_reset_token)) {
       return FALSE;
     }
 
