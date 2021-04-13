@@ -3,11 +3,13 @@
 namespace Drupal\quick_node_block\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
  * Provides a Node Block with his display.
@@ -19,6 +21,13 @@ use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
  * )
  */
 class QuickNodeBlock extends BlockBase implements ContainerFactoryPluginInterface {
+
+  /**
+   * The route match service.
+   *
+   * @var \Drupal\Core\Routing\RouteMatchInterface
+   */
+  protected $routeMatch;
 
   /**
    * The entity manager type service.
@@ -42,6 +51,7 @@ class QuickNodeBlock extends BlockBase implements ContainerFactoryPluginInterfac
         $configuration,
         $plugin_id,
         $plugin_definition,
+        $container->get('current_route_match'),
         $container->get('entity_type.manager'),
         $container->get('entity_display.repository')
       );
@@ -59,13 +69,16 @@ class QuickNodeBlock extends BlockBase implements ContainerFactoryPluginInterfac
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
+   *   The The route match service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity manager service.
    * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplay
    *   The entity display repository.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entityTypeManager, EntityDisplayRepositoryInterface $entityDisplay) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $routeMatch, EntityTypeManagerInterface $entityTypeManager, EntityDisplayRepositoryInterface $entityDisplay) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->routeMatch = $routeMatch;
     $this->entityTypeManager = $entityTypeManager;
     $this->entityDisplay = $entityDisplay;
   }
@@ -83,7 +96,7 @@ class QuickNodeBlock extends BlockBase implements ContainerFactoryPluginInterfac
       '#description' => $this->t('What node do you want to show? You can write a node number or node title.'),
       '#required' => TRUE,
       '#autocomplete_route_name' => 'quick_node_block.autocomplete',
-      '#default_value' => $config['quick_node'],
+      '#default_value' => $config['quick_node'] ?? '',
       '#ajax' => [
         'wrapper' => 'quick-ajax-wrapper',
         'callback' => [$this, 'ajaxCallback'],
@@ -91,24 +104,32 @@ class QuickNodeBlock extends BlockBase implements ContainerFactoryPluginInterfac
       ],
     ];
 
+    // Get node from the url.
+    $nid_add = $this->routeMatch->getParameter('node');
+
     // Check if there is a node selected.
     $element = $form_state->getTriggeringElement();
     if (!empty($element['#value'])) {
       $node_title = $element['#value'];
     }
-    else {
-      $node_title = $config['quick_node'];
+    elseif (!empty($nid_add)) {
+      // Default value when creating the block from the node.
+      $node = $this->entityTypeManager->getStorage('node')->load($nid_add);
+      $node_title = $node->getTitle() . ' (' . $nid_add . ')';
+      $form['quick_node']['#default_value'] = $node_title;
+      $form['quick_node']['#attributes']['disabled'] = TRUE;
     }
-    $display_options = $config['quick_node'];
-    if (empty($display_options)) {
+    else {
+      $node_title = $config['quick_node'] ?? '';
+    }
+    // Get nid.
+    preg_match("/.+\s\(([^\)]+)\)/", $node_title, $matches);
+    $nid = $matches[1] ?? '';
+
+    if (empty($nid)) {
       $quick_display = $this->getQuickDisplays();
     }
     else {
-
-      // Get nid.
-      preg_match("/.+\s\(([^\)]+)\)/", $node_title, $matches);
-      $nid = $matches[1];
-
       // Get bundle.
       $storage = $this->entityTypeManager->getStorage('node');
       $node = $storage->load($nid);
@@ -124,7 +145,7 @@ class QuickNodeBlock extends BlockBase implements ContainerFactoryPluginInterfac
       '#description' => $this->t('How do you want the node to be displayed?. You must first choose a node.'),
       '#required' => TRUE,
       '#options' => $quick_display,
-      '#default_value' => $config['quick_display'],
+      '#default_value' => $config['quick_display'] ?? '',
       '#prefix' => '<div id="quick-ajax-wrapper">',
       '#suffix' => '</div>',
       // Hide field if quick_node is empty.
@@ -133,7 +154,7 @@ class QuickNodeBlock extends BlockBase implements ContainerFactoryPluginInterfac
           ':input[name$="[quick_node]"]' => [
             [
               'empty' => FALSE,
-            ]
+            ],
           ],
         ],
       ],
@@ -153,7 +174,7 @@ class QuickNodeBlock extends BlockBase implements ContainerFactoryPluginInterfac
    * @return array
    *   The updated form element.
    */
-  public function ajaxCallback($form, FormStateInterface $form_state) {
+  public function ajaxCallback(array $form, FormStateInterface $form_state) {
 
     // Get the currently selected node.
     $element = $form_state->getTriggeringElement();
@@ -177,9 +198,33 @@ class QuickNodeBlock extends BlockBase implements ContainerFactoryPluginInterfac
   /**
    * {@inheritdoc}
    */
+  public function blockValidate($form, FormStateInterface $form_state) {
+
+    // Get quick_node value.
+    $node_title = $form_state->getValue('quick_node');
+
+    // Get nid.
+    preg_match("/.+\s\(([^\)]+)\)/", $node_title, $matches);
+    $nid = $matches[1];
+
+    // Check if the node exists.
+    $query = $this->entityTypeManager->getStorage('node')->getQuery();
+    $values = $query->condition('nid', $nid)
+      ->execute();
+
+    if (empty($values)) {
+      $form_state->setErrorByName('quick_node', $this->t('The chosen node does not exist. Choose another one please.'));
+    }
+    return $form_state;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function blockSubmit($form, FormStateInterface $form_state) {
     parent::blockSubmit($form, $form_state);
     $values = $form_state->getValues();
+    // @todo: Don't save the node as a string (title + nid) but rather as nid.
     $this->configuration['quick_node'] = $values['quick_node'];
     $this->configuration['quick_display'] = $values['quick_display'];
   }
@@ -208,7 +253,19 @@ class QuickNodeBlock extends BlockBase implements ContainerFactoryPluginInterfac
    */
   protected function getQuickDisplays() {
     return $this->entityDisplay->getViewModeOptions('node');
-
   }
+  /**
+   * Cache block.
+   */
+  public function getCacheTags() {
+    $config = $this->getConfiguration();
+      if (isset($config['quick_node'])) {
+        preg_match("/.+\s\(([^\)]+)\)/", $config['quick_node'], $matches);
+        $nid = $matches[1];
 
+        return Cache::mergeTags(parent::getCacheTags(), ["node:{$nid}"]);
+      }
+
+      return parent::getCacheTags();
+     }
 }

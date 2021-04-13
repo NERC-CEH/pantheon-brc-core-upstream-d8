@@ -30,7 +30,7 @@ private static $installed = array (
     'aliases' => 
     array (
     ),
-    'reference' => 'f1ca5732c78f20b9888486631f5c269778f966a4',
+    'reference' => 'dea9f3a23355b3d6290d52a1f251d255ebe5fa90',
     'name' => 'drupal/legacy-project',
   ),
   'versions' => 
@@ -1345,12 +1345,12 @@ private static $installed = array (
     ),
     'drupal/inline_entity_form' => 
     array (
-      'pretty_version' => '1.0.0-rc8',
-      'version' => '1.0.0.0-RC8',
+      'pretty_version' => '1.0.0-rc9',
+      'version' => '1.0.0.0-RC9',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.0-rc8',
+      'reference' => '8.x-1.0-rc9',
     ),
     'drupal/inline_form_errors' => 
     array (
@@ -1502,7 +1502,7 @@ private static $installed = array (
       'aliases' => 
       array (
       ),
-      'reference' => 'f1ca5732c78f20b9888486631f5c269778f966a4',
+      'reference' => 'dea9f3a23355b3d6290d52a1f251d255ebe5fa90',
     ),
     'drupal/libraries' => 
     array (
@@ -1655,12 +1655,12 @@ private static $installed = array (
     ),
     'drupal/ng_lightbox' => 
     array (
-      'pretty_version' => '1.0.0-beta3',
-      'version' => '1.0.0.0-beta3',
+      'pretty_version' => '2.0.0-beta1',
+      'version' => '2.0.0.0-beta1',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.0-beta3',
+      'reference' => '2.0.0-beta1',
     ),
     'drupal/node' => 
     array (
@@ -1778,6 +1778,15 @@ private static $installed = array (
       ),
       'reference' => '8.x-1.2',
     ),
+    'drupal/quick_node_block' => 
+    array (
+      'pretty_version' => '1.3.0',
+      'version' => '1.3.0.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '8.x-1.3',
+    ),
     'drupal/quickedit' => 
     array (
       'replaced' => 
@@ -1853,12 +1862,12 @@ private static $installed = array (
     ),
     'drupal/restui' => 
     array (
-      'pretty_version' => '1.19.0',
-      'version' => '1.19.0.0',
+      'pretty_version' => '1.20.0',
+      'version' => '1.20.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.19',
+      'reference' => '8.x-1.20',
     ),
     'drupal/role_expire' => 
     array (
@@ -2245,12 +2254,12 @@ private static $installed = array (
     ),
     'drupal/views_conditional' => 
     array (
-      'pretty_version' => '1.2.0',
-      'version' => '1.2.0.0',
+      'pretty_version' => '1.3.0',
+      'version' => '1.3.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.2',
+      'reference' => '8.x-1.3',
     ),
     'drupal/views_data_export' => 
     array (
