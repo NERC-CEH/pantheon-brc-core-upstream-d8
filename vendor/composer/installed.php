@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => '3ed852b5145cf8890a19fa1d4a718c31836b852f',
+    'reference' => 'efec821709792fd91a9377a1d7b68401ae933fbc',
     'name' => 'drupal/legacy-project',
   ),
   'versions' => 
@@ -613,6 +613,15 @@
       array (
       ),
       'reference' => '8.x-1.2',
+    ),
+    'drupal/coming_soon' => 
+    array (
+      'pretty_version' => '3.6.0',
+      'version' => '3.6.0.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '8.x-3.6',
     ),
     'drupal/comment' => 
     array (
@@ -1487,7 +1496,7 @@
       'aliases' => 
       array (
       ),
-      'reference' => '3ed852b5145cf8890a19fa1d4a718c31836b852f',
+      'reference' => 'efec821709792fd91a9377a1d7b68401ae933fbc',
     ),
     'drupal/libraries' => 
     array (
@@ -2239,12 +2248,12 @@
     ),
     'drupal/views_conditional' => 
     array (
-      'pretty_version' => '1.3.0',
-      'version' => '1.3.0.0',
+      'pretty_version' => '1.4.0',
+      'version' => '1.4.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.3',
+      'reference' => '8.x-1.4',
     ),
     'drupal/views_data_export' => 
     array (

@@ -1,0 +1,13 @@
+name: Coming Soon
+description: Makes it easier to add a coming soon page to your website.
+package: Coming Soon
+# core: 8.x
+type: module
+
+configure: coming_soon.admin_page
+
+# Information added by Drupal.org packaging script on 2018-05-27
+version: '8.x-3.6'
+core: '8.x'
+project: 'coming_soon'
+datestamp: 1527417488
