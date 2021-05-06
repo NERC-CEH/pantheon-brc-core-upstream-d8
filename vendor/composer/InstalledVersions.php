@@ -30,7 +30,7 @@ private static $installed = array (
     'aliases' => 
     array (
     ),
-    'reference' => '0c0884ba80f852c33eee94ec2a159c85dfdb6237',
+    'reference' => '5d60d10036d478a06370338e9869fe245bc7a121',
     'name' => 'drupal/legacy-project',
   ),
   'versions' => 
@@ -540,12 +540,12 @@ private static $installed = array (
     ),
     'drupal/captcha' => 
     array (
-      'pretty_version' => '1.1.0',
-      'version' => '1.1.0.0',
+      'pretty_version' => '1.2.0',
+      'version' => '1.2.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.1',
+      'reference' => '8.x-1.2',
     ),
     'drupal/chosen' => 
     array (
@@ -1520,7 +1520,7 @@ private static $installed = array (
       'aliases' => 
       array (
       ),
-      'reference' => '0c0884ba80f852c33eee94ec2a159c85dfdb6237',
+      'reference' => '5d60d10036d478a06370338e9869fe245bc7a121',
     ),
     'drupal/libraries' => 
     array (
@@ -2315,12 +2315,12 @@ private static $installed = array (
     ),
     'drupal/webform' => 
     array (
-      'pretty_version' => '6.0.2',
-      'version' => '6.0.2.0',
+      'pretty_version' => '6.0.3',
+      'version' => '6.0.3.0',
       'aliases' => 
       array (
       ),
-      'reference' => '6.0.2',
+      'reference' => '6.0.3',
     ),
     'drupal/webform_views' => 
     array (
