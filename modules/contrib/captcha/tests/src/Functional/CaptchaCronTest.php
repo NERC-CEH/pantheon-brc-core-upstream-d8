@@ -17,7 +17,7 @@ class CaptchaCronTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['captcha'];
+  public static $modules = ['captcha'];
 
   /**
    * {@inheritdoc}

@@ -1,58 +1,38 @@
 <?php
 
-namespace Drupal\image_captcha\StreamedResponse;
+namespace Drupal\image_captcha\Controller;
 
-use Drupal\Core\Config\ImmutableConfig;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * A Controller to preview the captcha font on the settings page.
  */
-class CaptchaFontPreviewStreamedResponse extends StreamedResponse {
-
-  /**
-   * Config service.
-   *
-   * @var \Drupal\Core\Config\ImmutableConfig
-   */
-  protected $config;
-
-  /**
-   * Token font selector.
-   *
-   * @string
-   */
-  protected $token;
+class CaptchaFontPreview extends StreamedResponse {
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(ImmutableConfig $config, $token, $callback = NULL, $status = 200, $headers = []) {
-    parent::__construct(NULL, $status, $headers);
-
-    $this->config = $config;
-    $this->token = $token;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function sendContent() {
+  public function content(Request $request) {
+    $token = $request->get('token');
     // Get the font from the given font token.
-    if ($this->token == 'BUILTIN') {
+    if ($token == 'BUILTIN') {
       $font = 'BUILTIN';
     }
     else {
       // Get the mapping of font tokens to font file objects.
-      $fonts = $this->config->get('image_captcha_fonts_preview_map_cache');
-      if (!isset($fonts[$this->token])) {
-        return 'bad token';
+      $fonts = \Drupal::config('image_captcha.settings')
+        ->get('image_captcha_fonts_preview_map_cache');
+      if (!isset($fonts[$token])) {
+        echo 'bad token';
+        exit();
       }
       // Get the font path.
-      $font = $fonts[$this->token]['uri'];
+      $font = $fonts[$token]['uri'];
       // Some sanity checks if the given font is valid.
       if (!is_file($font) || !is_readable($font)) {
-        return 'bad font';
+        echo 'bad font';
+        exit();
       }
     }
 
@@ -65,7 +45,7 @@ class CaptchaFontPreviewStreamedResponse extends StreamedResponse {
     // Allocate image resource.
     $image = imagecreatetruecolor($width, $height);
     if (!$image) {
-      return NULL;
+      exit();
     }
     // White background and black foreground.
     $background_color = imagecolorallocate($image, 255, 255, 255);
@@ -85,6 +65,9 @@ class CaptchaFontPreviewStreamedResponse extends StreamedResponse {
     imagepng($image);
     // Release image memory.
     imagedestroy($image);
+
+    // Close connection.
+    exit();
   }
 
 }

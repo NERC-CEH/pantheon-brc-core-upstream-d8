@@ -15,6 +15,3 @@ image-captcha-refresh:
   version: 1.0
   js:
     js/image_captcha_refresh.js: {}
-  css:
-    theme:
-      image_captcha_refresh.css: {}

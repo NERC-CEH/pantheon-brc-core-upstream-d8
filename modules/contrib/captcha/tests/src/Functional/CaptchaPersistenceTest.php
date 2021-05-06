@@ -23,8 +23,7 @@ class CaptchaPersistenceTest extends CaptchaWebTestBase {
     $this->drupalLogin($this->adminUser);
     // Set persistence.
     $edit = ['persistence' => $persistence];
-    $this->drupalGet(self::CAPTCHA_ADMIN_PATH);
-    $this->submitForm($edit, 'Save configuration');
+    $this->drupalPostForm(self::CAPTCHA_ADMIN_PATH, $edit, 'Save configuration');
     // Log admin out.
     $this->drupalLogout();
 
@@ -49,7 +48,7 @@ class CaptchaPersistenceTest extends CaptchaWebTestBase {
    */
   protected function assertPreservedCsid($captcha_sid_initial) {
     $captcha_sid = $this->getCaptchaSidFromForm();
-    $this->assertEquals($captcha_sid_initial, $captcha_sid,
+    $this->assertEqual($captcha_sid_initial, $captcha_sid,
       "CAPTCHA session ID should be preserved (expected: $captcha_sid_initial, found: $captcha_sid).");
   }
 
@@ -61,7 +60,7 @@ class CaptchaPersistenceTest extends CaptchaWebTestBase {
    */
   protected function assertDifferentCsid($captcha_sid_initial) {
     $captcha_sid = $this->getCaptchaSidFromForm();
-    $this->assertNotEquals($captcha_sid_initial, $captcha_sid, "CAPTCHA session ID should be different.");
+    $this->assertNotEqual($captcha_sid_initial, $captcha_sid, "CAPTCHA session ID should be different.");
   }
 
   /**
@@ -83,7 +82,7 @@ class CaptchaPersistenceTest extends CaptchaWebTestBase {
       'pass' => 'bazlaz',
       'captcha_response' => 'Test 123',
     ];
-    $this->submitForm($edit, $this->t('Log in'), self::LOGIN_HTML_FORM_ID);
+    $this->drupalPostForm(NULL, $edit, $this->t('Log in'), [], self::LOGIN_HTML_FORM_ID);
     // Check that there was no error message for the CAPTCHA.
     $this->assertCaptchaResponseAccepted();
 
@@ -93,7 +92,7 @@ class CaptchaPersistenceTest extends CaptchaWebTestBase {
     $this->assertPreservedCsid($captcha_sid_initial);
 
     // Post from again.
-    $this->submitForm($edit, $this->t('Log in'), self::LOGIN_HTML_FORM_ID);
+    $this->drupalPostForm(NULL, $edit, $this->t('Log in'), [], self::LOGIN_HTML_FORM_ID);
     // Check that there was no error message for the CAPTCHA.
     $this->assertCaptchaResponseAccepted();
     $this->assertPreservedCsid($captcha_sid_initial);
@@ -117,7 +116,7 @@ class CaptchaPersistenceTest extends CaptchaWebTestBase {
       'pass' => 'bazlaz',
       'captcha_response' => 'Test 123',
     ];
-    $this->submitForm($edit, $this->t('Log in'), self::LOGIN_HTML_FORM_ID);
+    $this->drupalPostForm(NULL, $edit, $this->t('Log in'), [], self::LOGIN_HTML_FORM_ID);
     // Check that there was no error message for the CAPTCHA.
     $this->assertCaptchaResponseAccepted();
     // There shouldn't be a CAPTCHA on the new form.
@@ -154,7 +153,7 @@ class CaptchaPersistenceTest extends CaptchaWebTestBase {
       'pass' => 'bazlaz',
       'captcha_response' => 'Test 123',
     ];
-    $this->submitForm($edit, $this->t('Log in'), self::LOGIN_HTML_FORM_ID);
+    $this->drupalPostForm(NULL, $edit, $this->t('Log in'), [], self::LOGIN_HTML_FORM_ID);
     // Check that there was no error message for the CAPTCHA.
     $this->assertCaptchaResponseAccepted();
     // There shouldn't be a CAPTCHA on the new form.
@@ -196,7 +195,7 @@ class CaptchaPersistenceTest extends CaptchaWebTestBase {
       'pass' => 'bazlaz',
       'captcha_response' => 'Test 123',
     ];
-    $this->submitForm($edit, $this->t('Log in'), self::LOGIN_HTML_FORM_ID);
+    $this->drupalPostForm(NULL, $edit, $this->t('Log in'), [], self::LOGIN_HTML_FORM_ID);
     // Check that there was no error message for the CAPTCHA.
     $this->assertCaptchaResponseAccepted();
     // There shouldn't be a CAPTCHA on the new form.

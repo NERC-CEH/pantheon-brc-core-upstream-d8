@@ -3,8 +3,6 @@
 namespace Drupal\image_captcha\Response;
 
 use Drupal\Core\Config\Config;
-use Drupal\Core\Database\Connection;
-use Drupal\Core\File\FileSystemInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,25 +17,11 @@ class CaptchaImageResponse extends Response {
   const LOG_LEVEL = 'ERROR';
 
   /**
-   * Database connection configuration container.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
    * Image Captcha config storage.
    *
    * @var \Drupal\Core\Config\Config
    */
   protected $config;
-
-  /**
-   * File System container.
-   *
-   * @var \Drupal\Core\File\FileSystemInterface
-   */
-  protected $fileSystem;
 
   /**
    * Watchdog logger channel for captcha.
@@ -56,13 +40,11 @@ class CaptchaImageResponse extends Response {
   /**
    * {@inheritdoc}
    */
-  public function __construct(Config $config, LoggerInterface $logger, Connection $connection, FileSystemInterface $fileSystem, $callback = NULL, $status = 200, $headers = []) {
+  public function __construct(Config $config, LoggerInterface $logger, $callback = NULL, $status = 200, $headers = []) {
     parent::__construct(NULL, $status, $headers);
 
     $this->config = $config;
     $this->logger = $logger;
-    $this->connection = $connection;
-    $this->fileSystem = $fileSystem;
   }
 
   /**
@@ -71,7 +53,7 @@ class CaptchaImageResponse extends Response {
   public function prepare(Request $request) {
     $session_id = $request->get('session_id');
 
-    $code = $this->connection
+    $code = \Drupal::database()
       ->select('captcha_sessions', 'cs')
       ->fields('cs', ['solution'])
       ->condition('csid', $session_id)
@@ -389,12 +371,11 @@ class CaptchaImageResponse extends Response {
 
       // Pick a random font from the list.
       $font = $fonts[array_rand($fonts)];
-      $font = _image_captcha_get_font_uri($font);
 
       // Get character dimensions for TrueType fonts.
       if ($font != 'BUILTIN') {
         putenv('GDFONTPATH=' . realpath('.'));
-        $bbox = imagettfbbox($font_size, 0, $this->fileSystem->realpath($font), $character);
+        $bbox = imagettfbbox($font_size, 0, \Drupal::service('file_system')->realpath($font), $character);
         // In very rare cases with some versions of the GD library, the x-value
         // of the left side of the bounding box as returned by the first call of
         // imagettfbbox is corrupt (value -2147483648 = 0x80000000).
@@ -402,7 +383,7 @@ class CaptchaImageResponse extends Response {
         // can be used as workaround.
         // This issue is discussed at http://drupal.org/node/349218.
         if ($bbox[2] < 0) {
-          $bbox = imagettfbbox($font_size, 0, $this->fileSystem->realpath($font), $character);
+          $bbox = imagettfbbox($font_size, 0, \Drupal::service('file_system')->realpath($font), $character);
         }
       }
       else {
@@ -421,7 +402,7 @@ class CaptchaImageResponse extends Response {
       }
 
       // Random (but small) rotation of the character.
-      // @todo add a setting for this?
+      // TODO: add a setting for this?
       $angle = mt_rand(-10, 10);
 
       // Determine print position: at what coordinate should the character be
@@ -458,7 +439,7 @@ class CaptchaImageResponse extends Response {
         imagestring($image, 5, $pos_x, $pos_y, $character, $color);
       }
       else {
-        imagettftext($image, $font_size, $angle, $pos_x, $pos_y, $color, $this->fileSystem->realpath($font), $character);
+        imagettftext($image, $font_size, $angle, $pos_x, $pos_y, $color, \Drupal::service('file_system')->realpath($font), $character);
       }
     }
 

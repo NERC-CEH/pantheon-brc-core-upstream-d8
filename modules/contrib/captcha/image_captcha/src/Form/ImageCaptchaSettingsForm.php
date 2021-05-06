@@ -79,7 +79,7 @@ class ImageCaptchaSettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('image_captcha.settings');
     // Add CSS and JS for theming and added usability on admin form.
-    $form['#attached']['library'][] = 'image_captcha/base';
+    $form['#attached']['library'][] = 'captcha_image/base';
 
     // First some error checking.
     $setup_status = _image_captcha_check_setup(FALSE);
@@ -274,10 +274,6 @@ class ImageCaptchaSettingsForm extends ConfigFormBase {
       }
 
       $readable_fonts = [];
-      $available_fonts = _image_captcha_get_font_uri();
-      foreach ($fonts as $token) {
-        $fonts[$token] = $available_fonts[$token];
-      }
       list($readable_fonts, $problem_fonts) = _image_captcha_check_fonts($fonts);
       if (count($problem_fonts) > 0) {
         $form_state->setErrorByName('image_captcha_fonts', $this->t('The following fonts are not readable: %fonts.', ['%fonts' => implode(', ', $problem_fonts)]));
@@ -299,21 +295,13 @@ class ImageCaptchaSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $imageSettings = $form_state->cleanValues()->getValues();
     if (!isset($form['image_captcha_font_settings']['no_ttf_support'])) {
       // Filter the image_captcha fonts array to pick out the selected ones.
-      $image_captcha_fonts = $form_state->getValue('image_captcha_fonts');
-      $imageSettings['image_captcha_fonts'] = array_filter($imageSettings['image_captcha_fonts']);
+      $fonts = array_filter($form_state->getValue('image_captcha_fonts'));
+      $this->config('image_captcha.settings')
+        ->set('image_captcha_fonts', $fonts)
+        ->save();
     }
-    $config = $this->config('image_captcha.settings');
-    // Exclude few fields from config.
-    $exclude = ['image', 'captcha_sid', 'captcha_token', 'captcha_response'];
-    foreach ($imageSettings as $configName => $configValue) {
-      if (!in_array($configName, $exclude)) {
-        $config->set($configName, $configValue);
-      }
-    }
-    $config->save();
 
     parent::SubmitForm($form, $form_state);
   }
@@ -351,7 +339,7 @@ class ImageCaptchaSettingsForm extends ConfigFormBase {
       $available_fonts = [];
 
       // List of folders to search through for TrueType fonts.
-      $fonts = _image_captcha_get_available_fonts_from_directories();
+      $fonts = $this->getAvailableFontsFromDirectories();
       // Cache the list of previewable fonts. All the previews are done
       // in separate requests, and we don't want to rescan the filesystem
       // every time, so we cache the result.
@@ -370,16 +358,20 @@ class ImageCaptchaSettingsForm extends ConfigFormBase {
           'title' => $title,
           'alt' => $title,
         ];
-        $available_fonts[$token] = '<img' . new Attribute($attributes) . ' />';
+        $available_fonts[$font['uri']] = '<img' . new Attribute($attributes) . ' />';
       }
 
       // Append the PHP built-in font at the end.
       $title = $this->t('Preview of built-in font');
-      $available_fonts['BUILTIN'] = $this->t('PHP built-in font: <img src="@font_preview_url" alt="@title" title="@title"', [
-        '@font_preview_url' => Url::fromRoute('image_captcha.font_preview', ['token' => 'BUILTIN'])
+      $attributes = [
+        'src' => Url::fromRoute('image_captcha.font_preview', ['token' => 'BUILTIN'])
           ->toString(),
-        '@title' => $title,
-      ])->__toString();
+        'alt' => $title,
+        'title' => $title,
+      ];
+      $available_fonts['BUILTIN'] = (string) $this->t('PHP built-in font: font_preview', [
+        'font_preview' => '<img' . new Attribute($attributes) . ' />',
+      ]);
 
       $default_fonts = _image_captcha_get_enabled_fonts();
       $conf_path = DrupalKernel::findSitePath($this->getRequest());
@@ -432,6 +424,40 @@ class ImageCaptchaSettingsForm extends ConfigFormBase {
     ];
 
     return $form;
+  }
+
+  /**
+   * Helper function to get fonts from the given directories.
+   *
+   * @param array|null $directories
+   *   (Optional) an array of directories
+   *   to recursively search through, if not given, the default
+   *   directories will be used.
+   *
+   * @return array
+   *   Fonts file objects (with fields 'name',
+   *   'basename' and 'filename'), keyed on the sha256 hash of the font
+   *   path (to have an easy token that can be used in an url
+   *   without en/decoding issues).
+   */
+  protected function getAvailableFontsFromDirectories($directories = NULL) {
+    // If no fonts directories are given: use the default.
+    if ($directories === NULL) {
+      $directories = [
+        drupal_get_path('module', 'image_captcha') . '/fonts',
+        'sites/all/libraries/fonts',
+        DrupalKernel::findSitePath($this->getRequest()) . '/libraries/fonts',
+      ];
+    }
+    // Collect the font information.
+    $fonts = [];
+    foreach ($directories as $directory) {
+      foreach ($this->fileSystem->scanDirectory($directory, '/\.[tT][tT][fF]$/') as $filename => $font) {
+        $fonts[hash('sha256', $filename)] = $font;
+      }
+    }
+
+    return $fonts;
   }
 
 }
