@@ -1,0 +1,31 @@
+<?php
+
+/**
+ * @file
+ * Provides a list of entity synonyms as a field.
+ */
+
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\ContentEntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
+
+/**
+ * Implements hook_entity_base_field_info().
+ */
+function synonyms_entity_base_field_info(EntityTypeInterface $entity_type) {
+  if ($entity_type instanceof ContentEntityTypeInterface) {
+    $fields = [];
+
+    $fields['synonyms'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Synonyms list'))
+      ->setDescription(t('A list of entity synonyms.'))
+      ->setComputed(TRUE)
+      ->setReadOnly(TRUE)
+      ->setClass('\Drupal\synonyms_list_field\Field\SynonymsFieldItemList')
+      ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
+      ->setDisplayConfigurable('view', TRUE);
+
+    return $fields;
+  }
+}

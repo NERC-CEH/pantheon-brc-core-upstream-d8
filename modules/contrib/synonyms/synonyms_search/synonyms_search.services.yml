@@ -1,6 +1,0 @@
-services:
-  synonyms.behavior.search:
-    class: Drupal\synonyms_search\SynonymsService\Behavior\SearchService
-    arguments: [ '@entity_field.manager', '@entity_type.manager', '@database', '@datetime.time' ]
-    tags:
-      - { name: synonyms_behavior }

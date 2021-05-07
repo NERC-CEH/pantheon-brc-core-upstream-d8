@@ -2,6 +2,7 @@
 
 namespace Drupal\synonyms\Plugin\Synonyms\Provider;
 
+use Drupal\Component\Plugin\DependentPluginInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\ConditionInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
@@ -9,12 +10,8 @@ use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryBase;
 use Drupal\Core\Entity\Query\Sql\Condition;
-use Drupal\synonyms\ProviderInterface\FindInterface;
-use Drupal\synonyms\ProviderInterface\FindTrait;
-use Drupal\synonyms\ProviderInterface\FormatWordingInterface;
-use Drupal\synonyms\ProviderInterface\FormatWordingTrait;
-use Drupal\synonyms\ProviderInterface\GetInterface;
-use Drupal\synonyms\ProviderInterface\GetTrait;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\FieldConfigInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -25,9 +22,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   deriver = "Drupal\synonyms\Plugin\Derivative\EntityReferenceField"
  * )
  */
-class EntityReferenceField extends AbstractProvider implements GetInterface, FindInterface, FormatWordingInterface {
-
-  use GetTrait, FindTrait, FormatWordingTrait;
+class EntityReferenceField extends AbstractProvider implements DependentPluginInterface {
 
   /**
    * The entity field manager.
@@ -51,7 +46,7 @@ class EntityReferenceField extends AbstractProvider implements GetInterface, Fin
   protected $database;
 
   /**
-   * {@inheritdoc}
+   * EntityReferenceField constructor.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityFieldManagerInterface $entity_field_manager, EntityTypeManagerInterface $entity_type_manager, Connection $database, ContainerInterface $container) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $container);
@@ -83,7 +78,9 @@ class EntityReferenceField extends AbstractProvider implements GetInterface, Fin
     $synonyms = [];
 
     foreach ($entity->get($this->getPluginDefinition()['field']) as $item) {
-      $synonyms[] = $item->entity->label();
+      if (!$item->isEmpty()) {
+        $synonyms[] = $item->entity->label();
+      }
     }
 
     return $synonyms;
@@ -94,8 +91,7 @@ class EntityReferenceField extends AbstractProvider implements GetInterface, Fin
    */
   public function synonymsFind(ConditionInterface $condition) {
     $entity_type_definition = $this->entityTypeManager->getDefinition($this->getPluginDefinition()['controlled_entity_type']);
-    $field = $this->entityFieldManager->getFieldDefinitions($this->getPluginDefinition()['controlled_entity_type'], $this->getPluginDefinition()['controlled_bundle']);
-    $field = $field[$this->getPluginDefinition()['field']];
+    $field = $this->getFieldDefinition();
 
     $query = new FieldQuery($entity_type_definition, 'AND', $this->database, QueryBase::getNamespaces($this->entityTypeManager->getStorage($entity_type_definition->id())->getQuery()));
 
@@ -180,10 +176,26 @@ class EntityReferenceField extends AbstractProvider implements GetInterface, Fin
    * {@inheritdoc}
    */
   public function calculateDependencies() {
-    $field = $this->entityFieldManager->getFieldDefinitions($this->getPluginDefinition()['controlled_entity_type'], $this->getPluginDefinition()['controlled_bundle'])[$this->getPluginDefinition()['field']];
-    return [
-      $field->getConfigDependencyKey() => [$field->getConfigDependencyName()],
-    ];
+    $field = $this->getFieldDefinition();
+
+    $dependencies = [];
+
+    if ($field instanceof FieldConfigInterface) {
+      $dependencies[$field->getConfigDependencyKey()] = [$field->getConfigDependencyName()];
+    }
+
+    return $dependencies;
+  }
+
+  /**
+   * Retrieve the field definition against which this plugin is configured.
+   *
+   * @return \Drupal\Core\Field\FieldDefinitionInterface
+   *   Field definition against which this plugin is configured.
+   */
+  protected function getFieldDefinition() {
+    $field = $this->entityFieldManager->getFieldDefinitions($this->getPluginDefinition()['controlled_entity_type'], $this->getPluginDefinition()['controlled_bundle']);
+    return $field[$this->getPluginDefinition()['field']];
   }
 
 }

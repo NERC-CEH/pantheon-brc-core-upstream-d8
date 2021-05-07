@@ -5,6 +5,8 @@ namespace Drupal\Tests\commerce_recurring\Kernel;
 use Drupal\commerce_order\Entity\Order;
 use Drupal\commerce_order\Entity\OrderItem;
 use Drupal\commerce_order\Entity\OrderType;
+use Drupal\commerce_payment\Entity\PaymentGateway;
+use Drupal\commerce_payment\Entity\PaymentMethod;
 use Drupal\commerce_recurring\Entity\Subscription;
 
 /**
@@ -32,39 +34,7 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
    * Canceling the initial order should cancel the subscription.
    */
   public function testLifecycle() {
-    $configuration = $this->billingSchedule->getPluginConfiguration();
-    unset($configuration['trial_interval']);
-    $this->billingSchedule->setPluginConfiguration($configuration);
-    $this->billingSchedule->save();
-
-    $first_order_item = OrderItem::create([
-      'type' => 'test',
-      'title' => 'I promise not to start a subscription',
-      'unit_price' => [
-        'number' => '10.00',
-        'currency_code' => 'USD',
-      ],
-      'quantity' => 1,
-    ]);
-    $first_order_item->save();
-    $second_order_item = OrderItem::create([
-      'type' => 'default',
-      'purchased_entity' => $this->variation,
-      'unit_price' => [
-        'number' => '2.00',
-        'currency_code' => 'USD',
-      ],
-      'quantity' => '3',
-    ]);
-    $second_order_item->save();
-    $initial_order = Order::create([
-      'type' => 'default',
-      'store_id' => $this->store,
-      'uid' => $this->user,
-      'order_items' => [$first_order_item, $second_order_item],
-      'state' => 'draft',
-    ]);
-    $initial_order->save();
+    $initial_order = $this->createInitialOrder();
 
     // Confirm that placing the initial order with no payment method doesn't
     // create the subscription.
@@ -120,34 +90,7 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
    * Canceling the initial order should cancel the trial.
    */
   public function testLifecycleWithTrial() {
-    $first_order_item = OrderItem::create([
-      'type' => 'test',
-      'title' => 'I promise not to start a subscription',
-      'unit_price' => [
-        'number' => '10.00',
-        'currency_code' => 'USD',
-      ],
-      'quantity' => 1,
-    ]);
-    $first_order_item->save();
-    $second_order_item = OrderItem::create([
-      'type' => 'default',
-      'purchased_entity' => $this->variation,
-      'unit_price' => [
-        'number' => '2.00',
-        'currency_code' => 'USD',
-      ],
-      'quantity' => '3',
-    ]);
-    $second_order_item->save();
-    $initial_order = Order::create([
-      'type' => 'default',
-      'store_id' => $this->store,
-      'uid' => $this->user,
-      'order_items' => [$first_order_item, $second_order_item],
-      'state' => 'draft',
-    ]);
-    $initial_order->save();
+    $initial_order = $this->createInitialOrder(TRUE);
 
     // Confirm that placing the initial order creates a trial subscription,
     // even without a payment method.
@@ -189,4 +132,98 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
     $this->assertEquals('canceled', $subscription->getState()->getId());
   }
 
+  /**
+   * Tests that updating an active subscription also updates the current order.
+   */
+  public function testSubscriptionUpdates() {
+    $initial_order = $this->createInitialOrder();
+
+    // Set a payment gateway and place the order so the subscription gets
+    // created.
+    $initial_order->set('payment_method', $this->paymentMethod);
+    $initial_order->getState()->applyTransitionById('place');
+    $initial_order->save();
+
+    /** @var \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription */
+    $subscription = Subscription::load(1);
+    $this->assertEquals('active', $subscription->getState()->getId());
+
+    /** @var \Drupal\commerce_order\Entity\OrderInterface $recurring_order */
+    $recurring_order = Order::load(2);
+    $this->assertEquals('recurring', $recurring_order->bundle());
+    $this->assertEquals($recurring_order->id(), $subscription->getCurrentOrder()->id());
+
+    // Check that updating the payment method of the subscription also updates
+    // the current recurring order.
+    $new_payment_gateway = PaymentGateway::create([
+      'id' => 'example_2',
+      'label' => 'Example 2',
+      'plugin' => 'example_onsite',
+    ]);
+    $new_payment_gateway->save();
+    /** @var \Drupal\commerce_payment\Entity\PaymentMethodInterface $new_payment_method */
+    $new_payment_method = PaymentMethod::create([
+      'type' => 'credit_card',
+      'payment_gateway' => $new_payment_gateway,
+      'card_type' => 'visa',
+      'uid' => $this->user->id(),
+    ]);
+    $new_payment_method->save();
+
+    $subscription->setPaymentMethod($new_payment_method);
+    $subscription->save();
+    $recurring_order = $this->reloadEntity($recurring_order);
+    $this->assertEquals($new_payment_method->id(), $subscription->getPaymentMethodId());
+    $this->assertEquals($new_payment_method->id(), $recurring_order->get('payment_method')->target_id);
+    $this->assertEquals($new_payment_gateway->id(), $recurring_order->get('payment_gateway')->target_id);
+  }
+
+  /**
+   * Tests the subscription deletion.
+   *
+   * Deleting the subscription will also delete its recurring orders.
+   */
+  public function testSubscriptionDelete() {
+    $initial_order = $this->createInitialOrder();
+
+    // Confirm that placing the initial order with no payment method doesn't
+    // create the subscription.
+    $initial_order->getState()->applyTransitionById('place');
+    $initial_order->save();
+    $subscriptions = Subscription::loadMultiple();
+    $this->assertCount(0, $subscriptions);
+
+    // Confirm that placing an order with a payment method creates an
+    // active subscription.
+    $initial_order->set('state', 'draft');
+    $initial_order->set('payment_method', $this->paymentMethod);
+    $initial_order->save();
+    $initial_order->getState()->applyTransitionById('place');
+    $initial_order->save();
+    $subscriptions = Subscription::loadMultiple();
+    $this->assertCount(1, $subscriptions);
+    /** @var \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription */
+    $subscription = reset($subscriptions);
+
+    // Confirm that a recurring order was created for the subscription.
+    $orders = $subscription->getOrders();
+    $this->assertCount(1, $orders);
+    $order = reset($orders);
+    $this->assertEquals('recurring', $order->bundle());
+
+    // Confirm that the recurring order has an order item for the subscription.
+    $order_items = $order->getItems();
+    $this->assertCount(1, $order_items);
+    $order_item = reset($order_items);
+    $this->assertEquals($subscription->id(), $order_item->get('subscription')->target_id);
+
+    // Test deleting the subscription.
+    $subscription->delete();
+    $subscription = $this->reloadEntity($subscription);
+    $order_item = $this->reloadEntity($order_item);
+    $order = $this->reloadEntity($order);
+    $this->assertNull($subscription);
+    $this->assertNull($order_item);
+    $this->assertNull($order);
+  }
 }

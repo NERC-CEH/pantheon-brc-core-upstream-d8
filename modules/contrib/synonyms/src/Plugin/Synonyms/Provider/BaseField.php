@@ -5,14 +5,7 @@ namespace Drupal\synonyms\Plugin\Synonyms\Provider;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\ConditionInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\synonyms\ProviderInterface\FindInterface;
-use Drupal\synonyms\ProviderInterface\FindTrait;
-use Drupal\synonyms\ProviderInterface\FormatWordingInterface;
-use Drupal\synonyms\ProviderInterface\FormatWordingTrait;
-use Drupal\synonyms\ProviderInterface\GetInterface;
-use Drupal\synonyms\ProviderInterface\GetTrait;
 use Drupal\synonyms\SynonymsService\FieldTypeToSynonyms;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -24,16 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   deriver = "Drupal\synonyms\Plugin\Derivative\Field"
  * )
  */
-class BaseField extends AbstractProvider implements GetInterface, FindInterface, FormatWordingInterface {
-
-  use GetTrait, FindTrait, FormatWordingTrait;
-
-  /**
-   * The entity field manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected $entityFieldManager;
+class BaseField extends AbstractProvider {
 
   /**
    * The field type to synonyms.
@@ -59,10 +43,9 @@ class BaseField extends AbstractProvider implements GetInterface, FindInterface,
   /**
    * BaseField constructor.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityFieldManagerInterface $entity_field_manager, FieldTypeToSynonyms $field_type_to_synonyms, EntityTypeManagerInterface $entity_type_manager, Connection $database, ContainerInterface $container) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, FieldTypeToSynonyms $field_type_to_synonyms, EntityTypeManagerInterface $entity_type_manager, Connection $database, ContainerInterface $container) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $container);
 
-    $this->entityFieldManager = $entity_field_manager;
     $this->fieldTypeToSynonyms = $field_type_to_synonyms;
     $this->entityTypeManager = $entity_type_manager;
     $this->database = $database;
@@ -76,7 +59,6 @@ class BaseField extends AbstractProvider implements GetInterface, FindInterface,
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('entity_field.manager'),
       $container->get('synonyms.provider.field_type_to_synonyms'),
       $container->get('entity_type.manager'),
       $container->get('database'),
@@ -95,7 +77,9 @@ class BaseField extends AbstractProvider implements GetInterface, FindInterface,
 
     if (isset($map[$field_type])) {
       foreach ($entity->get($this->getPluginDefinition()['field']) as $item) {
-        $synonyms[] = $item->{$map[$field_type]};
+        if (!$item->isEmpty()) {
+          $synonyms[] = $item->{$map[$field_type]};
+        }
       }
     }
 
@@ -121,16 +105,6 @@ class BaseField extends AbstractProvider implements GetInterface, FindInterface,
     $query->condition($condition);
 
     return $query->execute();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function calculateDependencies() {
-    $field = $this->entityFieldManager->getFieldDefinitions($this->getPluginDefinition()['controlled_entity_type'], $this->getPluginDefinition()['controlled_bundle'])[$this->getPluginDefinition()['field']];
-    return [
-      $field->getConfigDependencyKey() => [$field->getConfigDependencyName()],
-    ];
   }
 
 }

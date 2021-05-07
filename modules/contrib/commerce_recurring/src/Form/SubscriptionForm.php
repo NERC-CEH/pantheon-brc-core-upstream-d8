@@ -2,6 +2,7 @@
 
 namespace Drupal\commerce_recurring\Form;
 
+use Drupal\commerce_recurring\Entity\SubscriptionInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Datetime\DateFormatterInterface;
@@ -140,6 +141,29 @@ class SubscriptionForm extends ContentEntityForm {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  protected function actions(array $form, FormStateInterface $form_state) {
+    $actions = parent::actions($form, $form_state);
+    $subscription = $this->entity;
+    assert($subscription instanceof SubscriptionInterface);
+
+    // No need for a Cancel button when creating a subscription.
+    if (!$subscription->isNew()) {
+      $actions['delete']['#weight'] = 50;
+      $actions['cancel'] = [
+        '#type' => 'submit',
+        '#button_type' => 'danger',
+        '#value' => t('Cancel subscription'),
+        '#submit' => ['::cancelSubscription'],
+        '#access' => $subscription->getState()->getId() !== 'canceled' && $subscription->access('cancel'),
+      ];
+    }
+
+    return $actions;
+  }
+
+  /**
    * Builds a read-only form element for a field.
    *
    * @param string $label
@@ -173,6 +197,23 @@ class SubscriptionForm extends ContentEntityForm {
     $this->entity->save();
     $this->messenger()->addMessage($this->t('A subscription been successfully saved.'));
     $form_state->setRedirect('entity.commerce_subscription.collection');
+  }
+
+  /**
+   * Submit handler for canceling a subscription.
+   *
+   * @param array $form
+   *   The form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   */
+  public function cancelSubscription(array $form, FormStateInterface $form_state) {
+    // Prevent ?destination from overriding our redirect.
+    // @todo remove after https://www.drupal.org/project/drupal/issues/2950883
+    $this->getRequest()->query->remove('destination');
+    $form_state->setRedirect('entity.commerce_subscription.cancel_form', [
+      'commerce_subscription' => $this->entity->id(),
+    ]);
   }
 
 }

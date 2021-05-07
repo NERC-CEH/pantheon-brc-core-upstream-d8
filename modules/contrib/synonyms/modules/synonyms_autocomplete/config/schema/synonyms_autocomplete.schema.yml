@@ -1,0 +1,18 @@
+synonyms_autocomplete.settings:
+  type: config_entity
+  label: 'Widget configuration'
+  mapping:
+    default_wording:
+      type: string
+      label: 'Default wording for this widget'
+
+synonyms_autocomplete.behavior.*:
+  type: config_entity
+  label: 'Behavior configuration'
+  mapping:
+    status:
+      type: boolean
+      label: 'Status'
+    wording:
+      type: string
+      label: 'Behavior service wording'

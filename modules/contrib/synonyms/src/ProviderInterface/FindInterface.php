@@ -7,7 +7,7 @@ use Drupal\Core\Database\Query\ConditionInterface;
 /**
  * Interface to look up entities by synonyms they have.
  */
-interface FindInterface extends ProviderInterface {
+interface FindInterface {
 
   /**
    * Constant which denotes placeholder of a synonym column.
@@ -22,6 +22,22 @@ interface FindInterface extends ProviderInterface {
    * @var string
    */
   const COLUMN_ENTITY_ID_PLACEHOLDER = '***ENTITY_ID***';
+
+  /**
+   * Supportive method to process $condition argument in synonymsFind().
+   *
+   * This method will swap FindInterface::COLUMN_* to real
+   * column names in $condition for you, so you do not have to worry about
+   * internal processing of $condition object.
+   *
+   * @param \Drupal\Core\Database\Query\ConditionInterface $condition
+   *   Condition to be processed.
+   * @param string $synonym_column
+   *   Actual name of the column where synonyms are kept in text.
+   * @param string $entity_id_column
+   *   Actual name of the column where entity_ids are kept.
+   */
+  public function synonymsFindProcessCondition(ConditionInterface $condition, $synonym_column, $entity_id_column);
 
   /**
    * Look up entities by their synonyms within a behavior implementation.

@@ -22,9 +22,11 @@ class BillingPeriodItemTest extends KernelTestBase {
   public static $modules = [
     'commerce',
     'commerce_price',
+    'commerce_order',
     'commerce_recurring',
     'field',
     'entity_test',
+    'profile',
     'user',
   ];
 

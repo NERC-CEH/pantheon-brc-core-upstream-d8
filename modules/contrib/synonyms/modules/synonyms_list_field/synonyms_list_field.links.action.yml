@@ -1,0 +1,6 @@
+synonyms_list_field.settings:
+  route_name: 'synonyms_list_field.settings'
+  title: 'Synonyms list field settings'
+  weight: 1
+  appears_on:
+    - synonyms.overview

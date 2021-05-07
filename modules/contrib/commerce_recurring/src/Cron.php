@@ -93,10 +93,12 @@ class Cron implements CronInterface {
 
       $subscription = reset($subscriptions);
       if ($subscription->hasScheduledChanges()) {
+        // Apply changes that were scheduled to happen on the next billing
+        // cycle like suscription cancelation.
         $subscription->applyScheduledChanges();
         $subscription->save();
       }
-      // If the subscription was scheduled for cancellation, applying the
+      // If the subscription was scheduled for cancelation, applying the
       // scheduled changes has resulted in both the subscription and its
       // recurring order being canceled.
       // Canceled orders are considered closed, and don't need to be charged.

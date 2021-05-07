@@ -10,19 +10,11 @@ services:
 
   synonyms.provider_service:
     class: Drupal\synonyms\SynonymsService\ProviderService
-    arguments: [ '@entity_type.manager' ]
+    arguments: [ '@entity_type.manager', '@entity_type.bundle.info' ]
 
   synonyms.provider.field_type_to_synonyms:
     class: Drupal\synonyms\SynonymsService\FieldTypeToSynonyms
     arguments: [ '@module_handler' ]
-
-  synonyms.find_synonyms:
-    class: Drupal\synonyms\SynonymsService\FindSynonyms
-    arguments: [ '@entity_type.bundle.info' ]
-
-  synonyms.entity_get_by_synonym:
-    class: Drupal\synonyms\SynonymsService\EntityGetBySynonym
-    arguments: [ '@synonyms.find_synonyms', '@entity_type.manager' ]
 
   synonyms.param_converter.entity_type:
     class: Drupal\synonyms\ParamConverter\EntityTypeParamConverter

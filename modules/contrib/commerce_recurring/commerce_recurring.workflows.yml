@@ -29,7 +29,7 @@ order_recurring:
       to: failed
     cancel:
       label: 'Cancel order'
-      from: [draft]
+      from: [draft, needs_payment, failed]
       to: canceled
 
 subscription_default:

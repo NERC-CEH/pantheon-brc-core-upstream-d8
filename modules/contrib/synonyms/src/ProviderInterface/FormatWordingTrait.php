@@ -52,13 +52,13 @@ trait FormatWordingTrait {
       }
       // Try widget's wording per entity type.
       if (empty($wording) && ($wording_type == 'provider' || $wording_type == 'entity')) {
-        $get_wording = \Drupal::config('synonyms.behavior.' . $entity_type . '.' . $bundle . '.' . $service_id)->get('wording');
+        $get_wording = \Drupal::config('synonyms_' . $service_id . '.behavior.' . $entity_type . '.' . $bundle)->get('wording');
         $wording = !empty($get_wording) ? $get_wording : $wording;
       }
       // Try default widget's wording and if it is empty as well
       // fallback to basic '@synonym' wording.
       if (empty($wording) && ($wording_type == 'provider' || $wording_type == 'entity' || $wording_type == 'default')) {
-        $get_wording = \Drupal::config('synonyms_' . $service_id . '.widget')->get('default_wording');
+        $get_wording = \Drupal::config('synonyms_' . $service_id . '.settings')->get('default_wording');
         $wording = !empty($get_wording) ? $get_wording : $wording;
       }
       // Ultimate fallback if all other wordings are empty.

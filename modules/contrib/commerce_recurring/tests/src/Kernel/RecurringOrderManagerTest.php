@@ -83,7 +83,8 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
    * @covers ::startTrial
    */
   public function testStartTrialWithInvalidState() {
-    $this->setExpectedException(\InvalidArgumentException::class, 'Unexpected subscription state "active".');
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('Unexpected subscription state "active".');
     $order = $this->recurringOrderManager->startTrial($this->activeSubscription);
   }
 
@@ -96,7 +97,8 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
     $this->billingSchedule->setPluginConfiguration($configuration);
     $this->billingSchedule->save();
 
-    $this->setExpectedException(\InvalidArgumentException::class, 'The billing schedule "test_id" does not allow trials.');
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('The billing schedule "test_id" does not allow trials.');
     $order = $this->recurringOrderManager->startTrial($this->trialSubscription);
   }
 
@@ -174,7 +176,8 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
    * @covers ::startRecurring
    */
   public function testStartRecurringWithInvalidState() {
-    $this->setExpectedException(\InvalidArgumentException::class, 'Unexpected subscription state "trial".');
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('Unexpected subscription state "trial".');
     $order = $this->recurringOrderManager->startRecurring($this->trialSubscription);
   }
 
@@ -301,7 +304,8 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
     $this->activeSubscription->save();
     $order = $this->recurringOrderManager->startRecurring($this->activeSubscription);
 
-    $this->setExpectedException(HardDeclineException::class, 'Payment method not found.');
+    $this->expectException(HardDeclineException::class);
+    $this->expectExceptionMessage('Payment method not found.');
     $this->recurringOrderManager->closeOrder($order);
   }
 
@@ -326,6 +330,64 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
     $this->assertEquals($this->paymentMethod->id(), $payment->getPaymentMethodId());
     $this->assertEquals($order->id(), $payment->getOrderId());
     $this->assertEquals($order->getTotalPrice(), $payment->getAmount());
+  }
+
+  /**
+   * @covers ::closeOrder
+   */
+  public function testCloseOrderAlreadyPaidMarksTheOrderAsCompleted() {
+    $order = $this->recurringOrderManager->startRecurring($this->activeSubscription);
+
+    // We set the total paid to the amount of the order, but don't set the order
+    // as complete.
+    $order->set('total_paid', $order->getTotalPrice())
+      ->set('state', 'needs_payment')
+      ->save();
+    $order = $this->reloadEntity($order);
+
+    $this->assertEquals('needs_payment', $order->getState()->getId());
+    $this->assertTrue($order->isPaid());
+
+    // We close an order that was already completed.
+    $this->recurringOrderManager->closeOrder($order);
+
+    $order = $this->reloadEntity($order);
+
+    $this->assertTrue($order->isPaid());
+    $this->assertEquals('completed', $order->getState()->getId());
+
+    /** @var \Drupal\commerce_payment\PaymentStorageInterface $payment_storage */
+    $payment_storage = $this->container->get('entity_type.manager')->getStorage('commerce_payment');
+    // No extra payment has been added.
+    $payments = $payment_storage->loadMultipleByOrder($order);
+    $this->assertCount(0, $payments);
+  }
+
+  /**
+   * @covers ::closeOrder
+   */
+  public function testCloseOrderAlreadyCanceledDoesntAddExtraPayment() {
+    $order = $this->recurringOrderManager->startRecurring($this->activeSubscription);
+
+    // We set the order as canceled.
+    $order->set('state', 'canceled')->save();
+    $order = $this->reloadEntity($order);
+
+    $this->assertEquals('canceled', $order->getState()->getId());
+
+    // We close an order that was canceled.
+    $this->recurringOrderManager->closeOrder($order);
+
+    $order = $this->reloadEntity($order);
+
+    $this->assertFalse($order->isPaid());
+    $this->assertEquals('canceled', $order->getState()->getId());
+
+    /** @var \Drupal\commerce_payment\PaymentStorageInterface $payment_storage */
+    $payment_storage = $this->container->get('entity_type.manager')->getStorage('commerce_payment');
+    // No extra payment has been added.
+    $payments = $payment_storage->loadMultipleByOrder($order);
+    $this->assertCount(0, $payments);
   }
 
   /**

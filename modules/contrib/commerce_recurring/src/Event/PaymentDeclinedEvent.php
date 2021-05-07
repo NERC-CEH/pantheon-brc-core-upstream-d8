@@ -3,6 +3,7 @@
 namespace Drupal\commerce_recurring\Event;
 
 use Drupal\commerce_order\Entity\OrderInterface;
+use Drupal\commerce_payment\Exception\DeclineException;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
@@ -44,6 +45,13 @@ class PaymentDeclinedEvent extends Event {
   protected $maxRetries;
 
   /**
+   * The payment decline exception.
+   *
+   * @var null|\Drupal\commerce_payment\Exception\DeclineException
+   */
+  protected $exception;
+
+  /**
    * Constructs a new PaymentDeclinedEvent object.
    *
    * @param \Drupal\commerce_order\Entity\OrderInterface $order
@@ -54,12 +62,15 @@ class PaymentDeclinedEvent extends Event {
    *   The number of times payment was retried.
    * @param int $max_retries
    *   The maximum number of retries.
+   * @param \Drupal\commerce_payment\Exception\DeclineException $exception
+   *   (optional) The payment decline exception.
    */
-  public function __construct(OrderInterface $order, $retry_days, $num_retries, $max_retries) {
+  public function __construct(OrderInterface $order, $retry_days, $num_retries, $max_retries, DeclineException $exception = NULL) {
     $this->order = $order;
     $this->retryDays = $retry_days;
     $this->numRetries = $num_retries;
     $this->maxRetries = $max_retries;
+    $this->exception = $exception;
   }
 
   /**
@@ -100,6 +111,16 @@ class PaymentDeclinedEvent extends Event {
    */
   public function getMaxRetries() {
     return $this->maxRetries;
+  }
+
+  /**
+   * Gets the payment decline exception.
+   *
+   * @return null|\Drupal\commerce_payment\Exception\DeclineException
+   *   The payment decline exception.
+   */
+  public function getException() {
+    return $this->exception;
   }
 
 }

@@ -9,6 +9,6 @@ workflow: order_recurring
 traits: {  }
 refresh_mode: customer
 refresh_frequency: 300
-sendReceipt: true
+sendReceipt: false
 receiptBcc: ''
 locked: true

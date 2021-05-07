@@ -5,23 +5,18 @@
  * Provide synonyms feature for content entities.
  */
 
-use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\ContentEntityTypeInterface;
-use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
- * Implements hook_entity_base_field_info().
+ * Implements hook_help().
  */
-function synonyms_entity_base_field_info(EntityTypeInterface $entity_type) {
-  if ($entity_type instanceof ContentEntityTypeInterface) {
-    $fields = [];
+function synonyms_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for Synonyms module.
+    case 'help.page.synonyms':
+      // Return a line-break version of the README.md file.
+      return _filter_autop(file_get_contents(dirname(__FILE__) . '/README.md'));
 
-    $fields['synonyms'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Entity synonyms'))
-      ->setDescription(t('A list of known entity synonyms.'))
-      ->setComputed(TRUE)
-      ->setClass('\Drupal\synonyms\Plugin\SynonymsFieldItemList');
-
-    return $fields;
+    default:
   }
 }

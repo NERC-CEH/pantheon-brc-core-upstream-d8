@@ -147,7 +147,8 @@ class OrderSubscriber implements EventSubscriberInterface {
       $query = $subscription_storage->getQuery();
       $query
         ->condition('initial_order', $order->id())
-        ->condition('state', ['trial', 'active'], 'IN');
+        ->condition('state', ['trial', 'active'], 'IN')
+        ->accessCheck(FALSE);
       $result = $query->execute();
       if ($result) {
         $subscriptions = $subscription_storage->loadMultiple($result);

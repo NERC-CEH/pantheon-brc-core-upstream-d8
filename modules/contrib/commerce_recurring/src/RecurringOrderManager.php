@@ -130,7 +130,19 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
    * {@inheritdoc}
    */
   public function closeOrder(OrderInterface $order) {
-    if ($order->getState()->getId() == 'draft') {
+    $order_state = $order->getState()->getId();
+    if ($order->isPaid()) {
+      if (in_array('mark_paid', array_keys($order->getState()
+        ->getTransitions()))) {
+        $order->getState()->applyTransitionById('mark_paid');
+        $order->save();
+      }
+    }
+    if (in_array($order_state, ['canceled', 'completed']) || $order->isPaid()) {
+      return;
+    }
+
+    if ($order_state == 'draft') {
       $order->getState()->applyTransitionById('place');
       $order->save();
     }
@@ -141,23 +153,28 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
       throw new HardDeclineException('Payment method not found.');
     }
     $payment_gateway = $payment_method->getPaymentGateway();
+    if (!$payment_gateway) {
+      throw new HardDeclineException('Payment gateway not found');
+    }
     /** @var \Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\OnsitePaymentGatewayInterface $payment_gateway_plugin */
     $payment_gateway_plugin = $payment_gateway->getPlugin();
-    $payment_storage = $this->entityTypeManager->getStorage('commerce_payment');
-    /** @var \Drupal\commerce_payment\Entity\PaymentInterface $payment */
-    $payment = $payment_storage->create([
-      'payment_gateway' => $payment_gateway->id(),
-      'payment_method' => $payment_method->id(),
-      'order_id' => $order->id(),
-      'amount' => $order->getTotalPrice(),
-      'state' => 'new',
-    ]);
-    // The createPayment() call might throw a decline exception, which is
-    // supposed to be handled by the caller, to allow for dunning.
-    $payment_gateway_plugin->createPayment($payment);
+    if (!$order->isPaid()) {
+      $payment_storage = $this->entityTypeManager->getStorage('commerce_payment');
+      /** @var \Drupal\commerce_payment\Entity\PaymentInterface $payment */
+      $payment = $payment_storage->create([
+        'payment_gateway' => $payment_gateway->id(),
+        'payment_method' => $payment_method->id(),
+        'order_id' => $order->id(),
+        'amount' => $order->getTotalPrice(),
+        'state' => 'new',
+      ]);
+      // The createPayment() call might throw a decline exception, which is
+      // supposed to be handled by the caller, to allow for dunning.
+      $payment_gateway_plugin->createPayment($payment);
 
-    $order->getState()->applyTransitionById('mark_paid');
-    $order->save();
+      $order->getState()->applyTransitionById('mark_paid');
+      $order->save();
+    }
   }
 
   /**

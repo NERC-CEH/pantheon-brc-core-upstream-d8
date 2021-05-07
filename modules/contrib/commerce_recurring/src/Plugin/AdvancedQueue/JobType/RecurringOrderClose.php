@@ -28,6 +28,10 @@ class RecurringOrderClose extends RecurringJobTypeBase {
       return JobResult::failure('Order not found.');
     }
 
+    if ($order->getState()->getId() == 'canceled') {
+      return JobResult::failure('Order has been canceled.');
+    }
+
     try {
       $this->recurringOrderManager->closeOrder($order);
     }

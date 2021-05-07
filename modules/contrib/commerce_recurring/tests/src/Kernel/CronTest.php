@@ -69,10 +69,10 @@ class CronTest extends RecurringKernelTestBase {
     $counts = array_filter($queue->getBackend()->countJobs());
     $this->assertEquals([Job::STATE_QUEUED => 2], $counts);
     $first_job = $queue->getBackend()->claimJob();
-    $this->assertArraySubset(['order_id' => $order->id()], $first_job->getPayload());
+    $this->assertSame(['order_id' => $order->id()], $first_job->getPayload());
     $this->assertEquals('commerce_recurring_order_close', $first_job->getType());
     $second_job = $queue->getBackend()->claimJob();
-    $this->assertArraySubset(['subscription_id' => $subscription->id()], $second_job->getPayload());
+    $this->assertSame(['subscription_id' => $subscription->id()], $second_job->getPayload());
     $this->assertEquals('commerce_subscription_activate', $second_job->getType());
   }
 
@@ -109,7 +109,7 @@ class CronTest extends RecurringKernelTestBase {
     $counts = array_filter($queue->getBackend()->countJobs());
     $this->assertEquals([Job::STATE_QUEUED => 1], $counts);
     $job = $queue->getBackend()->claimJob();
-    $this->assertArraySubset(['order_id' => $postpaid_order->id()], $job->getPayload());
+    $this->assertSame(['order_id' => $postpaid_order->id()], $job->getPayload());
     $this->assertEquals('commerce_recurring_order_close', $job->getType());
 
     $postpaid_subscription->delete();
@@ -184,10 +184,10 @@ class CronTest extends RecurringKernelTestBase {
     $counts = array_filter($queue->getBackend()->countJobs());
     $this->assertEquals([Job::STATE_QUEUED => 2], $counts);
     $first_job = $queue->getBackend()->claimJob();
-    $this->assertArraySubset(['order_id' => $order->id()], $first_job->getPayload());
+    $this->assertSame(['order_id' => $order->id()], $first_job->getPayload());
     $this->assertEquals('commerce_recurring_order_close', $first_job->getType());
     $second_job = $queue->getBackend()->claimJob();
-    $this->assertArraySubset(['order_id' => $order->id()], $second_job->getPayload());
+    $this->assertSame(['order_id' => $order->id()], $second_job->getPayload());
     $this->assertEquals('commerce_recurring_order_renew', $second_job->getType());
   }
 
@@ -222,7 +222,7 @@ class CronTest extends RecurringKernelTestBase {
     $counts = array_filter($queue->getBackend()->countJobs());
     $this->assertEquals([Job::STATE_QUEUED => 1], $counts);
     $job = $queue->getBackend()->claimJob();
-    $this->assertArraySubset(['order_id' => $postpaid_order->id()], $job->getPayload());
+    $this->assertSame(['order_id' => $postpaid_order->id()], $job->getPayload());
     $this->assertEquals('commerce_recurring_order_close', $job->getType());
 
     $postpaid_subscription->delete();
@@ -286,7 +286,7 @@ class CronTest extends RecurringKernelTestBase {
     $counts = array_filter($queue->getBackend()->countJobs());
     $this->assertEquals([Job::STATE_QUEUED => 1], $counts);
     $job = $queue->getBackend()->claimJob();
-    $this->assertArraySubset(['subscription_id' => $subscription->id()], $job->getPayload());
+    $this->assertSame(['subscription_id' => $subscription->id()], $job->getPayload());
   }
 
   /**

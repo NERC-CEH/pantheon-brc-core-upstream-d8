@@ -4,6 +4,8 @@ namespace Drupal\Tests\commerce_recurring\FunctionalJavascript;
 
 use Drupal\commerce_recurring\Entity\BillingSchedule;
 use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
+use Drupal\commerce_recurring\Entity\Subscription;
+use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\Tests\commerce\FunctionalJavascript\CommerceWebDriverTestBase;
 
 /**
@@ -145,6 +147,48 @@ class BillingScheduleTest extends CommerceWebDriverTestBase {
     ], $billing_schedule->getPluginConfiguration());
     $this->assertEquals($billing_schedule->getPluginConfiguration(), $billing_schedule->getPlugin()->getConfiguration());
     $this->assertEquals('full_price', $billing_schedule->getProraterId());
+
+    // Check that some fields are disabled when editing a billing schedule that
+    // is used by subscriptions.
+    $variation = ProductVariation::create([
+      'type' => 'default',
+      'sku' => strtolower($this->randomMachineName()),
+      'price' => [
+        'number' => '39.99',
+        'currency_code' => 'USD',
+      ],
+    ]);
+    $variation->save();
+    $subscription = Subscription::create([
+      'type' => 'product_variation',
+      'title' => $this->randomString(),
+      'uid' => $this->adminUser->id(),
+      'billing_schedule' => $billing_schedule,
+      'purchased_entity' => $variation,
+      'store_id' => $this->store->id(),
+      'unit_price' => $variation->getPrice(),
+      'starts' => time(),
+      'state' => 'active',
+    ]);
+    $subscription->save();
+    $this->drupalGet('admin/commerce/config/billing-schedules/manage/' . $billing_schedule->id());
+    $page = $this->getSession()->getPage();
+    $this->assertSession()->pageTextContains('Some fields are disabled since the Test (Modified) billing schedule is used by subscriptions.');
+    $disabled_fields = [
+      'edit-billingtype-prepaid',
+      'edit-billingtype-postpaid',
+      'edit-plugin-fixed',
+      'edit-plugin-rolling',
+      'edit-configuration-fixed-trial-interval-allow-trials',
+      'edit-configuration-fixed-interval-number',
+      'edit-configuration-fixed-interval-unit',
+      'edit-prorater-full-price',
+      'edit-prorater-proportional',
+    ];
+    foreach ($disabled_fields as $disabled_field) {
+      $field = $page->findField($disabled_field);
+      $this->assertEquals($field->getAttribute('disabled'), 'disabled');
+    }
   }
 
   /**

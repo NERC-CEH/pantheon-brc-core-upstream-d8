@@ -1,0 +1,12 @@
+synonyms.settings:
+  route_name: 'synonyms.settings'
+  title: 'Synonyms settings'
+  weight: 0
+  appears_on:
+    - synonyms.overview
+
+synonym.entity_type.bundle.add_form:
+  route_name: 'synonym.entity_type.bundle.add_form'
+  title: 'Add provider'
+  appears_on:
+    - synonym.entity_type.bundle

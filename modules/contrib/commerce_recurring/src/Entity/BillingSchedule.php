@@ -21,6 +21,8 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *   handlers = {
  *     "list_builder" = "\Drupal\commerce_recurring\BillingScheduleListBuilder",
  *     "storage" = "\Drupal\Core\Config\Entity\ConfigEntityStorage",
+ *     "access" = "Drupal\commerce_recurring\BillingScheduleAccessControlHandler",
+ *     "permission_provider" = "Drupal\entity\EntityPermissionProvider",
  *     "form" = {
  *       "add" = "\Drupal\commerce_recurring\Form\BillingScheduleForm",
  *       "edit" = "\Drupal\commerce_recurring\Form\BillingScheduleForm",

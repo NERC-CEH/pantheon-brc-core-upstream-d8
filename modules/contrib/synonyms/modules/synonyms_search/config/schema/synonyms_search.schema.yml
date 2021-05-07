@@ -1,0 +1,10 @@
+synonyms_search.behavior.*:
+  type: config_entity
+  label: 'Behavior configuration'
+  mapping:
+    status:
+      type: boolean
+      label: 'Status'
+    wording:
+      type: string
+      label: 'Behavior service wording'

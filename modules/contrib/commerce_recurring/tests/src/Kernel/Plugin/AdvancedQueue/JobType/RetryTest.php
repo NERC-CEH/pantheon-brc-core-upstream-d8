@@ -7,12 +7,16 @@ use Drupal\commerce_price\Price;
 use Drupal\commerce_recurring\Entity\Subscription;
 use Drupal\commerce_recurring_test\Entity\ExceptionPaymentMethod;
 use Drupal\Tests\commerce_recurring\Kernel\RecurringKernelTestBase;
+use Drupal\Core\Test\AssertMailTrait;
+use Drupal\Core\Url;
 
 /**
  * @coversDefaultClass \Drupal\commerce_recurring\Plugin\AdvancedQueue\JobType\RecurringJobTypeBase
  * @group commerce_recurring
  */
 class RetryTest extends RecurringKernelTestBase {
+
+  use AssertMailTrait;
 
   /**
    * {@inheritdoc}
@@ -45,6 +49,9 @@ class RetryTest extends RecurringKernelTestBase {
     /** @var \Drupal\Core\Entity\EntityStorageInterface $queue_storage */
     $queue_storage = $this->container->get('entity_type.manager')->getStorage('advancedqueue_queue');
     $this->queue = $queue_storage->load('commerce_recurring');
+
+    // Ensure that the customer has an email (for dunning emails).
+    $this->user->setEmail($this->randomMachineName() . '@example.com');
   }
 
   /**
@@ -70,7 +77,8 @@ class RetryTest extends RecurringKernelTestBase {
     $order = $this->recurringOrderManager->startRecurring($subscription);
 
     // Rewind time to the end of the first subscription.
-    $this->rewindTime(strtotime('2019-03-01 00:00'));
+    $new_time = strtotime('2019-03-01 00:00');
+    $this->rewindTime($new_time);
     $job = Job::create('commerce_recurring_order_close', [
       'order_id' => $order->id(),
     ]);
@@ -93,9 +101,16 @@ class RetryTest extends RecurringKernelTestBase {
     $this->assertEquals(1, $job->getNumRetries());
     $this->assertEquals(Job::STATE_QUEUED, $job->getState());
     $this->assertEquals(strtotime('2019-03-02 00:00'), $job->getAvailableTime());
+    // Confirm dunning email.
+    $this->assertMailString('subject', 'Payment declined - Order #1.', 1);
+    $this->assertMailString('body', 'We regret to inform you that the most recent charge attempt on your card failed.', 1);
+    $this->assertMailString('body', Url::fromRoute('entity.commerce_payment_method.collection', ['user' => 1], ['absolute' => TRUE])->toString(), 1);
+    $next_retry_time = strtotime('+1 day', $new_time);
+    $this->assertMailString('body', 'Our next charge attempt will be on: ' . date('F d', $next_retry_time), 1);
 
     // Run the first retry.
-    $this->rewindTime(strtotime('2019-03-02 00:00'));
+    $new_time = strtotime('2019-03-02 00:00');
+    $this->rewindTime($new_time);
     $job = $this->queue->getBackend()->claimJob();
     $result = $processor->processJob($job, $this->queue);
 
@@ -107,9 +122,13 @@ class RetryTest extends RecurringKernelTestBase {
     $this->assertEquals(2, $job->getNumRetries());
     $this->assertEquals(Job::STATE_QUEUED, $job->getState());
     $this->assertEquals(strtotime('2019-03-05 00:00'), $job->getAvailableTime());
+    // Confirm dunning email.
+    $next_retry_time = strtotime('+3 days', $new_time);
+    $this->assertMailString('body', 'Our next charge attempt will be on: ' . date('F d', $next_retry_time), 1);
 
     // Run the second retry.
-    $this->rewindTime(strtotime('2019-03-05 00:00'));
+    $new_time = strtotime('2019-03-05 00:00');
+    $this->rewindTime($new_time);
     $job = $this->queue->getBackend()->claimJob();
     $result = $processor->processJob($job, $this->queue);
 
@@ -121,9 +140,13 @@ class RetryTest extends RecurringKernelTestBase {
     $this->assertEquals(3, $job->getNumRetries());
     $this->assertEquals(Job::STATE_QUEUED, $job->getState());
     $this->assertEquals(strtotime('2019-03-10 00:00'), $job->getAvailableTime());
+    // Confirm dunning email.
+    $next_retry_time = strtotime('+5 days', $new_time);
+    $this->assertMailString('body', 'Our final charge attempt will be on: ' . date('F d', $next_retry_time), 1);
 
     // Run the last retry.
-    $this->rewindTime(strtotime('2019-03-10 00:00'));
+    $new_time = strtotime('2019-03-10 00:00');
+    $this->rewindTime($new_time);
     $job = $this->queue->getBackend()->claimJob();
     $result = $processor->processJob($job, $this->queue);
 
@@ -139,6 +162,8 @@ class RetryTest extends RecurringKernelTestBase {
     // Confirm that the subscription was canceled.
     $subscription = $this->reloadEntity($subscription);
     $this->assertEquals('canceled', $subscription->getState()->getId());
+    // Confirm dunning email.
+    $this->assertMailString('body', 'This was our final charge attempt.', 1);
   }
 
   /**
@@ -216,6 +241,11 @@ class RetryTest extends RecurringKernelTestBase {
     $queue_storage = $this->container->get('entity_type.manager')->getStorage('advancedqueue_queue');
     $queue_storage->resetCache(['commerce_recurring']);
     $this->queue = $queue_storage->load('commerce_recurring');
+
+    // Reset services so that new time gets injected.
+    $this->container->set('commerce_recurring.payment_declined_mail', NULL);
+    $this->container->set('commerce_recurring.event_subscriber.dunning_subscriber', NULL);
+    $this->container->set('event_dispatcher', NULL);
   }
 
 }

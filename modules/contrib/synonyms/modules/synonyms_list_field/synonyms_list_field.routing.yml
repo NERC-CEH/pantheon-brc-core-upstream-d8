@@ -1,0 +1,7 @@
+synonyms_list_field.settings:
+  path: '/admin/structure/synonyms_list_field/settings'
+  defaults:
+    _form: '\Drupal\synonyms_list_field\Form\SettingsForm'
+    _title: 'Synonyms list field settings'
+  requirements:
+    _permission: 'administer site configuration'

@@ -2,6 +2,7 @@
 
 namespace Drupal\commerce_recurring\Entity;
 
+use Drupal\commerce\EntityOwnerTrait;
 use Drupal\commerce\PurchasableEntityInterface;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_payment\Entity\PaymentMethodInterface;
@@ -13,6 +14,7 @@ use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Component\Render\FormattableMarkup;
 use Drupal\user\UserInterface;
 
 /**
@@ -34,14 +36,19 @@ use Drupal\user\UserInterface;
  *     "event" = "Drupal\commerce_recurring\Event\SubscriptionEvent",
  *     "list_builder" = "Drupal\commerce_recurring\SubscriptionListBuilder",
  *     "storage" = "\Drupal\commerce_recurring\SubscriptionStorage",
+ *     "access" = "Drupal\commerce_recurring\SubscriptionAccessControlHandler",
+ *     "permission_provider" = "Drupal\commerce_recurring\SubscriptionPermissionProvider",
+ *     "query_access" = "Drupal\entity\QueryAccess\UncacheableQueryAccessHandler",
  *     "form" = {
  *       "default" = "\Drupal\commerce_recurring\Form\SubscriptionForm",
  *       "edit" = "\Drupal\commerce_recurring\Form\SubscriptionForm",
- *       "delete" = "\Drupal\Core\Entity\ContentEntityDeleteForm",
+ *       "customer" = "\Drupal\commerce_recurring\Form\SubscriptionForm",
+ *       "delete" = "\Drupal\commerce_recurring\Form\SubscriptionDeleteForm",
+ *       "cancel" = "\Drupal\commerce_recurring\Form\SubscriptionCancelForm",
  *     },
- *     "views_data" = "Drupal\views\EntityViewsData",
+ *     "views_data" = "Drupal\commerce_recurring\SubscriptionViewsData",
  *     "route_provider" = {
- *       "default" = "Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider",
+ *       "default" = "Drupal\commerce_recurring\SubscriptionRouteProvider",
  *     },
  *   },
  *   base_table = "commerce_subscription",
@@ -51,24 +58,43 @@ use Drupal\user\UserInterface;
  *     "id" = "subscription_id",
  *     "bundle" = "type",
  *     "uuid" = "uuid",
+ *     "owner" = "uid",
  *   },
  *   links = {
  *     "canonical" = "/admin/commerce/subscriptions/{commerce_subscription}",
  *     "add-page" = "/admin/commerce/subscriptions/add",
  *     "add-form" = "/admin/commerce/subscriptions/{type}/add",
  *     "edit-form" = "/admin/commerce/subscriptions/{commerce_subscription}/edit",
+ *     "customer-view" = "/user/{user}/subscriptions/{commerce_subscription}",
+ *     "customer-edit-form" = "/user/{user}/subscriptions/{commerce_subscription}/edit",
  *     "delete-form" = "/admin/commerce/subscriptions/{commerce_subscription}/delete",
  *     "collection" = "/admin/commerce/subscriptions",
+ *     "cancel-form" = "/admin/commerce/subscriptions/{commerce_subscription}/cancel",
  *   },
+ *   field_ui_base_route = "entity.commerce_subscription.admin_form",
  * )
  */
 class Subscription extends ContentEntityBase implements SubscriptionInterface {
+
+  use EntityOwnerTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function urlRouteParameters($rel) {
+    $uri_route_parameters = parent::urlRouteParameters($rel);
+    $uri_route_parameters['user'] = $this->getOwnerId();
+    return $uri_route_parameters;
+  }
 
   /**
    * {@inheritdoc}
    */
   public function label() {
-    return sprintf('#%s (%s)', $this->id(), $this->getTitle());
+    return new FormattableMarkup('@title #@id', [
+      '@title' => $this->getTitle(),
+      '@id' => $this->id(),
+    ]);
   }
 
   /**
@@ -419,6 +445,27 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
   /**
    * {@inheritdoc}
    */
+  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+    parent::postDelete($storage, $entities);
+
+    // Delete the orders of a deleted subscription. Otherwise they will
+    // reference an invalid subscription and result in data integrity issues.
+    // Deleting the orders will also remove all order items.
+    $orders = [];
+    /** @var \Drupal\commerce_recurring\Entity\SubscriptionInterface $entity */
+    foreach ($entities as $entity) {
+      foreach ($entity->getOrders() as $order) {
+        $orders[$order->id()] = $order;
+      }
+    }
+    /** @var \Drupal\commerce_order\OrderStorage $order_storage */
+    $order_storage = \Drupal::service('entity_type.manager')->getStorage('commerce_order');
+    $order_storage->delete($orders);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getRenewedTime() {
     return $this->get('renewed')->value;
   }
@@ -676,17 +723,24 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
         $this->setEndTime(NULL);
       }
     }
-    elseif ($state == 'expired' && $original_state != 'expired') {
-      $this->getType()->onSubscriptionExpire($this);
-    }
-    elseif ($state == 'canceled' && $original_state != 'canceled') {
-      if ($original_state === 'trial') {
-        $this->getType()->onSubscriptionTrialCancel($this);
+    else {
+      if ($this->isNew()) {
+        return;
       }
-      else {
-        $this->getType()->onSubscriptionCancel($this);
+
+      if ($state == 'expired' && $original_state != 'expired') {
+        $this->getType()->onSubscriptionExpire($this);
       }
-      $this->setEndTime(\Drupal::time()->getRequestTime());
+      elseif ($state == 'canceled' && $original_state != 'canceled') {
+        if ($original_state == 'trial') {
+          $this->getType()->onSubscriptionTrialCancel($this);
+        }
+        else {
+          $this->getType()->onSubscriptionCancel($this);
+        }
+
+        $this->setEndTime(\Drupal::time()->getRequestTime());
+      }
     }
   }
 
@@ -700,12 +754,17 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
     if (!isset($this->original) || empty($current_order)) {
       return;
     }
-    $state = $this->getState()->getId();
-    $original_state = $this->original->getState()->getId();
 
-    if ($state != $original_state && in_array($state, ['canceled'])) {
-      $current_order->setRefreshState(OrderInterface::REFRESH_ON_SAVE);
-      $current_order->save();
+    $fields_affecting_current_order = [
+      'payment_method',
+      'state',
+    ];
+    foreach ($fields_affecting_current_order as $field_name) {
+      if (!$this->get($field_name)->equals($this->original->get($field_name))) {
+        $current_order->setRefreshState(OrderInterface::REFRESH_ON_SAVE);
+        $current_order->save();
+        break;
+      }
     }
   }
 
@@ -714,6 +773,7 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = parent::baseFieldDefinitions($entity_type);
+    $fields += static::ownerBaseFieldDefinitions($entity_type);
 
     $fields['store_id'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Store'))
@@ -742,12 +802,10 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
       ])
       ->setDisplayConfigurable('form', TRUE);
 
-    $fields['uid'] = BaseFieldDefinition::create('entity_reference')
+    $fields['uid']
       ->setLabel(t('Customer'))
       ->setDescription(t('The subscribed customer.'))
       ->setRequired(TRUE)
-      ->setSetting('target_type', 'user')
-      ->setSetting('handler', 'default')
       ->setDisplayConfigurable('view', TRUE)
       ->setDisplayOptions('form', [
         'type' => 'entity_reference_autocomplete',
@@ -760,10 +818,11 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
       ->setDescription(t('The payment method.'))
       ->setSetting('target_type', 'commerce_payment_method')
       ->setDisplayOptions('form', [
-        'type' => 'entity_reference_autocomplete',
+        'type' => 'commerce_recurring_payment_method',
         'weight' => 0,
       ])
       ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE)
       ->setReadOnly(TRUE);
 
     $fields['purchased_entity'] = BaseFieldDefinition::create('entity_reference')
@@ -844,11 +903,16 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['orders'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Orders'))
+      ->setLabel(t('Recurring orders'))
       ->setDescription(t('The recurring orders.'))
       ->setCardinality(BaseFieldDefinition::CARDINALITY_UNLIMITED)
       ->setSetting('target_type', 'commerce_order')
-      ->setSetting('handler', 'default');
+      ->setSetting('handler', 'default')
+      ->setDisplayOptions('view', [
+        'type' => 'subscription_orders',
+        'weight' => 0,
+      ])
+      ->setDisplayConfigurable('view', TRUE);
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Created'))
@@ -857,7 +921,8 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
         'label' => 'hidden',
         'type' => 'timestamp',
         'weight' => 0,
-      ]);
+      ])
+      ->setDisplayConfigurable('view', TRUE);
 
     $fields['next_renewal'] = BaseFieldDefinition::create('timestamp')
       ->setLabel(t('Next renewal'))
@@ -867,17 +932,19 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
         'label' => 'hidden',
         'type' => 'timestamp',
         'weight' => 0,
-      ]);
+      ])
+      ->setDisplayConfigurable('view', TRUE);
 
     $fields['renewed'] = BaseFieldDefinition::create('timestamp')
-      ->setLabel(t('Renewed'))
+      ->setLabel(t('Last renewed'))
       ->setDescription(t('The time when the subscription was last renewed.'))
       ->setDefaultValue(0)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
         'type' => 'timestamp',
         'weight' => 0,
-      ]);
+      ])
+      ->setDisplayConfigurable('view', TRUE);
 
     $fields['trial_starts'] = BaseFieldDefinition::create('timestamp')
       ->setLabel(t('Trial starts'))
@@ -892,6 +959,7 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
         'type' => 'datetime_timestamp',
         'weight' => 0,
       ])
+      ->setDisplayConfigurable('view', TRUE)
       ->setDisplayConfigurable('form', TRUE);
 
     $fields['trial_ends'] = BaseFieldDefinition::create('timestamp')
@@ -907,6 +975,7 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
         'type' => 'commerce_recurring_end_timestamp',
         'weight' => 0,
       ])
+      ->setDisplayConfigurable('view', TRUE)
       ->setDisplayConfigurable('form', TRUE);
 
     $fields['starts'] = BaseFieldDefinition::create('timestamp')
@@ -918,6 +987,7 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
         'type' => 'timestamp',
         'weight' => 0,
       ])
+      ->setDisplayConfigurable('view', TRUE)
       ->setDisplayOptions('form', [
         'type' => 'datetime_timestamp',
         'weight' => 0,
@@ -933,6 +1003,7 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
         'type' => 'timestamp',
         'weight' => 0,
       ])
+      ->setDisplayConfigurable('view', TRUE)
       ->setDisplayOptions('form', [
         'type' => 'commerce_recurring_end_timestamp',
         'weight' => 0,
@@ -958,28 +1029,40 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
    * {@inheritdoc}
    */
   public static function bundleFieldDefinitions(EntityTypeInterface $entity_type, $bundle, array $base_field_definitions) {
-    /** @var \Drupal\commerce_order\Entity\OrderItemTypeInterface $subscription_type */
+    /** @var \Drupal\commerce_recurring\SubscriptionTypeManager $subscription_type_manager */
     $subscription_type_manager = \Drupal::service('plugin.manager.commerce_subscription_type');
-    $subscription_type = $subscription_type_manager->createInstance($bundle);
-    $purchasable_entity_type = $subscription_type->getPurchasableEntityTypeId();
-    $fields = [];
-    $fields['purchased_entity'] = clone $base_field_definitions['purchased_entity'];
-    $fields['purchased_entity']->setLabel(t('Product variation'));
 
-    if ($purchasable_entity_type) {
-      $fields['purchased_entity']->setSetting('target_type', $purchasable_entity_type);
+    /** @var \Drupal\commerce_recurring\Plugin\Commerce\SubscriptionType\SubscriptionTypeInterface $subscription_type */
+    $subscription_type = $subscription_type_manager->createInstance($bundle);
+
+    $fields = [
+      'purchased_entity' => clone $base_field_definitions['purchased_entity'],
+    ];
+
+    $entity_type_id = $subscription_type->getPurchasableEntityTypeId();
+    if ($entity_type_id) {
+      /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager */
+      $entity_type_manager = \Drupal::service('entity_type.manager');
+
+      /** @var \Drupal\Core\Entity\EntityTypeInterface $entity_type */
+      $entity_type = $entity_type_manager->getDefinition($entity_type_id);
+
+      $fields['purchased_entity']
+        ->setLabel($entity_type->getLabel())
+        ->setSetting('target_type', $entity_type_id);
     }
     else {
-      // This order item type won't reference a purchasable entity. The field
+      // This subscription type doesn't reference a purchasable entity. The field
       // can't be removed here, or converted to a configurable one, so it's
       // hidden instead. https://www.drupal.org/node/2346347#comment-10254087.
-      $fields['purchased_entity']->setRequired(FALSE);
-      $fields['purchased_entity']->setDisplayOptions('form', [
-        'type' => 'hidden',
-      ]);
-      $fields['purchased_entity']->setDisplayConfigurable('form', FALSE);
-      $fields['purchased_entity']->setDisplayConfigurable('view', FALSE);
-      $fields['purchased_entity']->setReadOnly(TRUE);
+      $fields['purchased_entity']
+        ->setRequired(FALSE)
+        ->setDisplayOptions('form', [
+          'region' => 'hidden',
+        ])
+        ->setDisplayConfigurable('form', FALSE)
+        ->setDisplayConfigurable('view', FALSE)
+        ->setReadOnly(TRUE);
     }
 
     return $fields;

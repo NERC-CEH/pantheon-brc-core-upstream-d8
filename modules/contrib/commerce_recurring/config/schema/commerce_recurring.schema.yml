@@ -104,3 +104,14 @@ field.value.commerce_billing_period:
    ends:
      type: int
      label: 'Ends'
+
+field.widget.settings.commerce_recurring_payment_method:
+  type: field.widget.settings.entity_reference_autocomplete_tags
+
+field.formatter.settings.subscription_orders:
+  type: mapping
+  label: 'Subscription orders formatter'
+  mapping:
+   view:
+      type: string
+      label: 'View'

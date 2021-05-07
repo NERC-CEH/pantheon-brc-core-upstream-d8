@@ -107,7 +107,7 @@ abstract class RecurringJobTypeBase extends JobTypeBase implements ContainerFact
       $this->handleFailedOrder($order, FALSE);
     }
     // Subscribers can choose to send a dunning email.
-    $event = new PaymentDeclinedEvent($order, $retry_days, $num_retries, $max_retries);
+    $event = new PaymentDeclinedEvent($order, $retry_days, $num_retries, $max_retries, $exception);
     $this->eventDispatcher->dispatch(RecurringEvents::PAYMENT_DECLINED, $event);
     $order->save();
 

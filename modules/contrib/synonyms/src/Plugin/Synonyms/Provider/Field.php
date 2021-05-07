@@ -11,12 +11,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryBase;
 use Drupal\Core\Entity\Query\Sql\Condition;
 use Drupal\Core\Entity\Query\Sql\Query;
-use Drupal\synonyms\ProviderInterface\FindInterface;
-use Drupal\synonyms\ProviderInterface\FindTrait;
-use Drupal\synonyms\ProviderInterface\FormatWordingInterface;
-use Drupal\synonyms\ProviderInterface\FormatWordingTrait;
-use Drupal\synonyms\ProviderInterface\GetInterface;
-use Drupal\synonyms\ProviderInterface\GetTrait;
+use Drupal\field\FieldConfigInterface;
 use Drupal\synonyms\SynonymsService\FieldTypeToSynonyms;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -28,9 +23,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   deriver = "Drupal\synonyms\Plugin\Derivative\Field"
  * )
  */
-class Field extends AbstractProvider implements GetInterface, FindInterface, FormatWordingInterface, DependentPluginInterface {
-
-  use GetTrait, FindTrait, FormatWordingTrait;
+class Field extends AbstractProvider implements DependentPluginInterface {
 
   /**
    * The entity field manager.
@@ -61,7 +54,7 @@ class Field extends AbstractProvider implements GetInterface, FindInterface, For
   protected $database;
 
   /**
-   * {@inheritdoc}
+   * Field constructor.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityFieldManagerInterface $entity_field_manager, FieldTypeToSynonyms $field_type_to_synonyms, EntityTypeManagerInterface $entity_type_manager, Connection $database, ContainerInterface $container) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $container);
@@ -99,7 +92,9 @@ class Field extends AbstractProvider implements GetInterface, FindInterface, For
 
     if (isset($map[$field_type])) {
       foreach ($entity->get($this->getPluginDefinition()['field']) as $item) {
-        $synonyms[] = $item->{$map[$field_type]};
+        if (!$item->isEmpty()) {
+          $synonyms[] = $item->{$map[$field_type]};
+        }
       }
     }
 
@@ -190,10 +185,26 @@ class Field extends AbstractProvider implements GetInterface, FindInterface, For
    * {@inheritdoc}
    */
   public function calculateDependencies() {
-    $field = $this->entityFieldManager->getFieldDefinitions($this->getPluginDefinition()['controlled_entity_type'], $this->getPluginDefinition()['controlled_bundle'])[$this->getPluginDefinition()['field']];
-    return [
-      $field->getConfigDependencyKey() => [$field->getConfigDependencyName()],
-    ];
+    $field = $this->getFieldDefinition();
+
+    $dependencies = [];
+
+    if ($field instanceof FieldConfigInterface) {
+      $dependencies[$field->getConfigDependencyKey()] = [$field->getConfigDependencyName()];
+    }
+
+    return $dependencies;
+  }
+
+  /**
+   * Retrieve the field definition against which this plugin is configured.
+   *
+   * @return \Drupal\Core\Field\FieldDefinitionInterface
+   *   Field definition against which this plugin is configured.
+   */
+  protected function getFieldDefinition() {
+    $field = $this->entityFieldManager->getFieldDefinitions($this->getPluginDefinition()['controlled_entity_type'], $this->getPluginDefinition()['controlled_bundle']);
+    return $field[$this->getPluginDefinition()['field']];
   }
 
 }

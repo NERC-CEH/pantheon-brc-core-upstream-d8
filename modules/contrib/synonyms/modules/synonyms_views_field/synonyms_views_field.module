@@ -1,0 +1,34 @@
+<?php
+
+/**
+ * @file
+ * Integrates synonyms field with core Views module.
+ */
+
+/**
+ * Implements hook_views_data().
+ */
+function synonyms_views_data() {
+  $data = [];
+
+  foreach (\Drupal::entityTypeManager()->getDefinitions() as $entity_type) {
+    $tables = [
+      $entity_type->getDataTable() ?? $entity_type->getBaseTable(),
+      $entity_type->getRevisionDataTable() ?? $entity_type->getRevisionTable(),
+    ];
+    $tables = array_filter($tables);
+
+    foreach ($tables as $table) {
+      $data[$table]['synonyms'] = [
+        'title' => t('Synonyms list'),
+        'help' => t('A list of entity synonyms.'),
+        'field' => [
+          'id' => 'field',
+          'field_name' => 'synonyms',
+        ],
+      ];
+    }
+  }
+
+  return $data;
+}

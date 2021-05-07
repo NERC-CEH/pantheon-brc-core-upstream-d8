@@ -19,7 +19,8 @@ class ChargeTest extends KernelTestBase {
    * @covers ::__construct
    */
   public function testMissingProperty() {
-    $this->setExpectedException(\InvalidArgumentException::class, 'Missing required property "billing_period".');
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('Missing required property "billing_period".');
     $charge = new Charge([
       'title' => 'My subscription',
       'unit_price' => new Price('99.99', 'USD'),
@@ -30,7 +31,8 @@ class ChargeTest extends KernelTestBase {
    * @covers ::__construct
    */
   public function testInvalidPurchasedEntity() {
-    $this->setExpectedException(\InvalidArgumentException::class, 'The "purchased_entity" property must be an instance of Drupal\commerce\PurchasableEntityInterface.');
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('The "purchased_entity" property must be an instance of Drupal\commerce\PurchasableEntityInterface.');
     $charge = new Charge([
       'purchased_entity' => 'INVALID',
       'title' => 'My subscription',
@@ -50,7 +52,8 @@ class ChargeTest extends KernelTestBase {
    * @covers ::__construct
    */
   public function testInvalidUnitPrice() {
-    $this->setExpectedException(\InvalidArgumentException::class, 'The "unit_price" property must be an instance of Drupal\commerce_price\Price.');
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('The "unit_price" property must be an instance of Drupal\commerce_price\Price.');
     $charge = new Charge([
       'title' => 'My subscription',
       'unit_price' => 'INVALID',
@@ -69,7 +72,8 @@ class ChargeTest extends KernelTestBase {
    * @covers ::__construct
    */
   public function testInvalidBillingPeriod() {
-    $this->setExpectedException(\InvalidArgumentException::class, 'The "billing_period" property must be an instance of Drupal\commerce_recurring\BillingPeriod.');
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('The "billing_period" property must be an instance of Drupal\commerce_recurring\BillingPeriod.');
     $charge = new Charge([
       'title' => 'My subscription',
       'unit_price' => new Price('99.99', 'USD'),
@@ -85,7 +89,8 @@ class ChargeTest extends KernelTestBase {
    * @covers ::__construct
    */
   public function testInvalidFullBillingPeriod() {
-    $this->setExpectedException(\InvalidArgumentException::class, 'The "full_billing_period" property must be an instance of Drupal\commerce_recurring\BillingPeriod.');
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('The "full_billing_period" property must be an instance of Drupal\commerce_recurring\BillingPeriod.');
     $charge = new Charge([
       'title' => 'My subscription',
       'unit_price' => new Price('99.99', 'USD'),

@@ -85,24 +85,4 @@ class BehaviorService implements ContainerInjectionInterface {
     return $this->widgetServices;
   }
 
-  /**
-   * Checks if the service is enabled.
-   *
-   * @param string $entity_type
-   *   Entity type for which to do the check.
-   * @param string $bundle
-   *   Bundle for which to do the check.
-   * @param string $service_id
-   *   ID of the synonyms behavior service for check.
-   *
-   * @return bool
-   *   Returns TRUE if this service is enabled for given
-   *   entity type and bundle and FALSE if it is not.
-   */
-  public function serviceIsEnabled($entity_type, $bundle, $service_id) {
-    $status = \Drupal::config('synonyms.behavior.' . $entity_type . '.' . $bundle . '.' . $service_id)->get('status');
-
-    return !empty($status);
-  }
-
 }

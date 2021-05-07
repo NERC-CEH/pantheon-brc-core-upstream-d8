@@ -1,0 +1,7 @@
+synonyms_list_field.settings:
+  type: config_entity
+  label: 'Synonyms list field settings'
+  mapping:
+    include_entity_label:
+      type: boolean
+      label: 'Include entity label'

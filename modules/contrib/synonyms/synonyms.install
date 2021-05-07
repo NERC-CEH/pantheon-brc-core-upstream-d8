@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * @file
+ * Synonyms update hooks.
+ */
+
+/**
+ * Issue #3200849: Renaming .widget.yml files to more natural .settings.yml.
+ */
+function synonyms_update_8001() {
+  // Update config records for autocomplete and select widgets.
+  $database = \Drupal::database();
+  $update1 = $database->query("UPDATE {config} SET name = 'synonyms_autocomplete.settings' WHERE name = 'synonyms_autocomplete.widget'")
+    ->execute();
+  $update2 = $database->query("UPDATE {config} SET name = 'synonyms_select.settings' WHERE name = 'synonyms_select.widget'")
+    ->execute();
+  $message = $update1 + $update2 . ' configuration records updated.';
+  return $message;
+}

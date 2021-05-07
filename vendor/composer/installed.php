@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => '5d60d10036d478a06370338e9869fe245bc7a121',
+    'reference' => 'ac510f966370d3c958817c474f7836906d321e21',
     'name' => 'drupal/legacy-project',
   ),
   'versions' => 
@@ -704,12 +704,21 @@
     ),
     'drupal/commerce_recurring' => 
     array (
-      'pretty_version' => '1.0.0-beta5',
-      'version' => '1.0.0.0-beta5',
+      'pretty_version' => '1.0.0-beta6',
+      'version' => '1.0.0.0-beta6',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.0-beta5',
+      'reference' => '8.x-1.0-beta6',
+    ),
+    'drupal/commerce_shipping' => 
+    array (
+      'pretty_version' => '2.0.0',
+      'version' => '2.0.0.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '8.x-2.0',
     ),
     'drupal/commerce_store' => 
     array (
@@ -1496,7 +1505,7 @@
       'aliases' => 
       array (
       ),
-      'reference' => '5d60d10036d478a06370338e9869fe245bc7a121',
+      'reference' => 'ac510f966370d3c958817c474f7836906d321e21',
     ),
     'drupal/libraries' => 
     array (
@@ -1755,6 +1764,15 @@
       'reference' => '8.x-1.0-alpha2',
     ),
     'drupal/php' => 
+    array (
+      'pretty_version' => '1.1.0',
+      'version' => '1.1.0.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '8.x-1.1',
+    ),
+    'drupal/physical' => 
     array (
       'pretty_version' => '1.1.0',
       'version' => '1.1.0.0',
@@ -2045,12 +2063,12 @@
     ),
     'drupal/synonyms' => 
     array (
-      'pretty_version' => '2.0.0-alpha1',
-      'version' => '2.0.0.0-alpha1',
+      'pretty_version' => '2.0.0-beta1',
+      'version' => '2.0.0.0-beta1',
       'aliases' => 
       array (
       ),
-      'reference' => '2.0.0-alpha1',
+      'reference' => '2.0.0-beta1',
     ),
     'drupal/syslog' => 
     array (

@@ -1,0 +1,6 @@
+services:
+  synonyms.behavior.autocomplete:
+    class: Drupal\synonyms_autocomplete\SynonymsService\Behavior\AutocompleteService
+    arguments: [ '@keyvalue', '@plugin.manager.entity_reference_selection', '@database', '@entity_type.manager', '@synonyms.provider_service' ]
+    tags:
+      - { name: synonyms_behavior }

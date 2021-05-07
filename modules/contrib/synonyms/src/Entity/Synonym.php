@@ -169,6 +169,22 @@ class Synonym extends ConfigEntityBase implements SynonymInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function calculateDependencies() {
+    $return = parent::calculateDependencies();
+
+    $plugin_definition = $this->getProviderPluginInstance()->getPluginDefinition();
+    $controlled_entity_type = \Drupal::entityTypeManager()->getDefinition($plugin_definition['controlled_entity_type']);
+    $dependency = $controlled_entity_type->getBundleConfigDependency($plugin_definition['controlled_bundle']);
+    if ($dependency) {
+      $this->addDependency($dependency['type'], $dependency['name']);
+    }
+
+    return $return;
+  }
+
+  /**
    * Construct a cache tag.
    *
    * Construct a cache tag that represents this synonyms config,

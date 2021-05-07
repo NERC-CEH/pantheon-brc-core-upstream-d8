@@ -7,7 +7,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
 /**
  * Interface to extract (get) synonyms from an entity.
  */
-interface GetInterface extends ProviderInterface {
+interface GetInterface {
 
   /**
    * Fetch synonyms from an entity.

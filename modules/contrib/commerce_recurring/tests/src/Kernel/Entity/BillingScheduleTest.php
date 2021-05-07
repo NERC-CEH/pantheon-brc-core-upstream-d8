@@ -23,7 +23,9 @@ class BillingScheduleTest extends KernelTestBase {
   public static $modules = [
     'commerce',
     'commerce_price',
+    'commerce_order',
     'commerce_recurring',
+    'profile',
   ];
 
   /**

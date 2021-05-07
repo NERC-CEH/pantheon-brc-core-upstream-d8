@@ -1,0 +1,48 @@
+{#
+/**
+ * @file
+ * Template for subscriptions in the 'customer' view mode.
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the wrapper.
+ * - subscription: The rendered subscription fields.
+ *   Use 'subscription' to print them all, or print a subset such as
+ *   'subscription.title'. Use the following code to exclude the
+ *   printing of a given field:
+ *   @code
+ *   {{ subscription|without('title') }}
+ *   @endcode
+ * - subscription_entity: The subscription entity.
+ *
+ * @ingroup themeable
+ */
+#}
+{{ attach_library('commerce_recurring/subscription_form') }}
+<div class="layout-subscription-form clearfix">
+  <div class="layout-region layout-region-subscription-main">
+    {{ subscription.orders }}
+  </div>
+  <div class="layout-region layout-region-subscription-secondary">
+    <div class="entity-meta">
+      <div class="entity-meta__header">
+        <h3 class="entity-meta__title">
+          {{ subscription.state }}
+        </h3>
+      </div>
+      <details open class="seven-details">
+        <summary role="button" class="seven-details__summary">
+          {{ 'Subscription information'|t }}
+        </summary>
+        <div class="details-wrapper seven-details__wrapper">
+          {{ subscription|without('orders', 'state', 'payment_method') }}
+        </div>
+        <summary role="button" class="seven-details__summary">
+          {{ 'Payment information'|t }}
+        </summary>
+        <div class="details-wrapper seven-details__wrapper">
+          {{ subscription.payment_method }}
+        </div>
+      </details>
+    </div>
+  </div>
+</div>

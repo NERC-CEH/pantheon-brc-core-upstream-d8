@@ -1,0 +1,13 @@
+name: Synonyms List Field
+description: Provides a list of entity synonyms as a field.
+package: Synonyms
+type: module
+core_version_requirement: ^8.8 || ^9
+configure: synonyms_list_field.settings
+dependencies:
+  - synonyms:synonyms
+
+# Information added by Drupal.org packaging script on 2021-04-29
+version: '2.0.0-beta1'
+project: 'synonyms'
+datestamp: 1619657140

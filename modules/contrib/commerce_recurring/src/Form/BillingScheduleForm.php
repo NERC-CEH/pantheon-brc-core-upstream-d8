@@ -9,6 +9,7 @@ use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class BillingScheduleForm extends EntityForm {
@@ -118,7 +119,6 @@ class BillingScheduleForm extends EntityForm {
       '#options' => $plugins,
       '#default_value' => $plugin,
       '#required' => TRUE,
-      '#disabled' => !$billing_schedule->isNew(),
       '#ajax' => [
         'callback' => '::ajaxRefresh',
         'wrapper' => $wrapper_id,
@@ -218,6 +218,49 @@ class BillingScheduleForm extends EntityForm {
    * Ajax callback.
    */
   public static function ajaxRefresh(array $form, FormStateInterface $form_state) {
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm(array $form, FormStateInterface $form_state) {
+    $form = parent::buildForm($form, $form_state);
+
+    /** @var \Drupal\commerce_recurring\Entity\BillingScheduleInterface $billing_schedule */
+    $billing_schedule = $this->entity;
+
+    if ($billing_schedule->isNew()) {
+      return $form;
+    }
+
+    $is_referenced = (boolean) $this->entityTypeManager
+      ->getStorage('commerce_subscription')
+      ->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('billing_schedule', $billing_schedule->id())
+      ->count()
+      ->execute();
+
+    if ($is_referenced) {
+      // Disable some fields when the billing shedule is already in use by subscriptions.
+      $form['billingType']['#disabled'] = TRUE;
+      $form['plugin']['#disabled'] = TRUE;
+      $form['configuration']['#disabled'] = TRUE;
+      $form['prorater']['#disabled'] = TRUE;
+      $form['prorater_configuration']['#disabled'] = TRUE;
+
+      if (empty($form_state->getUserInput())) {
+        // The form is not submitted, set a message explaining why some of the
+        // fields are disabled.
+        $link = Link::createFromRoute('subscriptions page', 'entity.commerce_subscription.collection');
+        $this->messenger()->addWarning($this->t('Some fields are disabled since the %billing_schedule billing schedule is used by subscriptions. Check the @link.', [
+          '%billing_schedule' => $billing_schedule->label(),
+          '@link' => $link->toString(),
+        ]));
+      }
+    }
+
     return $form;
   }
 

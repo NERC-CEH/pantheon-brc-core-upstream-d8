@@ -1,12 +1,12 @@
 name: 'Commerce Recurring Test'
 type: module
-description: 'Test module for RetryTest.'
+description: 'Test module for Commerce Recurring.'
 package: Testing
-core: 8.x
+core_version_requirement: ^8.8 || ^9
 dependencies:
   - commerce_recurring:commerce_recurring
 
-# Information added by Drupal.org packaging script on 2019-12-11
-version: '8.x-1.0-beta5'
+# Information added by Drupal.org packaging script on 2021-03-19
+version: '8.x-1.0-beta6'
 project: 'commerce_recurring'
-datestamp: 1576075410
+datestamp: 1616182159

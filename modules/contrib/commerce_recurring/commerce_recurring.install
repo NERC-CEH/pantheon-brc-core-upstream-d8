@@ -118,3 +118,17 @@ function commerce_recurring_update_8104() {
   $update_manager = \Drupal::entityDefinitionUpdateManager();
   $update_manager->installFieldStorageDefinition('next_renewal', 'commerce_subscription', 'commerce_recurring', $storage_definition);
 }
+
+/**
+ * Update entity keys for subscriptions.
+ */
+function commerce_recurring_update_8105() {
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  $uid_storage_definition = $definition_update_manager->getFieldStorageDefinition('uid', 'commerce_subscription');
+  $entity_type = $definition_update_manager->getEntityType('commerce_subscription');
+  $keys = $entity_type->getKeys();
+  $keys['owner'] = 'uid';
+  $entity_type->set('entity_keys', $keys);
+  $definition_update_manager->updateEntityType($entity_type);
+  $definition_update_manager->updateFieldStorageDefinition($uid_storage_definition);
+}

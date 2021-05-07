@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\commerce_recurring\Kernel;
 
+use Drupal\commerce_order\Entity\Order;
+use Drupal\commerce_order\Entity\OrderItem;
 use Drupal\commerce_payment\Entity\PaymentGateway;
 use Drupal\commerce_payment\Entity\PaymentMethod;
 use Drupal\commerce_product\Entity\ProductVariation;
@@ -141,6 +143,56 @@ abstract class RecurringKernelTestBase extends OrderKernelTestBase {
     ]);
     $variation->save();
     $this->variation = $this->reloadEntity($variation);
+  }
+
+  /**
+   * Creates an order with an order item that will start a subscription.
+   *
+   * @param bool $trial
+   *   Whether to enable a trial interval for the billing schedule. Defaults to
+   *   FALSE.
+   *
+   * @return \Drupal\commerce_order\Entity\OrderInterface
+   *   A commerce order.
+   */
+  protected function createInitialOrder($trial = FALSE) {
+    if (!$trial) {
+      $configuration = $this->billingSchedule->getPluginConfiguration();
+      unset($configuration['trial_interval']);
+      $this->billingSchedule->setPluginConfiguration($configuration);
+      $this->billingSchedule->save();
+    }
+
+    $first_order_item = OrderItem::create([
+      'type' => 'test',
+      'title' => 'I promise not to start a subscription',
+      'unit_price' => [
+        'number' => '10.00',
+        'currency_code' => 'USD',
+      ],
+      'quantity' => 1,
+    ]);
+    $first_order_item->save();
+    $second_order_item = OrderItem::create([
+      'type' => 'default',
+      'purchased_entity' => $this->variation,
+      'unit_price' => [
+        'number' => '2.00',
+        'currency_code' => 'USD',
+      ],
+      'quantity' => '3',
+    ]);
+    $second_order_item->save();
+    $initial_order = Order::create([
+      'type' => 'default',
+      'store_id' => $this->store,
+      'uid' => $this->user,
+      'order_items' => [$first_order_item, $second_order_item],
+      'state' => 'draft',
+    ]);
+    $initial_order->save();
+
+    return $initial_order;
   }
 
   /**
