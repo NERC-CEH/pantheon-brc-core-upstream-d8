@@ -61,7 +61,7 @@
         "drupal/core-recommended": "^8.8",
         "drupal/core-vendor-hardening": "^9.0",
         "drupal/csv_serialization": "1.5",
-        "drupal/ctools": "^3.5",
+        "drupal/ctools": "^3.6",
         "drupal/devel": "^4.1",
         "drupal/devel_entity_updates": "^3.0",
         "drupal/disable_user_login_and_registration": "^1.1",

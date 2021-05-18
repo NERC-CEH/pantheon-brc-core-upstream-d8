@@ -92,7 +92,7 @@ function _image_captcha_get_available_fonts_from_directories($directories = NULL
   // Collect the font information.
   $fonts = [];
   foreach ($directories as $directory) {
-    if (\Drupal::service('file_system')->prepareDirectory($directory)) {
+    if (file_exists($directory)) {
       $files = \Drupal::service('file_system')->scanDirectory($directory, '/\.[tT][tT][fF]$/');
       foreach ($files as $filename => $font) {
         $fonts[hash('sha256', $filename)] = (array) $font;
