@@ -32,7 +32,7 @@ private static $installed = array (
     'aliases' => 
     array (
     ),
-    'reference' => 'e3c86c164fb99efb0cd7d28b06be4bc0d395dd29',
+    'reference' => 'f44fda8ebdf6e2a556908bed1ea5856ad25f4fec',
     'name' => 'drupal/legacy-project',
   ),
   'versions' => 
@@ -1531,7 +1531,7 @@ private static $installed = array (
       'aliases' => 
       array (
       ),
-      'reference' => 'e3c86c164fb99efb0cd7d28b06be4bc0d395dd29',
+      'reference' => 'f44fda8ebdf6e2a556908bed1ea5856ad25f4fec',
     ),
     'drupal/libraries' => 
     array (
@@ -1884,12 +1884,12 @@ private static $installed = array (
     ),
     'drupal/responsive_tables_filter' => 
     array (
-      'pretty_version' => '1.7.0',
-      'version' => '1.7.0.0',
+      'pretty_version' => '1.8.0',
+      'version' => '1.8.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '8.x-1.7',
+      'reference' => '8.x-1.8',
     ),
     'drupal/rest' => 
     array (
@@ -3311,9 +3311,23 @@ return $installed[0]['root'];
 
 
 
+
 public static function getRawData()
 {
+@trigger_error('getRawData only returns the first dataset loaded, which may not be what you expect. Use getAllRawData() instead which returns all datasets for all autoloaders present in the process.', E_USER_DEPRECATED);
+
 return self::$installed;
+}
+
+
+
+
+
+
+
+public static function getAllRawData()
+{
+return self::getInstalled();
 }
 
 
