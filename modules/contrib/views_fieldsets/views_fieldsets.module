@@ -14,14 +14,14 @@ use Drupal\views_ui\ViewUI;
  * Implements hook_theme().
  */
 function views_fieldsets_theme() {
-  $vars = ['fields' => [], 'classes' => ''];
+  $vars = ['fields' => [], 'attributes' => []];
   $path = drupal_get_path('module', 'views_fieldsets');
   $hooks['views_fieldsets_fieldset'] = [
     'variables' => $vars + [
-        'legend' => '',
-        'collapsible' => TRUE,
-        'collapsed' => FALSE,
-      ],
+      'legend' => '',
+      'collapsible' => TRUE,
+      'collapsed' => FALSE,
+    ],
     'template' => 'views-fieldsets-fieldset',
     'path' => $path,
   ];
@@ -65,6 +65,8 @@ function views_fieldsets_preprocess_views_view_fields(&$vars) {
  */
 function views_fieldsets_views_ui_display_tab_alter(&$build, ViewUI $ui_view, $display_id) {
   $view = $ui_view->getExecutable();
+  // Re-init handlers.
+  $view->inited = FALSE;
   $view->build($display_id);
   $ui_view->set('executable', $view);
   if (Fieldset::isFieldsetView($view)) {
@@ -124,15 +126,15 @@ function views_fieldsets_form_views_ui_rearrange_form_alter(&$form, &$form_state
         '#attributes' => ['class' => ['field-name']],
       ],
       'hierarchy' => $debug_tabledrag + [
-          '#type' => 'hidden',
-          '#default_value' => Fieldset::getFieldParent($view, $field_name),
-          '#attributes' => ['class' => ['hierarchy']],
-        ],
+        '#type' => 'hidden',
+        '#default_value' => Fieldset::getFieldParent($view, $field_name),
+        '#attributes' => ['class' => ['hierarchy']],
+      ],
       'depth' => $debug_tabledrag + [
-          '#type' => 'hidden',
-          '#default_value' => $depth,
-          '#attributes' => ['class' => ['depth']],
-        ],
+        '#type' => 'hidden',
+        '#default_value' => $depth,
+        '#attributes' => ['class' => ['depth']],
+      ],
     ];
     unset($row);
   }
@@ -156,6 +158,7 @@ function views_fieldsets_form_views_ui_rearrange_form_alter(&$form, &$form_state
     'relationship' => 'sibling',
     'group' => 'weight',
   ];
+
   $form['actions']['submit']['#submit'][] = 'views_fieldsets_views_ui_rearrange_form_submit';
 }
 
@@ -167,6 +170,8 @@ function views_fieldsets_views_ui_rearrange_form_submit($form, $form_state) {
   $display_id = $form_state->get('display_id');
   $view = $ui_view->getExecutable();
   $view->setDisplay($display_id);
+  // Re-init handlers.
+  $view->inited = FALSE;
   $view->build($display_id);
   $fieldsets = Fieldset::getAllFieldsets($view);
   // Sort 1-dimensionally (wrong overall, but right per level).
@@ -180,7 +185,7 @@ function views_fieldsets_views_ui_rearrange_form_submit($form, $form_state) {
   // Sort overall: level by level, n-dimensionally following the tree down.
   $input_fields_weights = [];
   foreach ($input_fields as $field_name => $fieldset) {
-    $parents = Fieldset::getUIFieldParents($input_fields, $field_name);
+    $parents = Fieldset::getUiFieldParents($input_fields, $field_name);
     $id = array_reverse(array_merge([$field_name], $parents));
     $id = array_map(function ($field) use ($fields_order) {
       return array_search($field, $fields_order);

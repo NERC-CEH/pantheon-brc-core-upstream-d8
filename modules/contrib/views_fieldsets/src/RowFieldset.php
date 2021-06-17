@@ -3,10 +3,14 @@
 namespace Drupal\views_fieldsets;
 
 use Drupal\Component\Utility\Html;
+use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Render\Markup;
 use Drupal\views\ResultRow;
 use Drupal\views_fieldsets\Plugin\views\field\Fieldset;
 
+/**
+ * {@inheritdoc}
+ */
 class RowFieldset {
 
   public $row;
@@ -40,7 +44,8 @@ class RowFieldset {
    *   Method's name.
    */
   public function __get($name) {
-    if (is_callable($method = [$this, "get_$name"])) {
+    $method_name = 'get' . Unicode::ucwords($name);
+    if (is_callable($method = [$this, $method_name])) {
       return call_user_func($method);
     }
     if (!empty($name) && !empty($this->properties[$name])) {
@@ -50,23 +55,23 @@ class RowFieldset {
   }
 
   /**
-   * Object get_content().
+   * Object getcontent().
    */
-  public function get_content() {
+  public function getContent() {
     return $this->render();
   }
 
   /**
-   * Object get_wrapper_element().
+   * Object getwrapperelement().
    */
-  public function get_wrapper_element() {
+  public function getWrapperelement() {
     return '';
   }
 
   /**
-   * Object get_element_type().
+   * Object getelementtype().
    */
-  public function get_element_type() {
+  public function getElementtype() {
     return '';
   }
 
@@ -80,9 +85,14 @@ class RowFieldset {
       '#fields' => $this->children,
       '#legend' => Markup::create($this->getLegend()),
       '#collapsible' => (bool) $this->handler->options['collapsible'],
-      '#collapsed' => (bool) $this->handler->options['collapsed'],
-      '#classes' => $this->getClasses(),
+      '#attributes' => [
+        'class' => $this->getClasses(),
+      ],
     ];
+    if ($this->handler->options['collapsed'] && $this->getWrapperType() != 'div') {
+      $element['#attributes']['class'][] = 'collapsed';
+    }
+
     return render($element);
   }
 
@@ -115,7 +125,8 @@ class RowFieldset {
     $classes = array_map(function ($class) {
       return Html::getClass($this->tokenize($class));
     }, $classes);
-    return implode(' ', $classes);
+
+    return $classes;
   }
 
   /**
@@ -133,8 +144,8 @@ class RowFieldset {
    *
    * @param array $fields
    *   Fields.
-   * @param array $field_name
-   *   Fields name.
+   * @param string $field_name
+   *   Field name.
    */
   public function addChild(array $fields, $field_name) {
     $this->children[$field_name] = $fields[$field_name];
